@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import JsonFormatterContent from "./JsonFormatterContent";
 
 export async function generateMetadata(): Promise<Metadata> {
-    metadataBase: new URL("https://anytools.online");
     return {
         title: "JSON Formatter Online - Free JSON Beautifier & Validator Tool 2025",
         description: "Free online JSON formatter, validator and beautifier. Format, validate, minify JSON instantly. Best JSON editor with syntax highlighting. No installation required. Try now!",
@@ -40,10 +39,11 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Format, validate, and beautify JSON data online. Free JSON formatter with syntax highlighting.",
         },
         alternates: {
-            canonical: "/tools/json-formatter",
+            canonical: "https://anytools.online/tools/json-formatter",
             languages: {
-                en: "/tools/json-formatter?lang=en",
-                vi: "/tools/json-formatter?lang=vi",
+                "x-default": "https://anytools.online/tools/json-formatter",
+                en: "https://anytools.online/tools/json-formatter",
+                vi: "https://anytools.online/tools/json-formatter",
             },
         },
         robots: {

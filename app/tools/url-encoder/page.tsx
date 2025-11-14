@@ -39,10 +39,11 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Free URL encoder/decoder for web developers. Encode query parameters instantly.",
         },
         alternates: {
-            canonical: "/tools/url-encoder",
+            canonical: "https://anytools.online/tools/url-encoder",
             languages: {
-                en: "/tools/url-encoder?lang=en",
-                vi: "/tools/url-encoder?lang=vi",
+                "x-default": "https://anytools.online/tools/url-encoder",
+                en: "https://anytools.online/tools/url-encoder",
+                vi: "https://anytools.online/tools/url-encoder",
             },
         },
         robots: {

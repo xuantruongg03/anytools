@@ -157,23 +157,23 @@ export default function ColorPickerContent() {
                 <section className='mt-12'>
                     <h2 className='text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100'>{t.tools.colorPicker.page.faq}</h2>
                     <div className='space-y-6'>
-                        <div>
+                        <div className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6'>
                             <h3 className='text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.tools.colorPicker.page.faqList.q1}</h3>
                             <p className='text-gray-600 dark:text-gray-400'>{t.tools.colorPicker.page.faqList.a1}</p>
                         </div>
-                        <div>
+                        <div className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6'>
                             <h3 className='text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.tools.colorPicker.page.faqList.q2}</h3>
                             <p className='text-gray-600 dark:text-gray-400'>{t.tools.colorPicker.page.faqList.a2}</p>
                         </div>
-                        <div>
+                        <div className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6'>
                             <h3 className='text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.tools.colorPicker.page.faqList.q3}</h3>
                             <p className='text-gray-600 dark:text-gray-400'>{t.tools.colorPicker.page.faqList.a3}</p>
                         </div>
-                        <div>
+                        <div className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6'>
                             <h3 className='text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.tools.colorPicker.page.faqList.q4}</h3>
                             <p className='text-gray-600 dark:text-gray-400'>{t.tools.colorPicker.page.faqList.a4}</p>
                         </div>
-                        <div>
+                        <div className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6'>
                             <h3 className='text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.tools.colorPicker.page.faqList.q5}</h3>
                             <p className='text-gray-600 dark:text-gray-400'>{t.tools.colorPicker.page.faqList.a5}</p>
                         </div>

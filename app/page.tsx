@@ -12,6 +12,7 @@ const toolsList = [
     { href: "/tools/text-case", icon: "Aa", key: "textCase", category: "text" },
     { href: "/tools/color-picker", icon: "🎨", key: "colorPicker", category: "developer" },
     { href: "/tools/hash-generator", icon: "#", key: "hashGenerator", category: "developer" },
+    { href: "/tools/stun-turn-test", icon: "🧪", key: "stunTurnTest", category: "developer" },
 ];
 
 export default function Home() {
@@ -86,7 +87,7 @@ export default function Home() {
                             return (
                                 <Link key={tool.href} href={tool.href} className='block p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-lg transition-all hover:scale-105'>
                                     <div className='flex items-start gap-4'>
-                                        <div className='text-3xl flex-shrink-0 w-12 h-12 flex items-center justify-center bg-blue-50 dark:bg-blue-900/30 rounded-lg text-gray-900 dark:text-gray-100'>{tool.icon}</div>
+                                        <div className='text-3xl shrink-0 w-12 h-12 flex items-center justify-center bg-blue-50 dark:bg-blue-900/30 rounded-lg text-gray-900 dark:text-gray-100'>{tool.icon}</div>
                                         <div className='flex-1'>
                                             <div className='text-xs text-blue-600 dark:text-blue-400 font-medium mb-1'>{toolData.category}</div>
                                             <h3 className='text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100'>{toolData.name}</h3>

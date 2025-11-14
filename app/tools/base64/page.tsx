@@ -45,10 +45,11 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Encode and decode Base64 strings and images online. Fast and secure Base64 converter.",
         },
         alternates: {
-            canonical: "/tools/base64",
+            canonical: "https://anytools.online/tools/base64",
             languages: {
-                en: "/tools/base64?lang=en",
-                vi: "/tools/base64?lang=vi",
+                "x-default": "https://anytools.online/tools/base64",
+                en: "https://anytools.online/tools/base64",
+                vi: "https://anytools.online/tools/base64",
             },
         },
         robots: {

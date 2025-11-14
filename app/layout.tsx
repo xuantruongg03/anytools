@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+    metadataBase: new URL("https://anytools.online"),
     title: {
         default: "AnyTools - Free Online Tools for Developers & Creators",
         template: "%s | AnyTools",

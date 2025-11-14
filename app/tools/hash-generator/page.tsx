@@ -18,10 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Generate cryptographic hashes or encrypt/decrypt text with AES-256. Supports SHA-1, SHA-256, SHA-512.",
         },
         alternates: {
-            canonical: "/tools/hash-generator",
+            canonical: "https://anytools.online/tools/hash-generator",
             languages: {
-                en: "/tools/hash-generator?lang=en",
-                vi: "/tools/hash-generator?lang=vi",
+                "x-default": "https://anytools.online/tools/hash-generator",
+                en: "https://anytools.online/tools/hash-generator",
+                vi: "https://anytools.online/tools/hash-generator",
             },
         },
         robots: {

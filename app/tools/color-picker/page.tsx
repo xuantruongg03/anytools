@@ -18,10 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Pick colors from images or color wheel and convert between HEX, RGB, and HSL formats.",
         },
         alternates: {
-            canonical: "/tools/color-picker",
+            canonical: "https://anytools.online/tools/color-picker",
             languages: {
-                en: "/tools/color-picker?lang=en",
-                vi: "/tools/color-picker?lang=vi",
+                "x-default": "https://anytools.online/tools/color-picker",
+                en: "https://anytools.online/tools/color-picker",
+                vi: "https://anytools.online/tools/color-picker",
             },
         },
         robots: {
