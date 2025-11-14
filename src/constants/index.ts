@@ -1,0 +1,22 @@
+/**
+ * Application-wide constants
+ */
+
+export const APP_NAME = "AnyTools";
+
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+export const SUPPORTED_IMAGE_FORMATS = ["image/jpeg", "image/png", "image/webp"] as const;
+
+/**
+ * HTTP Status Codes
+ */
+export const HTTP_STATUS = {
+    OK: 200,
+    CREATED: 201,
+    BAD_REQUEST: 400,
+    UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
+    INTERNAL_SERVER_ERROR: 500,
+} as const;
