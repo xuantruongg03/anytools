@@ -203,8 +203,8 @@ This project is open source and available under the [MIT License](LICENSE).
 If you find AnyTools useful:
 
 - ⭐ **Star this repository** on GitHub
-- 🐛 **Report bugs** via [GitHub Issues](https://github.com/yourusername/anytools/issues)
-- 💡 **Suggest features** via [GitHub Discussions](https://github.com/yourusername/anytools/discussions)
+- 🐛 **Report bugs** via [GitHub Issues](https://github.com/xuantruongg03/anytools/issues)
+- 💡 **Suggest features** via [GitHub Discussions](https://github.com/xuantruongg03/anytools/discussions)
 - 🤝 **Contribute** by submitting pull requests
 
 ---
@@ -212,8 +212,8 @@ If you find AnyTools useful:
 ## 📞 Contact
 
 - **Website**: [anytools.vercel.app](https://anytools.vercel.app)
-- **GitHub**: [github.com/yourusername/anytools](https://github.com/yourusername/anytools)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/anytools/issues)
+- **GitHub**: [github.com/xuantruongg03/anytools](https://github.com/xuantruongg03/anytools)
+- **Issues**: [GitHub Issues](https://github.com/xuantruongg03/anytools/issues)
 
 ---
 
