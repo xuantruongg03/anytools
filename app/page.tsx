@@ -14,6 +14,7 @@ const toolsList = [
     { href: "/tools/color-picker", icon: "🎨", key: "colorPicker", category: "developer" },
     { href: "/tools/hash-generator", icon: "#", key: "hashGenerator", category: "developer" },
     { href: "/tools/stun-turn-test", icon: "🧪", key: "stunTurnTest", category: "developer" },
+    { href: "/tools/tailwind-css", icon: "⚡", key: "tailwindCss", category: "developer" },
 ];
 
 export default function Home() {
