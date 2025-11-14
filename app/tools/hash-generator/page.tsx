@@ -19,11 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         alternates: {
             canonical: "https://anytools.online/tools/hash-generator",
-            languages: {
-                "x-default": "https://anytools.online/tools/hash-generator",
-                en: "https://anytools.online/tools/hash-generator",
-                vi: "https://anytools.online/tools/hash-generator",
-            },
         },
         robots: {
             index: true,

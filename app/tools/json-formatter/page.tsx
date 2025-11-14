@@ -40,11 +40,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         alternates: {
             canonical: "https://anytools.online/tools/json-formatter",
-            languages: {
-                "x-default": "https://anytools.online/tools/json-formatter",
-                en: "https://anytools.online/tools/json-formatter",
-                vi: "https://anytools.online/tools/json-formatter",
-            },
         },
         robots: {
             index: true,

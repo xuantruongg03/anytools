@@ -19,11 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         alternates: {
             canonical: "https://anytools.online/tools/text-case",
-            languages: {
-                "x-default": "https://anytools.online/tools/text-case",
-                en: "https://anytools.online/tools/text-case",
-                vi: "https://anytools.online/tools/text-case",
-            },
         },
         robots: {
             index: true,

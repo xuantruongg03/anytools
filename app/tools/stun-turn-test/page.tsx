@@ -19,11 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         alternates: {
             canonical: "https://anytools.online/tools/stun-turn-test",
-            languages: {
-                "x-default": "https://anytools.online/tools/stun-turn-test",
-                en: "https://anytools.online/tools/stun-turn-test",
-                vi: "https://anytools.online/tools/stun-turn-test",
-            },
         },
         robots: {
             index: true,

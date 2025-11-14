@@ -19,11 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         alternates: {
             canonical: "https://anytools.online/tools/color-picker",
-            languages: {
-                "x-default": "https://anytools.online/tools/color-picker",
-                en: "https://anytools.online/tools/color-picker",
-                vi: "https://anytools.online/tools/color-picker",
-            },
         },
         robots: {
             index: true,

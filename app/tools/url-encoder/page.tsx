@@ -40,11 +40,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         alternates: {
             canonical: "https://anytools.online/tools/url-encoder",
-            languages: {
-                "x-default": "https://anytools.online/tools/url-encoder",
-                en: "https://anytools.online/tools/url-encoder",
-                vi: "https://anytools.online/tools/url-encoder",
-            },
         },
         robots: {
             index: true,

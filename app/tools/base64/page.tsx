@@ -46,11 +46,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         alternates: {
             canonical: "https://anytools.online/tools/base64",
-            languages: {
-                "x-default": "https://anytools.online/tools/base64",
-                en: "https://anytools.online/tools/base64",
-                vi: "https://anytools.online/tools/base64",
-            },
         },
         robots: {
             index: true,
