@@ -1,6 +1,8 @@
 export const cssUnitConverterTranslations = {
     en: {
         cssUnitConverter: {
+            name: "CSS Unit Converter",
+            description: "Convert between px, rem, em, pt, %, and viewport units instantly",
             ui: {
                 pixelLabel: "Pixel Value (px)",
                 pixelPlaceholder: "Enter pixel value",
@@ -121,6 +123,8 @@ export const cssUnitConverterTranslations = {
     },
     vi: {
         cssUnitConverter: {
+            name: "Trình Chuyển Đổi Đơn Vị CSS",
+            description: "Chuyển đổi giữa px, rem, em, pt, %, và đơn vị viewport ngay lập tức",
             ui: {
                 pixelLabel: "Giá Trị Pixel (px)",
                 pixelPlaceholder: "Nhập giá trị pixel",

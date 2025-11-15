@@ -1,6 +1,8 @@
 export const regexTesterTranslations = {
     en: {
         regexTester: {
+            name: "Regex Tester",
+            description: "Test and debug regular expressions with real-time results",
             ui: {
                 patternLabel: "Regular Expression Pattern",
                 patternPlaceholder: "Enter regex pattern (e.g., ^\\d+$)",
@@ -269,6 +271,8 @@ export const regexTesterTranslations = {
     },
     vi: {
         regexTester: {
+            name: "Trình Kiểm Tra Regex",
+            description: "Kiểm tra và gỡ lỗi biểu thức chính quy với kết quả thời gian thực",
             ui: {
                 patternLabel: "Mẫu Biểu Thức Chính Quy",
                 patternPlaceholder: "Nhập mẫu regex (ví dụ: ^\\d+$)",

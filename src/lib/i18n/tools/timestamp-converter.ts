@@ -1,6 +1,8 @@
 export const timestampConverterTranslations = {
     en: {
         timestampConverter: {
+            name: "Timestamp Converter",
+            description: "Convert between Unix timestamp and human-readable date",
             page: {
                 title: "Timestamp Converter",
                 subtitle: "Convert between Unix timestamp and human-readable date",
@@ -111,6 +113,8 @@ export const timestampConverterTranslations = {
     },
     vi: {
         timestampConverter: {
+            name: "Trình Chuyển Đổi Timestamp",
+            description: "Chuyển đổi giữa Unix timestamp và ngày giờ dễ đọc",
             page: {
                 title: "Chuyển Đổi Timestamp",
                 subtitle: "Chuyển đổi giữa Unix timestamp và ngày giờ dễ đọc",

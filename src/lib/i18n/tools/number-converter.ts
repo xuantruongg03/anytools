@@ -1,6 +1,8 @@
 export const numberConverterTranslations = {
     en: {
         numberConverter: {
+            name: "Number System Converter & Bitwise Calculator",
+            description: "Convert numbers between different bases and perform bitwise operations instantly",
             ui: {
                 inputLabel: "Input Value",
                 inputPlaceholder: "Enter a number...",
@@ -227,6 +229,8 @@ export const numberConverterTranslations = {
     },
     vi: {
         numberConverter: {
+            name: "Trình Chuyển Đổi Hệ Số & Máy Tính Bitwise",
+            description: "Chuyển đổi số giữa các hệ cơ số khác nhau và thực hiện phép toán bitwise ngay lập tức",
             ui: {
                 inputLabel: "Giá trị đầu vào",
                 inputPlaceholder: "Nhập số...",

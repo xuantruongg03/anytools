@@ -1,6 +1,8 @@
 export const htmlEntityEncoderTranslations = {
     en: {
         htmlEntityEncoder: {
+            name: "HTML Entity Encoder/Decoder",
+            description: "Convert special characters to HTML entities and vice versa instantly",
             ui: {
                 inputLabel: "Input Text",
                 inputPlaceholder: "Enter text or HTML entities...",
@@ -127,6 +129,8 @@ export const htmlEntityEncoderTranslations = {
     },
     vi: {
         htmlEntityEncoder: {
+            name: "Bộ Mã Hóa/Giải Mã HTML Entity",
+            description: "Chuyển đổi ký tự đặc biệt sang HTML entities và ngược lại ngay lập tức",
             ui: {
                 inputLabel: "Văn Bản Đầu Vào",
                 inputPlaceholder: "Nhập văn bản hoặc HTML entities...",
