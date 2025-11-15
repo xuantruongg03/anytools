@@ -1,4 +1,5 @@
 import { Locale } from "./config";
+import { toolsTranslations } from "./tools";
 
 export const translations = {
     en: {
@@ -26,7 +27,10 @@ export const translations = {
                 pdf: "PDF",
                 text: "Text",
                 developer: "Developer",
+                design: "Design",
                 ai: "AI",
+                security: "Security",
+                utility: "Utility",
             },
             features: {
                 fast: {
@@ -661,9 +665,17 @@ export const translations = {
                     protocol: "Protocol",
                 },
             },
+            ...toolsTranslations.en,
         },
 
         // About
+        header: {
+            tools: "Tools",
+            viewAllTools: "View All Tools",
+            home: "Home",
+            about: "About",
+        },
+
         about: {
             title: "About AnyTools",
             url: "/about",
@@ -772,7 +784,10 @@ export const translations = {
                 pdf: "PDF",
                 text: "Văn Bản",
                 developer: "Lập Trình",
+                design: "Thiết Kế",
                 ai: "AI",
+                security: "Bảo Mật",
+                utility: "Tiện Ích",
             },
             features: {
                 fast: {
@@ -1407,9 +1422,17 @@ export const translations = {
                     protocol: "Protocol",
                 },
             },
+            ...toolsTranslations.vi,
         },
 
         // About
+        header: {
+            tools: "Công Cụ",
+            viewAllTools: "Xem Tất Cả Công Cụ",
+            home: "Trang Chủ",
+            about: "Về Chúng Tôi",
+        },
+
         about: {
             title: "Về AnyTools",
             url: "/about",

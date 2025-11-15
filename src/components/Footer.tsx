@@ -10,13 +10,13 @@ export function Footer() {
 
     const toolCategories = {
         developer: [
-            { name: t.tools.jsonFormatter.name, href: "/tools/json-formatter" },
-            { name: t.tools.base64.name, href: "/tools/base64" },
-            { name: t.tools.urlEncoder.name, href: "/tools/url-encoder" },
-            { name: t.tools.hashGenerator.name, href: "/tools/hash-generator" },
+            { name: t.tools.jsonFormatter.name, href: `/${locale}/tools/json-formatter` },
+            { name: t.tools.base64.name, href: `/${locale}/tools/base64` },
+            { name: t.tools.urlEncoder.name, href: `/${locale}/tools/url-encoder` },
+            { name: t.tools.hashGenerator.name, href: `/${locale}/tools/hash-generator` },
         ],
-        text: [{ name: t.tools.textCase.name, href: "/tools/text-case" }],
-        design: [{ name: t.tools.colorPicker.name, href: "/tools/color-picker" }],
+        text: [{ name: t.tools.textCase.name, href: `/${locale}/tools/text-case` }],
+        design: [{ name: t.tools.colorPicker.name, href: `/${locale}/tools/color-picker` }],
     };
 
     return (
@@ -70,12 +70,12 @@ export function Footer() {
                         <h4 className='font-semibold mb-4 text-gray-900 dark:text-gray-100'>{locale === "en" ? "Links" : "Liên Kết"}</h4>
                         <ul className='space-y-2'>
                             <li>
-                                <Link href='/' className='text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors'>
+                                <Link href={`/${locale}`} className='text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors'>
                                     {locale === "en" ? "Home" : "Trang Chủ"}
                                 </Link>
                             </li>
                             <li>
-                                <Link href='/about' className='text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors'>
+                                <Link href={`/${locale}/about`} className='text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors'>
                                     {t.about.title}
                                 </Link>
                             </li>

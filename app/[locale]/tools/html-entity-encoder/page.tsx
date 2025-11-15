@@ -1,0 +1,110 @@
+import type { Metadata } from "next";
+import HtmlEntityContent from "./HtmlEntityContent";
+
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "HTML Entity Encoder/Decoder - Convert Special Characters to HTML Entities 2025",
+        description: "Free HTML entity encoder and decoder tool. Convert special characters (&, <, >, quotes) to HTML entities for security. Prevent XSS attacks with proper encoding.",
+        keywords: ["html entity encoder", "html entity decoder", "html entities", "encode html", "decode html", "xss prevention", "html special characters", "html escape", "mã hóa html", "giải mã html", "ký tự đặc biệt html", "bảo mật html", "ngăn chặn xss"],
+        alternates: {
+            canonical: "https://anytools.online/tools/html-entity-encoder",
+            languages: {
+                en: "https://anytools.online/en/tools/html-entity-encoder",
+                vi: "https://anytools.online/vi/tools/html-entity-encoder",
+            },
+        },
+        openGraph: {
+            title: "HTML Entity Encoder/Decoder - Convert Special Characters to HTML Entities 2025",
+            description: "Free HTML entity encoder and decoder tool. Convert special characters to HTML entities for security. Prevent XSS attacks with proper encoding.",
+            url: "https://anytools.online/tools/html-entity-encoder",
+            siteName: "AnyTools",
+            locale: "en_US",
+            type: "website",
+            images: [
+                {
+                    url: "https://anytools.online/og-image.png",
+                    width: 1200,
+                    height: 630,
+                    alt: "HTML Entity Encoder/Decoder",
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: "HTML Entity Encoder/Decoder - Convert Special Characters 2025",
+            description: "Free HTML entity encoder and decoder. Prevent XSS attacks with proper HTML encoding. Convert &, <, >, quotes, and more.",
+            images: ["https://anytools.online/og-image.png"],
+        },
+        robots: { index: true, follow: true },
+    };
+}
+
+export default function HtmlEntityPage() {
+    const webAppSchema = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "HTML Entity Encoder/Decoder",
+        description: "Free online tool to encode and decode HTML entities. Convert special characters to HTML entities for security and prevent XSS attacks.",
+        url: "https://anytools.online/tools/html-entity-encoder",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Any",
+        offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "USD",
+        },
+        featureList: ["Encode HTML entities", "Decode HTML entities", "Support named entities (&amp;, &lt;, &gt;)", "Support numeric entities (&#38;, &#60;)", "Support hex entities (&#x26;, &#x3C;)", "XSS prevention", "Common entities reference", "Security best practices", "Fast encoding/decoding", "Copy to clipboard", "Free to use"],
+        browserRequirements: "Requires JavaScript",
+    };
+
+    const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+            {
+                "@type": "Question",
+                name: "What are HTML entities?",
+                acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "HTML entities are special codes that represent reserved characters in HTML. They start with & and end with ;, like &amp; for &, &lt; for <, and &gt; for >. They prevent browser interpretation errors and security vulnerabilities.",
+                },
+            },
+            {
+                "@type": "Question",
+                name: "Why should I encode HTML entities?",
+                acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Encoding HTML entities is crucial for security and proper display. It prevents XSS attacks, ensures special characters display correctly, maintains HTML validity, protects against injection vulnerabilities, and ensures cross-browser compatibility.",
+                },
+            },
+            {
+                "@type": "Question",
+                name: "What's the difference between named and numeric entities?",
+                acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Named entities use descriptive names (&amp;, &copy;, &euro;), numeric entities use decimal codes (&#38;, &#169;), and hex entities use hexadecimal (&#x26;, &#xA9;). Named entities are more readable but numeric/hex entities support all Unicode characters.",
+                },
+            },
+            {
+                "@type": "Question",
+                name: "When must I encode HTML entities?",
+                acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Always encode entities when displaying user input, showing code examples, inserting dynamic content, using special characters in attributes, displaying XML/HTML source code, and preventing XSS attacks in web applications.",
+                },
+            },
+        ],
+    };
+
+    return (
+        <>
+            <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }} />
+            <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors'>
+                <div className='container mx-auto px-4 py-8'>
+                    <HtmlEntityContent />
+                </div>
+            </div>
+        </>
+    );
+}

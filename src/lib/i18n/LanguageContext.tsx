@@ -14,7 +14,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const [locale, setLocaleState] = useState<Locale>(defaultLocale);
 
     useEffect(() => {
-        // Load saved language from localStorage
+        // Load saved language from localStorage and cookie
         const saved = localStorage.getItem("locale") as Locale;
         if (saved && (saved === "en" || saved === "vi")) {
             setLocaleState(saved);
@@ -24,6 +24,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const setLocale = (newLocale: Locale) => {
         setLocaleState(newLocale);
         localStorage.setItem("locale", newLocale);
+        // Set cookie for middleware
+        document.cookie = `locale=${newLocale}; path=/; max-age=31536000`; // 1 year
     };
 
     return <LanguageContext.Provider value={{ locale, setLocale }}>{children}</LanguageContext.Provider>;

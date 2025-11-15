@@ -1,0 +1,538 @@
+export const regexTesterTranslations = {
+    en: {
+        regexTester: {
+            ui: {
+                patternLabel: "Regular Expression Pattern",
+                patternPlaceholder: "Enter regex pattern (e.g., ^\\d+$)",
+                flagsLabel: "Flags",
+                testStringsLabel: "Test Strings (one per line)",
+                testStringsPlaceholder: "Enter test strings (one per line)\nuser@example.com\ninvalid-email\ntest@domain.com",
+                testButton: "Test Regex",
+                resultsTitle: "Test Results",
+                matched: "matched",
+                notMatched: "not matched",
+                match: "MATCH",
+                noMatch: "NO MATCH",
+                emptyLine: "(empty line)",
+                flavorTitle: "Regex Flavor/Syntax Differences",
+                flavorNote: "This tool uses JavaScript RegEx engine. This section ONLY shows syntax differences between languages for reference. To test regex for Java/Python/etc, you need to use tools in those languages.",
+                keyDifferences: "Key Differences:",
+                futureLanguages: "More languages (Rust, Swift, Kotlin, etc.) will be supported in the future.",
+                commonPatternsTitle: "Common Patterns",
+                regexFlavors: {
+                    javascript: {
+                        description: "ECMAScript Regex - Browser & Node.js",
+                        differences: ["Lookbehind supported (ES2018+): (?<=...) and (?<!...)", "Named groups: (?<name>...)", "Unicode property escapes: \\p{L} with 'u' flag", "Sticky flag 'y' for position-specific matching", "DotAll flag 's' makes . match newlines"],
+                    },
+                    python: {
+                        description: "Python re module",
+                        differences: ["Lookbehind supported: (?<=...) and (?<!...)", "Named groups: (?P<name>...) - different syntax!", "\\A and \\Z for absolute start/end (not ^/$)", "(?P=name) for backreferences to named groups", "No lookbehind in some older versions"],
+                    },
+                    java: {
+                        description: "Java Pattern class",
+                        differences: ["Lookbehind supported: (?<=...) and (?<!...)", "Named groups: (?<name>...) - same as JS", "\\A and \\Z for absolute start/end", "\\Q...\\E for literal quoting", "Possessive quantifiers: ++, *+, ?+, {n,m}+"],
+                    },
+                    php: {
+                        description: "Perl Compatible Regular Expressions",
+                        differences: ["Lookbehind supported: (?<=...) and (?<!...)", "Named groups: (?P<name>...) or (?<name>...)", "Recursive patterns: (?R) or (?n)", "Conditional patterns: (?(condition)yes|no)", "\\K for keeping text before match"],
+                    },
+                    csharp: {
+                        description: ".NET Regex class",
+                        differences: ["Lookbehind supported: (?<=...) and (?<!...)", "Named groups: (?<name>...) or (?'name'...)", "Balancing groups: (?<name1-name2>...)", "Inline options: (?i:...) for case-insensitive", "\\A and \\Z for absolute start/end"],
+                    },
+                    ruby: {
+                        description: "Ruby Oniguruma engine",
+                        differences: ["Lookbehind supported: (?<=...) and (?<!...)", "Named groups: (?<name>...) or (?'name'...)", "Absence operator: (?~pattern)", "Conditional patterns supported", "Unicode categories: \\p{...}"],
+                    },
+                    go: {
+                        description: "Go RE2 engine - Safe & Fast",
+                        differences: ["NO lookbehind/lookahead support!", "NO backreferences support!", "Named groups: (?P<name>...) - can extract only", "\\A and \\z for start/end", "Guaranteed linear time (no catastrophic backtracking)"],
+                    },
+                    perl: {
+                        description: "Perl native regex (PCRE origin)",
+                        differences: ["Most powerful regex engine", "Lookbehind supported: (?<=...) and (?<!...)", "Recursive patterns: (?R)", "Code execution: (?{...}) and (??{...})", "Define patterns: (?(DEFINE)...)"],
+                    },
+                },
+                quickReferenceTitle: "Quick Reference",
+                flagDescriptions: {
+                    g: "Global - Find all matches",
+                    i: "Case-insensitive - Ignore case",
+                    m: "Multiline - ^ and $ match line breaks",
+                    s: "Dotall - Dot matches newlines",
+                    u: "Unicode - Treat as Unicode",
+                    y: "Sticky - Match from lastIndex",
+                },
+                categories: {
+                    all: "All",
+                    validation: "Validation",
+                    web: "Web",
+                    network: "Network",
+                    dateTime: "Date/Time",
+                    finance: "Finance",
+                    security: "Security",
+                    address: "Address",
+                    numbers: "Numbers",
+                    development: "Development",
+                    files: "Files",
+                },
+                quickRef: {
+                    anyChar: "Any character",
+                    digit: "Digit (0-9)",
+                    wordChar: "Word character",
+                    whitespace: "Whitespace",
+                    startLine: "Start of line",
+                    endLine: "End of line",
+                    zeroOrMore: "0 or more",
+                    oneOrMore: "1 or more",
+                    zeroOrOne: "0 or 1",
+                    between: "Between n and m",
+                },
+                patterns: {
+                    emailAddress: { name: "Email Address", description: "Standard email validation" },
+                    urlWebsite: { name: "URL/Website", description: "Match HTTP/HTTPS URLs" },
+                    phoneUS: { name: "Phone (US)", description: "US phone number format" },
+                    phoneVN: { name: "Phone (Vietnam)", description: "Vietnamese phone number format" },
+                    phoneInternational: { name: "Phone (International)", description: "E.164 international format" },
+                    ipv4: { name: "IPv4 Address", description: "Valid IPv4 address" },
+                    ipv6: { name: "IPv6 Address", description: "Full IPv6 address" },
+                    dateYMD: { name: "Date (YYYY-MM-DD)", description: "ISO date format" },
+                    dateDMY: { name: "Date (DD/MM/YYYY)", description: "European date format" },
+                    dateMDY: { name: "Date (MM/DD/YYYY)", description: "US date format" },
+                    time24: { name: "Time (24-hour)", description: "24-hour time format" },
+                    time12: { name: "Time (12-hour)", description: "12-hour time with AM/PM" },
+                    hexColor: { name: "Hex Color", description: "CSS hex color code" },
+                    rgbColor: { name: "RGB Color", description: "CSS RGB color" },
+                    username: { name: "Username", description: "Alphanumeric username 3-16 chars" },
+                    strongPassword: { name: "Strong Password", description: "Min 8 chars, uppercase, lowercase, digit, special" },
+                    creditCardVisa: { name: "Credit Card (Visa)", description: "Visa card number" },
+                    creditCardMastercard: { name: "Credit Card (Mastercard)", description: "Mastercard number" },
+                    ssnUS: { name: "SSN (US)", description: "US Social Security Number" },
+                    zipCodeUS: { name: "ZIP Code (US)", description: "US ZIP code" },
+                    postalCodeUK: { name: "Postal Code (UK)", description: "UK postcode" },
+                    macAddress: { name: "MAC Address", description: "Network MAC address" },
+                    htmlTag: { name: "HTML Tag", description: "Match HTML tags" },
+                    slug: { name: "Slug/URL Path", description: "URL-friendly slug" },
+                    integerNumber: { name: "Integer Number", description: "Positive or negative integer" },
+                    decimalNumber: { name: "Decimal Number", description: "Decimal with fraction" },
+                    currencyUSD: { name: "Currency (USD)", description: "US dollar amount" },
+                    fileExtension: { name: "File Extension", description: "Extract file extension" },
+                    gitRepository: { name: "Git Repository", description: "Git repository URL" },
+                    semanticVersion: { name: "Semantic Version", description: "Semver format" },
+                    uuidV4: { name: "UUID v4", description: "UUID version 4" },
+                    jwtToken: { name: "JWT Token", description: "JSON Web Token" },
+                },
+            },
+            page: {
+                title: "Regex Tester",
+                subtitle: "Test and validate regular expressions with instant pattern matching",
+
+                whatIs: "What is Regular Expression (Regex)?",
+                whatIsDesc:
+                    "A regular expression (regex or regexp) is a sequence of characters that defines a search pattern. It's a powerful tool used in text processing for pattern matching, validation, search and replace operations, and data extraction. Regular expressions are supported in virtually all modern programming languages and text editors, making them an essential skill for developers, data analysts, and anyone working with text data. They use special characters (metacharacters) to create flexible patterns that can match multiple variations of text.",
+
+                history: "History of Regular Expressions",
+                historyDesc:
+                    "Regular expressions originated in the 1950s when mathematician Stephen Cole Kleene described regular languages using mathematical notation called regular sets. In the 1960s, Ken Thompson built Kleene's notation into the editor QED, and later into the Unix editor ed, which led to the grep utility. The concept spread through Unix utilities and eventually became a standard feature in most programming languages. In 1986, POSIX standardized regex syntax. Perl introduced powerful extensions in the late 1980s, creating what's known as Perl Compatible Regular Expressions (PCRE), which became the de facto standard and influenced regex implementations in many modern languages like Python, JavaScript, PHP, and Java.",
+
+                syntax: "Basic Regex Syntax",
+                syntaxDesc:
+                    "Regular expressions use special characters to define patterns. Literal characters match themselves, while metacharacters have special meanings. The most common metacharacters include: dot (.) matches any character except newline, caret (^) matches start of line, dollar ($) matches end of line, square brackets [] define character classes, parentheses () create capture groups, pipe (|) means OR, asterisk (*) means zero or more, plus (+) means one or more, question mark (?) means zero or one, and curly braces {} specify exact counts. Backslash (\\) escapes special characters or introduces special sequences like \\d for digits, \\w for word characters, \\s for whitespace, and their uppercase versions for negation.",
+
+                metacharacters: "Common Metacharacters",
+                metacharactersList: {
+                    dot: ". (Dot): Matches any single character except newline",
+                    caret: "^ (Caret): Matches the start of a line or string",
+                    dollar: "$ (Dollar): Matches the end of a line or string",
+                    star: "* (Asterisk): Matches 0 or more repetitions of the preceding element",
+                    plus: "+ (Plus): Matches 1 or more repetitions of the preceding element",
+                    question: "? (Question): Matches 0 or 1 repetition (makes preceding element optional)",
+                    brackets: "[] (Brackets): Defines a character class (matches any single character inside)",
+                    pipe: "| (Pipe): Alternation operator (logical OR)",
+                    parens: "() (Parentheses): Creates a capture group and defines scope",
+                    braces: "{} (Braces): Specifies exact number of repetitions {n}, {n,}, {n,m}",
+                },
+
+                characterClasses: "Character Classes",
+                characterClassesList: {
+                    digit: "\\d: Matches any digit (0-9), equivalent to [0-9]",
+                    notDigit: "\\D: Matches any non-digit character",
+                    word: "\\w: Matches any word character (alphanumeric + underscore), equivalent to [a-zA-Z0-9_]",
+                    notWord: "\\W: Matches any non-word character",
+                    whitespace: "\\s: Matches any whitespace character (space, tab, newline)",
+                    notWhitespace: "\\S: Matches any non-whitespace character",
+                    boundary: "\\b: Word boundary (position between \\w and \\W)",
+                    notBoundary: "\\B: Not a word boundary",
+                },
+
+                flags: "Regex Flags",
+                flagsList: {
+                    g: "g (Global): Find all matches rather than stopping after the first match",
+                    i: "i (Case-insensitive): Make the pattern case-insensitive",
+                    m: "m (Multiline): ^ and $ match start/end of lines, not just start/end of string",
+                    s: "s (Dotall): Dot (.) matches newline characters",
+                    u: "u (Unicode): Treat pattern and string as Unicode",
+                    y: "y (Sticky): Match only from the index indicated by the lastIndex property",
+                },
+
+                commonPatterns: "Common Regex Patterns",
+                patternsList: {
+                    email: "Email: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    url: "URL: https?://[\\w\\-\\.]+(:\\d+)?(/[\\w\\-\\./?%&=]*)?",
+                    phone: "Phone (US): ^\\+?1?\\s*\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$",
+                    ipv4: "IPv4 Address: ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+                    date: "Date (YYYY-MM-DD): ^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+                    hexColor: "Hex Color: ^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
+                    username: "Username: ^[a-zA-Z0-9_-]{3,16}$",
+                    password: "Strong Password: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+                },
+
+                useCases: "Common Use Cases",
+                useCasesList: {
+                    validation: "Input Validation: Validate email addresses, phone numbers, URLs, and other user inputs",
+                    extraction: "Data Extraction: Extract specific information from logs, documents, or web pages",
+                    searchReplace: "Search and Replace: Find and replace text patterns in code editors and IDEs",
+                    parsing: "Text Parsing: Parse structured text formats like CSV, logs, or configuration files",
+                    routing: "URL Routing: Match URL patterns in web frameworks for routing requests",
+                    filtering: "Content Filtering: Filter or sanitize user input to prevent security issues",
+                },
+
+                bestPractices: "Best Practices",
+                bestPracticesList: {
+                    simple: "Keep It Simple: Start with simple patterns and add complexity only when needed",
+                    specific: "Be Specific: Use specific character classes (\\d, \\w) instead of broad ones (.) when possible",
+                    anchor: "Use Anchors: Use ^ and $ to match entire strings and prevent partial matches",
+                    escape: "Escape Metacharacters: Remember to escape special characters when matching them literally",
+                    test: "Test Thoroughly: Test your regex with various inputs including edge cases",
+                    comment: "Document Complex Patterns: Add comments or documentation for complex regex patterns",
+                    performance: "Consider Performance: Avoid catastrophic backtracking with nested quantifiers",
+                    alternative: "Know Alternatives: Sometimes string methods are simpler and faster than regex",
+                },
+
+                performance: "Performance Considerations",
+                performanceDesc:
+                    "Regular expressions can be powerful but also computationally expensive if not written carefully. Catastrophic backtracking occurs when a regex engine tries many possible ways to match a pattern, especially with nested quantifiers like (a+)+. This can cause exponential time complexity and freeze applications. To avoid this: use possessive quantifiers when available, be careful with alternation inside repeated groups, anchor your patterns when possible, and consider using string methods for simple searches. Always test regex performance with large inputs, and use online tools to analyze and optimize complex patterns. In production systems, implement timeouts for regex operations to prevent denial-of-service vulnerabilities.",
+
+                tools: "Regex Testing Tools",
+                toolsList: {
+                    online: "Online Testers: Use tools like regex101.com or regexr.com for detailed analysis",
+                    ide: "IDE Integration: Most modern IDEs have built-in regex testing and highlighting",
+                    libraries: "Regex Libraries: Use well-tested libraries instead of writing complex patterns from scratch",
+                    debugger: "Regex Debuggers: Use debuggers that show step-by-step matching process",
+                },
+
+                features: {
+                    free: "100% Free and unlimited regex testing",
+                    instant: "Instant pattern matching with real-time results",
+                    offline: "Works completely offline in your browser",
+                    noServer: "No data sent to any server - complete privacy",
+                    flags: "Support for all regex flags (g, i, m, s, u, y)",
+                    highlighting: "Clear display of all matches found",
+                },
+
+                howToUse: "How to Use",
+                steps: {
+                    pattern: "Enter Pattern: Type your regular expression pattern in the first field",
+                    flags: "Set Flags: Enter flags like 'g' (global), 'i' (case-insensitive), 'm' (multiline)",
+                    text: "Enter Test Text: Paste or type the text you want to test against",
+                    test: "Test: Click 'Test Regex' to see all matches highlighted",
+                    iterate: "Iterate: Refine your pattern based on the results until it matches exactly what you need",
+                },
+
+                faq: "Frequently Asked Questions",
+                faqList: {
+                    q1: "What's the difference between greedy and lazy quantifiers?",
+                    a1: "Greedy quantifiers (*, +, {n,}) match as much text as possible, while lazy quantifiers (*?, +?, {n,}?) match as little as possible. For example, given the string '<p>Hello</p><p>World</p>', the pattern '<.*>' (greedy) matches the entire string, but '<.*?>' (lazy) matches only '<p>' and '</p>' separately. Use lazy quantifiers when you want to match the shortest possible string, especially when working with delimiters or tags.",
+
+                    q2: "How do I match special characters literally in regex?",
+                    a2: "Special characters (metacharacters) like . * + ? [ ] ( ) { } ^ $ | \\ have special meanings in regex. To match them literally, you must escape them with a backslash. For example, to match a literal period, use '\\.' instead of '.'. To match a backslash itself, use '\\\\'. In character classes [], most special characters lose their special meaning, except for ^, -, ], and \\.",
+
+                    q3: "What is catastrophic backtracking and how can I avoid it?",
+                    a3: "Catastrophic backtracking occurs when a regex engine tries exponentially many ways to match a pattern, typically with nested quantifiers like (a+)+ or (a*)*. This can cause your application to hang. To avoid it: use possessive quantifiers when available (+, *), be careful with alternation inside repeated groups, use atomic groups, anchor your patterns, and test with large inputs. Consider using string methods for simple patterns instead of complex regex.",
+
+                    q4: "How do capture groups work in regular expressions?",
+                    a4: "Capture groups are defined with parentheses () and allow you to extract specific parts of a match. For example, in the pattern '(\\d{3})-(\\d{3})-(\\d{4})' applied to '123-456-7890', group 1 captures '123', group 2 captures '456', and group 3 captures '7890'. Non-capturing groups (?:...) match without saving, useful when you need grouping for precedence but don't need the captured value. Named capture groups (?<name>...) let you refer to groups by name instead of number.",
+
+                    q5: "What regex flags should I use and when?",
+                    a5: "Common flags include: 'g' (global) to find all matches instead of stopping at the first one, useful in search/replace operations; 'i' (case-insensitive) to match regardless of letter case; 'm' (multiline) to make ^ and $ match line boundaries instead of string boundaries; 's' (dotall) to make . match newlines; 'u' (unicode) for proper Unicode handling; 'y' (sticky) for position-specific matching. Combine flags as needed, like 'gi' for global case-insensitive matching.",
+
+                    q6: "How can I validate an email address with regex?",
+                    a6: "A simple email validation pattern is ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$. However, true RFC-compliant email validation is extremely complex. For production use, it's better to: use a well-tested library, send a verification email to confirm, or use a simple pattern to catch obvious errors. Remember that some valid emails might be rejected by overly strict patterns, and some invalid ones might pass simple checks.",
+
+                    q7: "What's the difference between .* and .+ in regex?",
+                    a7: "Both are quantifiers applied to the dot (.) which matches any character. The asterisk (*) means 'zero or more', so .* can match an empty string or any number of characters. The plus (+) means 'one or more', so .+ must match at least one character. Use .* when the pattern is optional, and .+ when at least one character is required. Both are greedy by default; add ? to make them lazy (.*? or .+?).",
+
+                    q8: "Can I use regex for parsing HTML or XML?",
+                    a8: "While regex can match simple HTML/XML patterns, it's not recommended for parsing structured markup. HTML/XML are context-free languages that require a proper parser to handle nested tags, attributes, and edge cases correctly. Use regex for simple extraction tasks or quick text processing, but use a dedicated parser (like DOMParser, BeautifulSoup, or XML parsers) for reliable parsing. The famous Stack Overflow answer about parsing HTML with regex warns against it for good reasons!",
+                },
+            },
+        },
+    },
+    vi: {
+        regexTester: {
+            ui: {
+                patternLabel: "Mẫu Biểu Thức Chính Quy",
+                patternPlaceholder: "Nhập mẫu regex (ví dụ: ^\\d+$)",
+                flagsLabel: "Cờ",
+                testStringsLabel: "Chuỗi Test (mỗi dòng một chuỗi)",
+                testStringsPlaceholder: "Nhập chuỗi test (mỗi dòng một chuỗi)\nuser@example.com\ninvalid-email\ntest@domain.com",
+                testButton: "Test Regex",
+                resultsTitle: "Kết Quả Test",
+                matched: "khớp",
+                notMatched: "không khớp",
+                match: "KHỚP",
+                noMatch: "KHÔNG KHỚP",
+                emptyLine: "(dòng trống)",
+                flavorTitle: "Sự Khác Biệt Cú Pháp Regex",
+                flavorNote: "Tool này sử dụng JavaScript RegEx engine. Phần này CHỈ hiển thị sự khác biệt giữa các ngôn ngữ để bạn tham khảo. Nếu muốn test regex cho Java/Python/etc, bạn cần sử dụng tool của ngôn ngữ đó.",
+                keyDifferences: "Điểm Khác Biệt Chính:",
+                futureLanguages: "Các ngôn ngữ khác (Rust, Swift, Kotlin, v.v.) sẽ được hỗ trợ trong tương lai.",
+                commonPatternsTitle: "Mẫu Phổ Biến",
+                regexFlavors: {
+                    javascript: {
+                        description: "ECMAScript Regex - Trình duyệt & Node.js",
+                        differences: ["Hỗ trợ Lookbehind (ES2018+): (?<=...) và (?<!...)", "Nhóm có tên: (?<name>...)", "Unicode property escapes: \\p{L} với cờ 'u'", "Cờ Sticky 'y' cho khớp vị trí cụ thể", "Cờ DotAll 's' làm cho . khớp newlines"],
+                    },
+                    python: {
+                        description: "Python re module",
+                        differences: ["Hỗ trợ Lookbehind: (?<=...) và (?<!...)", "Nhóm có tên: (?P<name>...) - cú pháp khác!", "\\A và \\Z cho đầu/cuối tuyệt đối (không phải ^/$)", "(?P=name) cho backreferences đến nhóm có tên", "Không có lookbehind ở một số phiên bản cũ"],
+                    },
+                    java: {
+                        description: "Java Pattern class",
+                        differences: ["Hỗ trợ Lookbehind: (?<=...) và (?<!...)", "Nhóm có tên: (?<name>...) - giống JS", "\\A và \\Z cho đầu/cuối tuyệt đối", "\\Q...\\E để trích dẫn theo nghĩa đen", "Possessive quantifiers: ++, *+, ?+, {n,m}+"],
+                    },
+                    php: {
+                        description: "Perl Compatible Regular Expressions",
+                        differences: ["Hỗ trợ Lookbehind: (?<=...) và (?<!...)", "Nhóm có tên: (?P<name>...) hoặc (?<name>...)", "Mẫu đệ quy: (?R) hoặc (?n)", "Mẫu có điều kiện: (?(condition)yes|no)", "\\K để giữ văn bản trước khớp"],
+                    },
+                    csharp: {
+                        description: ".NET Regex class",
+                        differences: ["Hỗ trợ Lookbehind: (?<=...) và (?<!...)", "Nhóm có tên: (?<name>...) hoặc (?'name'...)", "Nhóm cân bằng: (?<name1-name2>...)", "Tùy chọn inline: (?i:...) cho không phân biệt hoa thường", "\\A và \\Z cho đầu/cuối tuyệt đối"],
+                    },
+                    ruby: {
+                        description: "Ruby Oniguruma engine",
+                        differences: ["Hỗ trợ Lookbehind: (?<=...) và (?<!...)", "Nhóm có tên: (?<name>...) hoặc (?'name'...)", "Toán tử Absence: (?~pattern)", "Hỗ trợ mẫu có điều kiện", "Unicode categories: \\p{...}"],
+                    },
+                    go: {
+                        description: "Go RE2 engine - An toàn & Nhanh",
+                        differences: ["KHÔNG hỗ trợ lookbehind/lookahead!", "KHÔNG hỗ trợ backreferences!", "Nhóm có tên: (?P<name>...) - chỉ có thể trích xuất", "\\A và \\z cho đầu/cuối", "Đảm bảo thời gian tuyến tính (không có catastrophic backtracking)"],
+                    },
+                    perl: {
+                        description: "Perl native regex (nguồn gốc PCRE)",
+                        differences: ["Regex engine mạnh nhất", "Hỗ trợ Lookbehind: (?<=...) và (?<!...)", "Mẫu đệ quy: (?R)", "Thực thi code: (?{...}) và (??{...})", "Định nghĩa mẫu: (?(DEFINE)...)"],
+                    },
+                },
+                quickReferenceTitle: "Tham Khảo Nhanh",
+                flagDescriptions: {
+                    g: "Global - Tìm tất cả khớp",
+                    i: "Case-insensitive - Không phân biệt hoa thường",
+                    m: "Multiline - ^ và $ khớp xuống dòng",
+                    s: "Dotall - Dấu chấm khớp newlines",
+                    u: "Unicode - Xử lý như Unicode",
+                    y: "Sticky - Khớp từ lastIndex",
+                },
+                categories: {
+                    all: "Tất cả",
+                    validation: "Xác thực",
+                    web: "Web",
+                    network: "Mạng",
+                    dateTime: "Ngày/Giờ",
+                    finance: "Tài chính",
+                    security: "Bảo mật",
+                    address: "Địa chỉ",
+                    numbers: "Số",
+                    development: "Phát triển",
+                    files: "File",
+                },
+                quickRef: {
+                    anyChar: "Bất kỳ ký tự nào",
+                    digit: "Chữ số (0-9)",
+                    wordChar: "Ký tự từ",
+                    whitespace: "Khoảng trắng",
+                    startLine: "Đầu dòng",
+                    endLine: "Cuối dòng",
+                    zeroOrMore: "0 hoặc nhiều",
+                    oneOrMore: "1 hoặc nhiều",
+                    zeroOrOne: "0 hoặc 1",
+                    between: "Giữa n và m",
+                },
+                patterns: {
+                    emailAddress: { name: "Địa Chỉ Email", description: "Xác thực email chuẩn" },
+                    urlWebsite: { name: "URL/Website", description: "Khớp HTTP/HTTPS URLs" },
+                    phoneUS: { name: "Điện Thoại (US)", description: "Định dạng số điện thoại US" },
+                    phoneVN: { name: "Điện Thoại (Việt Nam)", description: "Định dạng số điện thoại Việt Nam" },
+                    phoneInternational: { name: "Điện Thoại (Quốc Tế)", description: "Định dạng quốc tế E.164" },
+                    ipv4: { name: "Địa Chỉ IPv4", description: "Địa chỉ IPv4 hợp lệ" },
+                    ipv6: { name: "Địa Chỉ IPv6", description: "Địa chỉ IPv6 đầy đủ" },
+                    dateYMD: { name: "Ngày (YYYY-MM-DD)", description: "Định dạng ngày ISO" },
+                    dateDMY: { name: "Ngày (DD/MM/YYYY)", description: "Định dạng ngày Châu Âu" },
+                    dateMDY: { name: "Ngày (MM/DD/YYYY)", description: "Định dạng ngày US" },
+                    time24: { name: "Giờ (24 giờ)", description: "Định dạng giờ 24h" },
+                    time12: { name: "Giờ (12 giờ)", description: "Giờ 12h với AM/PM" },
+                    hexColor: { name: "Màu Hex", description: "Mã màu hex CSS" },
+                    rgbColor: { name: "Màu RGB", description: "Màu RGB CSS" },
+                    username: { name: "Tên Người Dùng", description: "Username chữ số 3-16 ký tự" },
+                    strongPassword: { name: "Mật Khẩu Mạnh", description: "Tối thiểu 8 ký tự, hoa, thường, số, đặc biệt" },
+                    creditCardVisa: { name: "Thẻ Tín Dụng (Visa)", description: "Số thẻ Visa" },
+                    creditCardMastercard: { name: "Thẻ Tín Dụng (Mastercard)", description: "Số thẻ Mastercard" },
+                    ssnUS: { name: "SSN (US)", description: "Số An Sinh Xã Hội US" },
+                    zipCodeUS: { name: "Mã ZIP (US)", description: "Mã ZIP US" },
+                    postalCodeUK: { name: "Mã Bưu Chính (UK)", description: "Mã bưu chính UK" },
+                    macAddress: { name: "Địa Chỉ MAC", description: "Địa chỉ MAC mạng" },
+                    htmlTag: { name: "Thẻ HTML", description: "Khớp thẻ HTML" },
+                    slug: { name: "Slug/Đường Dẫn URL", description: "Slug thân thiện URL" },
+                    integerNumber: { name: "Số Nguyên", description: "Số nguyên dương hoặc âm" },
+                    decimalNumber: { name: "Số Thập Phân", description: "Số thập phân với phần lẻ" },
+                    currencyUSD: { name: "Tiền Tệ (USD)", description: "Số tiền đô la US" },
+                    fileExtension: { name: "Phần Mở Rộng File", description: "Trích xuất phần mở rộng file" },
+                    gitRepository: { name: "Git Repository", description: "URL Git repository" },
+                    semanticVersion: { name: "Semantic Version", description: "Định dạng Semver" },
+                    uuidV4: { name: "UUID v4", description: "UUID phiên bản 4" },
+                    jwtToken: { name: "JWT Token", description: "JSON Web Token" },
+                },
+            },
+            page: {
+                title: "Kiểm Tra Regex",
+                subtitle: "Kiểm tra và xác thực biểu thức chính quy với khớp mẫu tức thì",
+
+                whatIs: "Biểu Thức Chính Quy (Regex) Là Gì?",
+                whatIsDesc:
+                    "Biểu thức chính quy (regex hoặc regexp) là một chuỗi ký tự định nghĩa mẫu tìm kiếm. Đây là công cụ mạnh mẽ được sử dụng trong xử lý văn bản để khớp mẫu, xác thực, tìm kiếm và thay thế, và trích xuất dữ liệu. Biểu thức chính quy được hỗ trợ trong hầu hết các ngôn ngữ lập trình và trình soạn thảo văn bản hiện đại, làm cho chúng trở thành kỹ năng thiết yếu cho developers, data analysts, và bất kỳ ai làm việc với dữ liệu văn bản. Chúng sử dụng các ký tự đặc biệt (metacharacters) để tạo mẫu linh hoạt có thể khớp nhiều biến thể văn bản.",
+
+                history: "Lịch Sử Biểu Thức Chính Quy",
+                historyDesc:
+                    "Biểu thức chính quy có nguồn gốc từ những năm 1950 khi nhà toán học Stephen Cole Kleene mô tả ngôn ngữ chính quy bằng ký hiệu toán học gọi là tập hợp chính quy. Vào những năm 1960, Ken Thompson tích hợp ký hiệu của Kleene vào trình soạn thảo QED, và sau đó vào trình soạn thảo Unix ed, dẫn đến tiện ích grep. Khái niệm lan rộng qua các tiện ích Unix và cuối cùng trở thành tính năng tiêu chuẩn trong hầu hết các ngôn ngữ lập trình. Năm 1986, POSIX tiêu chuẩn hóa cú pháp regex. Perl giới thiệu các mở rộng mạnh mẽ vào cuối những năm 1980, tạo ra cái gọi là Perl Compatible Regular Expressions (PCRE), trở thành tiêu chuẩn de facto và ảnh hưởng đến triển khai regex trong nhiều ngôn ngữ hiện đại như Python, JavaScript, PHP và Java.",
+
+                syntax: "Cú Pháp Regex Cơ Bản",
+                syntaxDesc:
+                    "Biểu thức chính quy sử dụng các ký tự đặc biệt để định nghĩa mẫu. Ký tự thường khớp chính chúng, trong khi metacharacters có ý nghĩa đặc biệt. Các metacharacters phổ biến nhất bao gồm: dấu chấm (.) khớp bất kỳ ký tự nào trừ newline, dấu mũ (^) khớp đầu dòng, dấu đô la ($) khớp cuối dòng, ngoặc vuông [] định nghĩa lớp ký tự, ngoặc đơn () tạo nhóm bắt, pipe (|) nghĩa là OR, dấu sao (*) nghĩa là không hoặc nhiều, dấu cộng (+) nghĩa là một hoặc nhiều, dấu hỏi (?) nghĩa là không hoặc một, và ngoặc nhọn {} chỉ định số lượng chính xác. Backslash (\\) escape ký tự đặc biệt hoặc giới thiệu chuỗi đặc biệt như \\d cho chữ số, \\w cho ký tự từ, \\s cho khoảng trắng, và phiên bản viết hoa của chúng để phủ định.",
+
+                metacharacters: "Metacharacters Phổ Biến",
+                metacharactersList: {
+                    dot: ". (Chấm): Khớp bất kỳ ký tự đơn nào trừ newline",
+                    caret: "^ (Mũ): Khớp đầu dòng hoặc chuỗi",
+                    dollar: "$ (Đô la): Khớp cuối dòng hoặc chuỗi",
+                    star: "* (Sao): Khớp 0 hoặc nhiều lần lặp của phần tử trước",
+                    plus: "+ (Cộng): Khớp 1 hoặc nhiều lần lặp của phần tử trước",
+                    question: "? (Hỏi): Khớp 0 hoặc 1 lần lặp (làm cho phần tử trước tùy chọn)",
+                    brackets: "[] (Ngoặc Vuông): Định nghĩa lớp ký tự (khớp bất kỳ ký tự đơn nào bên trong)",
+                    pipe: "| (Pipe): Toán tử thay thế (OR logic)",
+                    parens: "() (Ngoặc Đơn): Tạo nhóm bắt và định nghĩa phạm vi",
+                    braces: "{} (Ngoặc Nhọn): Chỉ định số lần lặp chính xác {n}, {n,}, {n,m}",
+                },
+
+                characterClasses: "Lớp Ký Tự",
+                characterClassesList: {
+                    digit: "\\d: Khớp bất kỳ chữ số nào (0-9), tương đương [0-9]",
+                    notDigit: "\\D: Khớp bất kỳ ký tự không phải chữ số",
+                    word: "\\w: Khớp bất kỳ ký tự từ nào (chữ cái số + gạch dưới), tương đương [a-zA-Z0-9_]",
+                    notWord: "\\W: Khớp bất kỳ ký tự không phải từ",
+                    whitespace: "\\s: Khớp bất kỳ ký tự khoảng trắng nào (space, tab, newline)",
+                    notWhitespace: "\\S: Khớp bất kỳ ký tự không phải khoảng trắng",
+                    boundary: "\\b: Ranh giới từ (vị trí giữa \\w và \\W)",
+                    notBoundary: "\\B: Không phải ranh giới từ",
+                },
+
+                flags: "Cờ Regex",
+                flagsList: {
+                    g: "g (Global): Tìm tất cả khớp thay vì dừng sau khớp đầu tiên",
+                    i: "i (Case-insensitive): Làm cho mẫu không phân biệt hoa thường",
+                    m: "m (Multiline): ^ và $ khớp đầu/cuối dòng, không chỉ đầu/cuối chuỗi",
+                    s: "s (Dotall): Chấm (.) khớp ký tự newline",
+                    u: "u (Unicode): Xử lý mẫu và chuỗi như Unicode",
+                    y: "y (Sticky): Chỉ khớp từ index được chỉ định bởi thuộc tính lastIndex",
+                },
+
+                commonPatterns: "Mẫu Regex Phổ Biến",
+                patternsList: {
+                    email: "Email: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    url: "URL: https?://[\\w\\-\\.]+(:\\d+)?(/[\\w\\-\\./?%&=]*)?",
+                    phone: "Điện thoại (US): ^\\+?1?\\s*\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$",
+                    ipv4: "Địa chỉ IPv4: ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+                    date: "Ngày (YYYY-MM-DD): ^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+                    hexColor: "Màu Hex: ^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
+                    username: "Username: ^[a-zA-Z0-9_-]{3,16}$",
+                    password: "Mật khẩu mạnh: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+                },
+
+                useCases: "Các Trường Hợp Sử Dụng Phổ Biến",
+                useCasesList: {
+                    validation: "Xác Thực Đầu Vào: Xác thực địa chỉ email, số điện thoại, URL và đầu vào người dùng khác",
+                    extraction: "Trích Xuất Dữ Liệu: Trích xuất thông tin cụ thể từ log, tài liệu hoặc trang web",
+                    searchReplace: "Tìm và Thay Thế: Tìm và thay thế mẫu văn bản trong trình soạn thảo code và IDE",
+                    parsing: "Phân Tích Văn Bản: Phân tích định dạng văn bản có cấu trúc như CSV, log hoặc file cấu hình",
+                    routing: "Định Tuyến URL: Khớp mẫu URL trong web framework để định tuyến request",
+                    filtering: "Lọc Nội Dung: Lọc hoặc làm sạch đầu vào người dùng để ngăn vấn đề bảo mật",
+                },
+
+                bestPractices: "Thực Hành Tốt Nhất",
+                bestPracticesList: {
+                    simple: "Giữ Đơn Giản: Bắt đầu với mẫu đơn giản và chỉ thêm độ phức tạp khi cần",
+                    specific: "Cụ Thể: Sử dụng lớp ký tự cụ thể (\\d, \\w) thay vì rộng (.) khi có thể",
+                    anchor: "Dùng Anchor: Sử dụng ^ và $ để khớp toàn bộ chuỗi và ngăn khớp một phần",
+                    escape: "Escape Metacharacters: Nhớ escape ký tự đặc biệt khi khớp chúng theo nghĩa đen",
+                    test: "Test Kỹ Lưỡng: Test regex của bạn với nhiều đầu vào bao gồm edge cases",
+                    comment: "Tài Liệu Mẫu Phức Tạp: Thêm comment hoặc tài liệu cho mẫu regex phức tạp",
+                    performance: "Xem Xét Hiệu Suất: Tránh backtracking thảm khốc với quantifiers lồng nhau",
+                    alternative: "Biết Các Lựa Chọn Khác: Đôi khi phương thức string đơn giản và nhanh hơn regex",
+                },
+
+                performance: "Xem Xét Hiệu Suất",
+                performanceDesc:
+                    "Biểu thức chính quy có thể mạnh mẽ nhưng cũng tốn kém về mặt tính toán nếu không được viết cẩn thận. Backtracking thảm khốc xảy ra khi regex engine thử nhiều cách có thể để khớp mẫu, đặc biệt với quantifiers lồng nhau như (a+)+. Điều này có thể gây ra độ phức tạp thời gian hàm mũ và làm đóng băng ứng dụng. Để tránh điều này: sử dụng possessive quantifiers khi có thể, cẩn thận với alternation bên trong nhóm lặp lại, anchor mẫu của bạn khi có thể, và xem xét sử dụng phương thức string cho tìm kiếm đơn giản. Luôn test hiệu suất regex với đầu vào lớn, và sử dụng công cụ trực tuyến để phân tích và tối ưu hóa mẫu phức tạp. Trong hệ thống production, triển khai timeout cho các hoạt động regex để ngăn lỗ hổng denial-of-service.",
+
+                tools: "Công Cụ Test Regex",
+                toolsList: {
+                    online: "Testers Trực Tuyến: Sử dụng công cụ như regex101.com hoặc regexr.com để phân tích chi tiết",
+                    ide: "Tích Hợp IDE: Hầu hết IDE hiện đại có test và highlighting regex tích hợp",
+                    libraries: "Thư Viện Regex: Sử dụng thư viện đã được test kỹ thay vì viết mẫu phức tạp từ đầu",
+                    debugger: "Regex Debuggers: Sử dụng debuggers hiển thị quá trình khớp từng bước",
+                },
+
+                features: {
+                    free: "100% Miễn phí và test regex không giới hạn",
+                    instant: "Khớp mẫu tức thì với kết quả thời gian thực",
+                    offline: "Hoạt động hoàn toàn offline trong trình duyệt",
+                    noServer: "Không gửi dữ liệu đến máy chủ - hoàn toàn riêng tư",
+                    flags: "Hỗ trợ tất cả cờ regex (g, i, m, s, u, y)",
+                    highlighting: "Hiển thị rõ ràng tất cả các khớp tìm thấy",
+                },
+
+                howToUse: "Cách Sử Dụng",
+                steps: {
+                    pattern: "Nhập Mẫu: Gõ mẫu biểu thức chính quy của bạn trong trường đầu tiên",
+                    flags: "Đặt Cờ: Nhập cờ như 'g' (global), 'i' (case-insensitive), 'm' (multiline)",
+                    text: "Nhập Văn Bản Test: Dán hoặc gõ văn bản bạn muốn test",
+                    test: "Test: Nhấp 'Test Regex' để xem tất cả khớp được highlight",
+                    iterate: "Lặp Lại: Tinh chỉnh mẫu dựa trên kết quả cho đến khi nó khớp chính xác những gì bạn cần",
+                },
+
+                faq: "Câu Hỏi Thường Gặp",
+                faqList: {
+                    q1: "Sự khác biệt giữa quantifiers greedy và lazy là gì?",
+                    a1: "Quantifiers greedy (*, +, {n,}) khớp càng nhiều văn bản càng tốt, trong khi quantifiers lazy (*?, +?, {n,}?) khớp càng ít càng tốt. Ví dụ, với chuỗi '<p>Hello</p><p>World</p>', mẫu '<.*>' (greedy) khớp toàn bộ chuỗi, nhưng '<.*?>' (lazy) chỉ khớp '<p>' và '</p>' riêng biệt. Sử dụng quantifiers lazy khi bạn muốn khớp chuỗi ngắn nhất có thể, đặc biệt khi làm việc với delimiters hoặc tags.",
+
+                    q2: "Làm thế nào để khớp ký tự đặc biệt theo nghĩa đen trong regex?",
+                    a2: "Ký tự đặc biệt (metacharacters) như . * + ? [ ] ( ) { } ^ $ | \\ có ý nghĩa đặc biệt trong regex. Để khớp chúng theo nghĩa đen, bạn phải escape chúng bằng backslash. Ví dụ, để khớp dấu chấm theo nghĩa đen, sử dụng '\\.' thay vì '.'. Để khớp chính backslash, sử dụng '\\\\'. Trong lớp ký tự [], hầu hết ký tự đặc biệt mất ý nghĩa đặc biệt, trừ ^, -, ], và \\.",
+
+                    q3: "Backtracking thảm khốc là gì và làm thế nào tránh nó?",
+                    a3: "Backtracking thảm khốc xảy ra khi regex engine thử theo cấp số nhân nhiều cách để khớp mẫu, thường với quantifiers lồng nhau như (a+)+ hoặc (a*)*. Điều này có thể làm ứng dụng của bạn treo. Để tránh nó: sử dụng possessive quantifiers khi có thể (+, *), cẩn thận với alternation bên trong nhóm lặp lại, sử dụng atomic groups, anchor mẫu của bạn, và test với đầu vào lớn. Xem xét sử dụng phương thức string cho mẫu đơn giản thay vì regex phức tạp.",
+
+                    q4: "Nhóm bắt hoạt động như thế nào trong biểu thức chính quy?",
+                    a4: "Nhóm bắt được định nghĩa bằng ngoặc đơn () và cho phép bạn trích xuất các phần cụ thể của khớp. Ví dụ, trong mẫu '(\\d{3})-(\\d{3})-(\\d{4})' áp dụng cho '123-456-7890', nhóm 1 bắt '123', nhóm 2 bắt '456', và nhóm 3 bắt '7890'. Nhóm không bắt (?:...) khớp mà không lưu, hữu ích khi bạn cần nhóm cho precedence nhưng không cần giá trị bắt. Nhóm bắt có tên (?<name>...) cho phép bạn tham chiếu nhóm theo tên thay vì số.",
+
+                    q5: "Tôi nên sử dụng cờ regex nào và khi nào?",
+                    a5: "Cờ phổ biến bao gồm: 'g' (global) để tìm tất cả khớp thay vì dừng ở khớp đầu tiên, hữu ích trong hoạt động tìm/thay; 'i' (case-insensitive) để khớp không phân biệt hoa thường; 'm' (multiline) để làm cho ^ và $ khớp ranh giới dòng thay vì ranh giới chuỗi; 's' (dotall) để làm cho . khớp newlines; 'u' (unicode) cho xử lý Unicode đúng; 'y' (sticky) cho khớp cụ thể vị trí. Kết hợp cờ khi cần, như 'gi' cho khớp global không phân biệt hoa thường.",
+
+                    q6: "Làm thế nào để xác thực địa chỉ email bằng regex?",
+                    a6: "Mẫu xác thực email đơn giản là ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$. Tuy nhiên, xác thực email tuân thủ RFC thực sự cực kỳ phức tạp. Cho sử dụng production, tốt hơn là: sử dụng thư viện đã được test kỹ, gửi email xác minh để confirm, hoặc sử dụng mẫu đơn giản để bắt lỗi rõ ràng. Nhớ rằng một số email hợp lệ có thể bị từ chối bởi mẫu quá nghiêm ngặt, và một số không hợp lệ có thể vượt qua kiểm tra đơn giản.",
+
+                    q7: "Sự khác biệt giữa .* và .+ trong regex là gì?",
+                    a7: "Cả hai đều là quantifiers áp dụng cho dấu chấm (.) khớp bất kỳ ký tự nào. Dấu sao (*) nghĩa là 'không hoặc nhiều', vì vậy .* có thể khớp chuỗi rỗng hoặc bất kỳ số lượng ký tự nào. Dấu cộng (+) nghĩa là 'một hoặc nhiều', vì vậy .+ phải khớp ít nhất một ký tự. Sử dụng .* khi mẫu tùy chọn, và .+ khi ít nhất một ký tự được yêu cầu. Cả hai đều greedy mặc định; thêm ? để làm chúng lazy (.*? hoặc .+?).",
+
+                    q8: "Tôi có thể sử dụng regex để phân tích HTML hoặc XML không?",
+                    a8: "Mặc dù regex có thể khớp mẫu HTML/XML đơn giản, nó không được khuyến nghị để phân tích markup có cấu trúc. HTML/XML là ngôn ngữ context-free yêu cầu parser thích hợp để xử lý tags lồng nhau, attributes và edge cases một cách chính xác. Sử dụng regex cho các tác vụ trích xuất đơn giản hoặc xử lý văn bản nhanh, nhưng sử dụng parser chuyên dụng (như DOMParser, BeautifulSoup, hoặc XML parsers) để phân tích đáng tin cậy. Câu trả lời Stack Overflow nổi tiếng về phân tích HTML với regex cảnh báo chống lại nó vì lý do chính đáng!",
+                },
+            },
+        },
+    },
+};
