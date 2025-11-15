@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FloatingButtons } from "@/components/FloatingButtons";
+import QueryProvider from "@/components/QueryProvider";
 
 const inter = Inter({
     variable: "--font-inter",
@@ -65,12 +66,14 @@ export default function RootLayout({
                 />
             </head>
             <body className={`${inter.variable} antialiased flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}>
-                <LanguageProvider>
-                    <Header />
-                    <main className='flex-1'>{children}</main>
-                    <Footer />
-                    <FloatingButtons />
-                </LanguageProvider>
+                <QueryProvider>
+                    <LanguageProvider>
+                        <Header />
+                        <main className='flex-1'>{children}</main>
+                        <Footer />
+                        <FloatingButtons />
+                    </LanguageProvider>
+                </QueryProvider>
             </body>
         </html>
     );

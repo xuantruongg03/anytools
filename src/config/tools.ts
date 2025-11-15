@@ -52,7 +52,10 @@ export const toolsConfig: ToolCategory[] = [
     {
         key: "utility",
         icon: "🛠️",
-        tools: [{ href: "/tools/qr-code-generator", icon: "📱", key: "qrCodeGenerator" }],
+        tools: [
+            { href: "/tools/qr-code-generator", icon: "📱", key: "qrCodeGenerator" },
+            { href: "/tools/url-shortener", icon: "🔗", key: "urlShortener" },
+        ],
     },
 ];
 
