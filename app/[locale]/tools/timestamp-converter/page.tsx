@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import TimestampConverterContent from "./TimestampConverterContent";
+import { RelatedTools } from "@/components";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -74,12 +75,34 @@ export default function TimestampConverterPage() {
         browserRequirements: "Requires JavaScript. Requires HTML5.",
     };
 
+    const relatedTools = [
+        {
+            href: "/tools/countdown",
+            icon: "⏳",
+            nameEn: "Countdown Timer",
+            nameVi: "Đếm Ngược Thời Gian",
+            descriptionEn: "Count down to your important events with live updates",
+            descriptionVi: "Đếm ngược đến các sự kiện quan trọng của bạn",
+        },
+        {
+            href: "/tools/world-clock",
+            icon: "🌍",
+            nameEn: "World Clock",
+            nameVi: "Đồng Hồ Thế Giới",
+            descriptionEn: "Check current time across multiple time zones worldwide",
+            descriptionVi: "Xem giờ hiện tại của các thành phố trên thế giới",
+        },
+    ];
+
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
                 <div className='w-full px-4 py-8'>
                     <TimestampConverterContent />
+                    <div className='max-w-4xl mx-auto mt-8'>
+                        <RelatedTools tools={relatedTools} currentPath='/tools/timestamp-converter' />
+                    </div>
                 </div>
             </div>
         </>

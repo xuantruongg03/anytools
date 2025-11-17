@@ -18,20 +18,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function StopwatchPage() {
     const relatedTools = [
         {
-            href: "/tools/timestamp-converter",
-            icon: "⏰",
-            nameEn: "Timestamp Converter",
-            nameVi: "Chuyển đổi Timestamp",
-            descriptionEn: "Convert between Unix timestamp and human-readable date/time formats",
-            descriptionVi: "Chuyển đổi giữa Unix timestamp và định dạng ngày giờ dễ đọc",
+            href: "/tools/countdown",
+            icon: "⏳",
+            nameEn: "Countdown Timer",
+            nameVi: "Đếm Ngược Thời Gian",
+            descriptionEn: "Count down to your important events with live updates",
+            descriptionVi: "Đếm ngược đến các sự kiện quan trọng của bạn",
         },
         {
-            href: "/tools/qr-code-generator",
-            icon: "📱",
-            nameEn: "QR Code Generator",
-            nameVi: "Tạo mã QR",
-            descriptionEn: "Generate QR codes for text, URLs, contact information and more",
-            descriptionVi: "Tạo mã QR cho văn bản, URL, thông tin liên hệ và nhiều hơn nữa",
+            href: "/tools/world-clock",
+            icon: "🌍",
+            nameEn: "World Clock",
+            nameVi: "Đồng Hồ Thế Giới",
+            descriptionEn: "Check current time across multiple time zones worldwide",
+            descriptionVi: "Xem giờ hiện tại của các thành phố trên thế giới",
         },
     ];
 
