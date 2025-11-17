@@ -7,6 +7,7 @@ import { htmlEntityEncoderTranslations } from "./html-entity-encoder";
 import { numberConverterTranslations } from "./number-converter";
 import { passwordGeneratorTranslations } from "./password-generator";
 import { gpaCalculatorTranslations } from "./gpa-calculator";
+import { repoTreeTranslations } from "./repo-tree";
 import { newToolsTranslations } from "./new-tools";
 
 export const toolsTranslations = {
@@ -21,6 +22,7 @@ export const toolsTranslations = {
         numberConverter: numberConverterTranslations.en.numberConverter,
         passwordGenerator: passwordGeneratorTranslations.en.passwordGenerator,
         gpaCalculator: gpaCalculatorTranslations.en.gpaCalculator,
+        repoTree: repoTreeTranslations.en.repoTree,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -33,5 +35,6 @@ export const toolsTranslations = {
         numberConverter: numberConverterTranslations.vi.numberConverter,
         passwordGenerator: passwordGeneratorTranslations.vi.passwordGenerator,
         gpaCalculator: gpaCalculatorTranslations.vi.gpaCalculator,
+        repoTree: repoTreeTranslations.vi.repoTree,
     },
 };

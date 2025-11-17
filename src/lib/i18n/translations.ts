@@ -1425,6 +1425,8 @@ export const translations = {
             ...toolsTranslations.vi,
         },
 
+        // Repo Tree Viewer
+
         // About
         header: {
             tools: "Công Cụ",
