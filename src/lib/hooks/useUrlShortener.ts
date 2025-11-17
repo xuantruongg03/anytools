@@ -1,14 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { shortenWithFallback } from "@/lib/api/urlShortener";
-
-interface ShortenerResult {
-    shortUrl: string;
-    service: string;
-}
+import { shortenUrl } from "@/lib/api/urlShortener";
 
 export function useUrlShortener() {
     const mutation = useMutation({
-        mutationFn: (longUrl: string) => shortenWithFallback(longUrl),
+        mutationFn: (longUrl: string) => shortenUrl(longUrl),
     });
 
     return {

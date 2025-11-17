@@ -6,6 +6,7 @@ import { cssUnitConverterTranslations } from "./css-unit-converter";
 import { htmlEntityEncoderTranslations } from "./html-entity-encoder";
 import { numberConverterTranslations } from "./number-converter";
 import { passwordGeneratorTranslations } from "./password-generator";
+import { gpaCalculatorTranslations } from "./gpa-calculator";
 import { newToolsTranslations } from "./new-tools";
 
 export const toolsTranslations = {
@@ -19,6 +20,7 @@ export const toolsTranslations = {
         htmlEntityEncoder: htmlEntityEncoderTranslations.en.htmlEntityEncoder,
         numberConverter: numberConverterTranslations.en.numberConverter,
         passwordGenerator: passwordGeneratorTranslations.en.passwordGenerator,
+        gpaCalculator: gpaCalculatorTranslations.en.gpaCalculator,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -30,5 +32,6 @@ export const toolsTranslations = {
         htmlEntityEncoder: htmlEntityEncoderTranslations.vi.htmlEntityEncoder,
         numberConverter: numberConverterTranslations.vi.numberConverter,
         passwordGenerator: passwordGeneratorTranslations.vi.passwordGenerator,
+        gpaCalculator: gpaCalculatorTranslations.vi.gpaCalculator,
     },
 };
