@@ -57,6 +57,9 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/url-shortener", icon: "🔗", key: "urlShortener" },
             { href: "/tools/gpa-calculator", icon: "🎓", key: "gpaCalculator" },
             { href: "/tools/repo-tree", icon: "🌳", key: "repoTree" },
+            { href: "/tools/world-clock", icon: "🌍", key: "worldClock" },
+            { href: "/tools/countdown", icon: "⏱️", key: "countdown" },
+            { href: "/tools/stopwatch", icon: "⏲️", key: "stopwatch" },
         ],
     },
 ];

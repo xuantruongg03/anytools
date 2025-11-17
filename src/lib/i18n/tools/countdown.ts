@@ -1,0 +1,108 @@
+export const countdownTranslations = {
+    en: {
+        countdown: {
+            name: "Countdown Timer",
+            description: "Count down to your important events and deadlines",
+            page: {
+                title: "Countdown Timer - Track Time in Seconds",
+                subtitle: "Create and manage multiple countdown timers with quick presets",
+                createNew: "Create New Countdown",
+                eventName: "Timer Name",
+                secondsPlaceholder: "Enter seconds",
+                secondsLabel: "seconds",
+                addButton: "Add Timer",
+                hours: "Hours",
+                minutes: "Minutes",
+                seconds: "Seconds",
+                expired: "Time's Up!",
+                delete: "Delete",
+                remove: "Remove",
+                noCountdowns: "No timers yet. Create one above!",
+                errors: {
+                    fillFields: "Please enter a name and valid seconds",
+                    futureDate: "Please enter a positive number of seconds",
+                },
+                whatIs: "What is Countdown Timer?",
+                whatIsDesc: "Countdown Timer is a tool that helps you track time in seconds with precision. Perfect for cooking, workouts, study sessions, or any timed activity. It displays the countdown in hours, minutes, and seconds with real-time updates.",
+                howToUse: "How to use Countdown Timer",
+                howToUseDesc: "Enter a timer name and the number of seconds, or click a quick preset (10s, 30s, 1 min, etc.). Click 'Add Timer' to start. Your timers are automatically saved and will persist even after you close the browser. Delete timers you no longer need.",
+                features: "Key Features",
+                featuresList: ["Multiple simultaneous timers", "Real-time countdown updates every second", "Persistent storage with localStorage", "Hours, minutes, seconds display with zero-padding", "Quick presets (10s, 30s, 1min, 5min, etc.)", "Audio notification when timer expires", "Easy add/delete functionality", "Clean and intuitive interface", "Dark mode support"],
+                useCases: "Use Cases",
+                useCasesList: ["Cooking and baking timers", "Workout and exercise intervals (HIIT, Tabata)", "Study sessions and Pomodoro technique", "Meditation and breathing exercises", "Presentation and speech practice", "Game timers and turn limits", "Task time tracking and productivity", "Tea and coffee brewing"],
+                faqTitle: "Frequently Asked Questions",
+                faqList: [
+                    {
+                        question: "Are my timers saved?",
+                        answer: "Yes! All timers are automatically saved to your browser's localStorage. They will continue counting even after you close the browser or refresh the page.",
+                    },
+                    {
+                        question: "How many timers can I create?",
+                        answer: "You can create as many timers as you need. They all update simultaneously in real-time.",
+                    },
+                    {
+                        question: "What happens when a timer expires?",
+                        answer: "When a timer reaches zero, it displays 'Time's Up!' with a celebration animation and plays an audio notification. You can then delete it or keep it as a record.",
+                    },
+                    {
+                        question: "What are the quick preset options?",
+                        answer: "Quick presets include: 10s, 30s, 1 min, 2 min, 5 min, 10 min, 15 min, 30 min, and 1 hour. Click any preset to instantly create a timer with that duration.",
+                    },
+                ],
+            },
+        },
+    },
+    vi: {
+        countdown: {
+            name: "Đếm ngược",
+            description: "Đếm ngược đến các sự kiện và deadline quan trọng",
+            page: {
+                title: "Đếm ngược - Theo dõi Thời gian theo Giây",
+                subtitle: "Tạo và quản lý nhiều bộ đếm ngược với các tùy chọn nhanh",
+                createNew: "Tạo Bộ Đếm Ngược Mới",
+                eventName: "Tên Bộ Đếm",
+                secondsPlaceholder: "Nhập số giây",
+                secondsLabel: "giây",
+                addButton: "Thêm Bộ Đếm",
+                hours: "Giờ",
+                minutes: "Phút",
+                seconds: "Giây",
+                expired: "Hết Giờ!",
+                delete: "Xóa",
+                remove: "Xóa",
+                noCountdowns: "Chưa có bộ đếm ngược. Tạo một cái ở trên!",
+                errors: {
+                    fillFields: "Vui lòng nhập tên và số giây hợp lệ",
+                    futureDate: "Vui lòng nhập số giây dương",
+                },
+                whatIs: "Đồng hồ Đếm ngược là gì?",
+                whatIsDesc: "Đồng hồ Đếm ngược là công cụ giúp bạn theo dõi thời gian theo giây với độ chính xác cao. Hoàn hảo cho nấu ăn, tập luyện, học tập, hoặc bất kỳ hoạt động có giới hạn thời gian nào. Hiển thị thời gian đếm ngược theo giờ, phút và giây với cập nhật thời gian thực.",
+                howToUse: "Cách sử dụng Đồng hồ Đếm ngược",
+                howToUseDesc: "Nhập tên bộ đếm và số giây, hoặc click vào tùy chọn nhanh (10s, 30s, 1 phút, v.v.). Nhấn 'Thêm Bộ Đếm' để bắt đầu. Các bộ đếm được lưu tự động và sẽ tồn tại ngay cả sau khi bạn đóng trình duyệt. Xóa các bộ đếm không còn cần thiết.",
+                features: "Tính năng chính",
+                featuresList: ["Nhiều bộ đếm ngược cùng lúc", "Cập nhật thời gian thực mỗi giây", "Lưu trữ bền vững với localStorage", "Hiển thị giờ, phút, giây với định dạng 2 chữ số", "Tùy chọn nhanh (10s, 30s, 1phút, 5phút, v.v.)", "Thông báo âm thanh khi hết giờ", "Thêm/xóa dễ dàng", "Giao diện sạch sẽ và trực quan", "Hỗ trợ chế độ tối"],
+                useCases: "Ứng dụng thực tế",
+                useCasesList: ["Hẹn giờ nấu ăn và làm bánh", "Khoảng thời gian tập luyện (HIIT, Tabata)", "Phiên học tập và kỹ thuật Pomodoro", "Thiền định và bài tập thở", "Luyện thuyết trình và phát biểu", "Hẹn giờ trò chơi và giới hạn lượt", "Theo dõi thời gian làm việc và năng suất", "Pha trà và cà phê"],
+                faqTitle: "Câu hỏi thường gặp",
+                faqList: [
+                    {
+                        question: "Bộ đếm ngược của tôi có được lưu không?",
+                        answer: "Có! Tất cả bộ đếm ngược được tự động lưu vào localStorage của trình duyệt. Chúng sẽ tiếp tục đếm ngược ngay cả sau khi bạn đóng trình duyệt hoặc tải lại trang.",
+                    },
+                    {
+                        question: "Tôi có thể tạo bao nhiêu bộ đếm ngược?",
+                        answer: "Bạn có thể tạo bao nhiêu bộ đếm ngược tùy thích. Tất cả sẽ cập nhật đồng thời theo thời gian thực.",
+                    },
+                    {
+                        question: "Điều gì xảy ra khi bộ đếm ngược hết giờ?",
+                        answer: "Khi bộ đếm ngược về 0, nó hiển thị 'Hết Giờ!' với hiệu ứng chúc mừng và phát âm thanh thông báo. Bạn có thể xóa nó hoặc giữ lại như một bản ghi.",
+                    },
+                    {
+                        question: "Các tùy chọn nhanh là gì?",
+                        answer: "Các tùy chọn nhanh bao gồm: 10s, 30s, 1 phút, 2 phút, 5 phút, 10 phút, 15 phút, 30 phút và 1 giờ. Click vào bất kỳ tùy chọn nào để tạo ngay bộ đếm với thời lượng đó.",
+                    },
+                ],
+            },
+        },
+    },
+};

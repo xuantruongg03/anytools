@@ -11,14 +11,20 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [locale, setLocaleState] = useState<Locale>(defaultLocale);
+    const [locale, setLocaleState] = useState<Locale>(() => {
+        // Initialize from localStorage if available (client-side only)
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("locale") as Locale;
+            if (saved && (saved === "en" || saved === "vi")) {
+                return saved;
+            }
+        }
+        return defaultLocale;
+    });
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        // Load saved language from localStorage and cookie
-        const saved = localStorage.getItem("locale") as Locale;
-        if (saved && (saved === "en" || saved === "vi")) {
-            setLocaleState(saved);
-        }
+        setMounted(true);
     }, []);
 
     const setLocale = (newLocale: Locale) => {
@@ -27,6 +33,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         // Set cookie for middleware
         document.cookie = `locale=${newLocale}; path=/; max-age=31536000`; // 1 year
     };
+
+    // Prevent hydration mismatch by not rendering children until mounted
+    if (!mounted) {
+        return <LanguageContext.Provider value={{ locale: defaultLocale, setLocale }}>{children}</LanguageContext.Provider>;
+    }
 
     return <LanguageContext.Provider value={{ locale, setLocale }}>{children}</LanguageContext.Provider>;
 }

@@ -9,6 +9,9 @@ import { passwordGeneratorTranslations } from "./password-generator";
 import { gpaCalculatorTranslations } from "./gpa-calculator";
 import { repoTreeTranslations } from "./repo-tree";
 import { newToolsTranslations } from "./new-tools";
+import { worldClockTranslations } from "./world-clock";
+import { countdownTranslations } from "./countdown";
+import { stopwatchTranslations } from "./stopwatch";
 
 export const toolsTranslations = {
     en: {
@@ -23,6 +26,9 @@ export const toolsTranslations = {
         passwordGenerator: passwordGeneratorTranslations.en.passwordGenerator,
         gpaCalculator: gpaCalculatorTranslations.en.gpaCalculator,
         repoTree: repoTreeTranslations.en.repoTree,
+        worldClock: worldClockTranslations.en.worldClock,
+        countdown: countdownTranslations.en.countdown,
+        stopwatch: stopwatchTranslations.en.stopwatch,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -36,5 +42,8 @@ export const toolsTranslations = {
         passwordGenerator: passwordGeneratorTranslations.vi.passwordGenerator,
         gpaCalculator: gpaCalculatorTranslations.vi.gpaCalculator,
         repoTree: repoTreeTranslations.vi.repoTree,
+        worldClock: worldClockTranslations.vi.worldClock,
+        countdown: countdownTranslations.vi.countdown,
+        stopwatch: stopwatchTranslations.vi.stopwatch,
     },
 };
