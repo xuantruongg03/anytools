@@ -37,6 +37,7 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/css-unit-converter", icon: "📐", key: "cssUnitConverter" },
             { href: "/tools/html-entity-encoder", icon: "🏷️", key: "htmlEntityEncoder" },
             { href: "/tools/number-converter", icon: "🔢", key: "numberConverter" },
+            { href: "/tools/api-tester", icon: "🚀", key: "apiTester" },
         ],
     },
     {

@@ -12,6 +12,7 @@ import { newToolsTranslations } from "./new-tools";
 import { worldClockTranslations } from "./world-clock";
 import { countdownTranslations } from "./countdown";
 import { stopwatchTranslations } from "./stopwatch";
+import { apiTesterTranslations } from "./api-tester";
 
 export const toolsTranslations = {
     en: {
@@ -29,6 +30,7 @@ export const toolsTranslations = {
         worldClock: worldClockTranslations.en.worldClock,
         countdown: countdownTranslations.en.countdown,
         stopwatch: stopwatchTranslations.en.stopwatch,
+        apiTester: apiTesterTranslations.en.apiTester,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -45,5 +47,6 @@ export const toolsTranslations = {
         worldClock: worldClockTranslations.vi.worldClock,
         countdown: countdownTranslations.vi.countdown,
         stopwatch: stopwatchTranslations.vi.stopwatch,
+        apiTester: apiTesterTranslations.vi.apiTester,
     },
 };
