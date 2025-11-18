@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import HtmlEntityContent from "./HtmlEntityContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -96,6 +98,8 @@ export default function HtmlEntityPage() {
         ],
     };
 
+    const relatedTools = getRelatedTools("/tools/html-entity-encoder", 6);
+
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }} />
@@ -103,6 +107,7 @@ export default function HtmlEntityPage() {
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors'>
                 <div className='container mx-auto px-4 py-8'>
                     <HtmlEntityContent />
+                    <RelatedTools tools={relatedTools} currentPath='/tools/html-entity-encoder' />
                 </div>
             </div>
         </>

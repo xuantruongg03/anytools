@@ -11,7 +11,7 @@ export default function JsonFormatterContent() {
     const page = t.tools.jsonFormatter.page;
 
     return (
-        <>
+        <div className='max-w-6xl mx-auto'>
             {/* Header Section - Tiêu đề và mô tả */}
             <header className='mb-8'>
                 <h1 className='text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{page.title}</h1>
@@ -92,6 +92,6 @@ export default function JsonFormatterContent() {
                     { question: page.faqList.q4, answer: page.faqList.a4 },
                 ]}
             />
-        </>
+        </div>
     );
 }

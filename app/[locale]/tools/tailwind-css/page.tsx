@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import TailwindCssContent from "./TailwindCssContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -55,5 +57,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function TailwindCssPage() {
-    return <TailwindCssContent />;
+    const relatedTools = getRelatedTools("/tools/tailwind-css", 6);
+
+    return (
+        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+            <div className='container mx-auto px-4 py-8'>
+                <TailwindCssContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/tailwind-css' />
+            </div>
+        </div>
+    );
 }

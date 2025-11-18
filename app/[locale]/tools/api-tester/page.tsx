@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { RelatedTools } from "@/components";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 import ApiTesterClient from "./ApiTesterClient";
 import ApiTesterContent from "./ApiTesterContent";
 
@@ -81,30 +82,13 @@ function ApiTesterPage() {
         browserRequirements: "Requires JavaScript. Requires HTML5.",
     };
 
-    const relatedTools = [
-        {
-            href: "/tools/json-formatter",
-            icon: "📋",
-            nameEn: "JSON Formatter",
-            nameVi: "Định dạng JSON",
-            descriptionEn: "Format, validate and beautify JSON data",
-            descriptionVi: "Định dạng, kiểm tra và làm đẹp dữ liệu JSON",
-        },
-        {
-            href: "/tools/base64",
-            icon: "🔐",
-            nameEn: "Base64 Encode/Decode",
-            nameVi: "Mã hóa/Giải mã Base64",
-            descriptionEn: "Encode and decode Base64 strings",
-            descriptionVi: "Mã hóa và giải mã chuỗi Base64",
-        },
-    ];
+    const relatedTools = getRelatedTools("/tools/api-tester", 6);
 
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8 max-w-6xl'>
+                <div className='container mx-auto px-4 py-8'>
                     <ApiTesterClient />
                     <ApiTesterContent />
                     <RelatedTools tools={relatedTools} currentPath='/tools/api-tester' />

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { use } from "react";
 import UrlShortenerContent from "./UrlShortenerContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -51,6 +53,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default function UrlShortenerPage({ params }: Props) {
     const { locale: urlLocale } = use(params);
     const locale = (urlLocale === "en" || urlLocale === "vi" ? urlLocale : "en") as "en" | "vi";
+    const relatedTools = getRelatedTools("/tools/url-shortener", 6);
 
-    return <UrlShortenerContent locale={locale} />;
+    return (
+        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+            <div className='container mx-auto px-4 py-8'>
+                <UrlShortenerContent locale={locale} />
+                <RelatedTools tools={relatedTools} currentPath='/tools/url-shortener' />
+            </div>
+        </div>
+    );
 }

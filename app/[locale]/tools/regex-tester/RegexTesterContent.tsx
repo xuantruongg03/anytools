@@ -2,13 +2,14 @@
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
 import RegexTesterClient from "./RegexTesterClient";
+import FAQSection from "@/components/ui/FAQSection";
 
 export default function RegexTesterContent() {
     const { locale } = useLanguage();
     const t = getTranslation(locale).tools.regexTester.page;
 
     return (
-        <div className='w-full max-w-4xl mx-auto overflow-x-hidden'>
+        <div className='w-full max-w-6xl mx-auto overflow-x-hidden'>
             <div className='text-center mb-8'>
                 <h1 className='text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.title}</h1>
                 <p className='text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto'>{t.subtitle}</p>
@@ -218,19 +219,7 @@ export default function RegexTesterContent() {
                     </ol>
                 </section>
 
-                <section>
-                    <h2 className='text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.faq}</h2>
-                    <div className='space-y-4'>
-                        {Object.entries(t.faqList)
-                            .filter(([key]) => key.startsWith("q"))
-                            .map((_, index) => (
-                                <div key={index} className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                                    <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList[`q${index + 1}` as keyof typeof t.faqList]}</h3>
-                                    <p className='leading-relaxed'>{t.faqList[`a${index + 1}` as keyof typeof t.faqList]}</p>
-                                </div>
-                            ))}
-                    </div>
-                </section>
+                <FAQSection title={t.faq} faqs={t.faqList} />
             </div>
         </div>
     );

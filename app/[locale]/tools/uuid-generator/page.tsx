@@ -1,22 +1,33 @@
 import type { Metadata } from "next";
 import UuidGeneratorContent from "./UuidGeneratorContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Tạo UUID/GUID - Công Cụ Tạo UUID v1, v4 Miễn Phí 2025" : "UUID Generator Online - Free UUID v1, v4 GUID Generator Tool 2025";
+    const description = isVi ? "Tạo UUID/GUID trực tuyến ngay lập tức. Tạo UUID v4 (ngẫu nhiên) và UUID v1 (dựa trên thời gian) với hỗ trợ tạo hàng loạt. Công cụ tạo UUID miễn phí, nhanh và an toàn cho lập trình viên." : "Generate UUID/GUID online instantly. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk generation support. Free, fast, and secure UUID generator for developers.";
+
     return {
-        title: "UUID Generator Online - Free UUID v1, v4 GUID Generator Tool 2025",
-        description: "Generate UUID/GUID online instantly. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk generation support. Free, fast, and secure UUID generator for developers.",
+        title,
+        description,
         keywords: ["uuid generator", "guid generator", "uuid v4", "uuid v1", "generate uuid online", "random uuid", "unique identifier", "uuid tool", "bulk uuid generator", "free uuid generator", "universally unique identifier", "globally unique identifier", "random uuid generator", "timestamp uuid", "tạo uuid", "uuid trực tuyến", "công cụ uuid", "tạo mã uuid"],
         authors: [{ name: "AnyTools" }],
         creator: "AnyTools",
         publisher: "AnyTools",
         applicationName: "AnyTools UUID Generator",
         openGraph: {
-            title: "UUID Generator Online - Free UUID/GUID Generator Tool 2025",
-            description: "Generate UUID v4 and v1 instantly. Bulk generation support. Free online UUID/GUID generator for developers.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
-            url: "https://anytools.online/tools/uuid-generator",
-            locale: "en_US",
+            url: `https://anytools.online/${locale}/tools/uuid-generator`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
                     url: "https://anytools.online/og-image.png",
@@ -34,10 +45,10 @@ export async function generateMetadata(): Promise<Metadata> {
             images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://anytools.online/tools/uuid-generator",
+            canonical: `https://anytools.online/${locale}/tools/uuid-generator`,
             languages: {
-                "en-US": "https://anytools.online/tools/uuid-generator",
-                "vi-VN": "https://anytools.online/tools/uuid-generator",
+                "en-US": "https://anytools.online/en/tools/uuid-generator",
+                "vi-VN": "https://anytools.online/vi/tools/uuid-generator",
             },
         },
         robots: {
@@ -56,14 +67,18 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function UuidGeneratorPage() {
+export default async function UuidGeneratorPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        name: "UUID Generator Online",
+        name: isVi ? "Công Cụ Tạo UUID Trực Tuyến" : "UUID Generator Online",
         applicationCategory: "DeveloperApplication",
-        description: "Free online UUID/GUID generator. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk generation support.",
-        url: "https://anytools.online/tools/uuid-generator",
+        description: isVi ? "Công cụ tạo UUID/GUID miễn phí trực tuyến. Tạo UUID v4 (ngẫu nhiên) và UUID v1 (dựa trên thời gian) với hỗ trợ tạo hàng loạt." : "Free online UUID/GUID generator. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk generation support.",
+        url: `https://anytools.online/${locale}/tools/uuid-generator`,
+        inLanguage: locale,
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",
@@ -74,12 +89,15 @@ export default function UuidGeneratorPage() {
         browserRequirements: "Requires JavaScript. Requires HTML5.",
     };
 
+    const relatedTools = getRelatedTools("/tools/uuid-generator", 6);
+
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors'>
                 <div className='container mx-auto px-4 py-8'>
                     <UuidGeneratorContent />
+                    <RelatedTools tools={relatedTools} currentPath='/tools/uuid-generator' />
                 </div>
             </div>
         </>

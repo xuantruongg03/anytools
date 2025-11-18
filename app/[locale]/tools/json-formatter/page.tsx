@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
 import JsonFormatterContent from "./JsonFormatterContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Định Dạng JSON - Công Cụ Format & Validate JSON Miễn Phí 2025" : "JSON Formatter Online - Free JSON Beautifier & Validator Tool 2025";
+    const description = isVi ? "Công cụ định dạng, xác thực và làm đẹp JSON miễn phí trực tuyến. Định dạng, xác thực, thu gọn JSON ngay lập tức. Trình chỉnh sửa JSON tốt nhất với làm nổi bật cú pháp. Không cần cài đặt. Dùng thử ngay!" : "Free online JSON formatter, validator and beautifier. Format, validate, minify JSON instantly. Best JSON editor with syntax highlighting. No installation required. Try now!";
+
     return {
-        title: "JSON Formatter Online - Free JSON Beautifier & Validator Tool 2025",
-        description: "Free online JSON formatter, validator and beautifier. Format, validate, minify JSON instantly. Best JSON editor with syntax highlighting. No installation required. Try now!",
+        title,
+        description,
         keywords: [
             "json formatter",
             "json validator",
@@ -28,18 +39,24 @@ export async function generateMetadata(): Promise<Metadata> {
             "validate json tiếng việt",
         ],
         openGraph: {
-            title: "JSON Formatter Online - Free JSON Beautifier & Validator 2025",
-            description: "Format, validate, and beautify JSON data online. Free JSON formatter with syntax highlighting. Fast, secure, and easy to use.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
+            url: `https://anytools.online/${locale}/tools/json-formatter`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: "JSON Formatter Online - Free JSON Beautifier & Validator",
-            description: "Format, validate, and beautify JSON data online. Free JSON formatter with syntax highlighting.",
+            title,
+            description,
         },
         alternates: {
-            canonical: "https://anytools.online/tools/json-formatter",
+            canonical: `https://anytools.online/${locale}/tools/json-formatter`,
+            languages: {
+                "en-US": "https://anytools.online/en/tools/json-formatter",
+                "vi-VN": "https://anytools.online/vi/tools/json-formatter",
+            },
         },
         robots: {
             index: true,
@@ -55,11 +72,15 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function JsonFormatterPage() {
+export default async function JsonFormatterPage({ params }: Props) {
+    const { locale } = await params;
+    const relatedTools = getRelatedTools("/tools/json-formatter", 6);
+
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
             <div className='container mx-auto px-4 py-8'>
                 <JsonFormatterContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/json-formatter' />
             </div>
         </div>
     );

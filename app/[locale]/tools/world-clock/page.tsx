@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import WorldClockClient from "./WorldClockClient";
 import WorldClockContent from "./WorldClockContent";
-import { RelatedTools } from "@/components";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -16,24 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function WorldClockPage() {
-    const relatedTools = [
-        {
-            href: "/tools/countdown",
-            icon: "⏳",
-            nameEn: "Countdown Timer",
-            nameVi: "Đếm Ngược Thời Gian",
-            descriptionEn: "Count down to your important events with live updates",
-            descriptionVi: "Đếm ngược đến các sự kiện quan trọng của bạn",
-        },
-        {
-            href: "/tools/stopwatch",
-            icon: "⏱️",
-            nameEn: "Stopwatch",
-            nameVi: "Đồng Hồ Bấm Giây",
-            descriptionEn: "Precise time measurement with lap tracking",
-            descriptionVi: "Đo thời gian chính xác với tính năng bấm giờ từng vòng",
-        },
-    ];
+    const relatedTools = getRelatedTools("/tools/world-clock", 6);
 
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>

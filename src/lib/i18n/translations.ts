@@ -31,6 +31,7 @@ export const translations = {
                 ai: "AI",
                 security: "Security",
                 utility: "Utility",
+                fun: "Fun & Games",
             },
             features: {
                 fast: {
@@ -788,6 +789,7 @@ export const translations = {
                 ai: "AI",
                 security: "Bảo Mật",
                 utility: "Tiện Ích",
+                fun: "Vui Chơi",
             },
             features: {
                 fast: {

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import JwtDecoderContent from "./JwtDecoderContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -74,12 +76,17 @@ export default function JwtDecoderPage() {
         browserRequirements: "Requires JavaScript. Requires HTML5.",
     };
 
+    const relatedTools = getRelatedTools("/tools/jwt-decoder", 6);
+
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
                 <div className='w-full px-4 py-8'>
                     <JwtDecoderContent />
+                    <div className='max-w-4xl mx-auto mt-8'>
+                        <RelatedTools tools={relatedTools} currentPath='/tools/jwt-decoder' />
+                    </div>
                 </div>
             </div>
         </>

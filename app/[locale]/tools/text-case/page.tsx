@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import TextCaseContent from "./TextCaseContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -32,5 +34,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function TextCasePage() {
-    return <TextCaseContent />;
+    const relatedTools = getRelatedTools("/tools/text-case", 6);
+
+    return (
+        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+            <div className='container mx-auto px-4 py-8'>
+                <TextCaseContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/text-case' />
+            </div>
+        </div>
+    );
 }

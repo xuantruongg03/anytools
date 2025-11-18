@@ -26,7 +26,7 @@ export default function RelatedTools({ tools, currentPath }: RelatedToolsProps) 
     if (filteredTools.length === 0) return null;
 
     return (
-        <section className='bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8 mb-8'>
+        <section className='bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8 mb-8 mt-8'>
             <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-6'>{locale === "vi" ? "Công cụ liên quan" : "Related Tools"}</h2>
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {filteredTools.map((tool) => (

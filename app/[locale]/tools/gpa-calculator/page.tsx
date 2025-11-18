@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import GpaCalculatorClient from "./GpaCalculatorClient";
 import GpaCalculatorContent from "./GpaCalculatorContent";
-import { RelatedTools } from "@/components";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -63,56 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function GpaCalculatorPage() {
-    const relatedTools = [
-        {
-            href: "/tools/number-converter",
-            icon: "🔢",
-            nameEn: "Number Converter",
-            nameVi: "Chuyển đổi số",
-            descriptionEn: "Convert numbers between binary, octal, decimal, and hexadecimal systems",
-            descriptionVi: "Chuyển đổi số giữa các hệ nhị phân, bát phân, thập phân và thập lục phân",
-        },
-        {
-            href: "/tools/base64",
-            icon: "64",
-            nameEn: "Base64 Encoder/Decoder",
-            nameVi: "Mã hóa/Giải mã Base64",
-            descriptionEn: "Encode and decode Base64 strings easily for data transmission",
-            descriptionVi: "Mã hóa và giải mã chuỗi Base64 dễ dàng để truyền dữ liệu",
-        },
-        {
-            href: "/tools/qr-code-generator",
-            icon: "📱",
-            nameEn: "QR Code Generator",
-            nameVi: "Tạo mã QR",
-            descriptionEn: "Generate QR codes for text, URLs, contact information and more",
-            descriptionVi: "Tạo mã QR cho văn bản, URL, thông tin liên hệ và nhiều hơn nữa",
-        },
-        {
-            href: "/tools/timestamp-converter",
-            icon: "⏰",
-            nameEn: "Timestamp Converter",
-            nameVi: "Chuyển đổi Timestamp",
-            descriptionEn: "Convert between Unix timestamp and human-readable date/time formats",
-            descriptionVi: "Chuyển đổi giữa Unix timestamp và định dạng ngày giờ dễ đọc",
-        },
-        {
-            href: "/tools/json-formatter",
-            icon: "{ }",
-            nameEn: "JSON Formatter",
-            nameVi: "Định dạng JSON",
-            descriptionEn: "Format, validate and beautify JSON data with syntax highlighting",
-            descriptionVi: "Định dạng, xác thực và làm đẹp dữ liệu JSON với tô màu cú pháp",
-        },
-        {
-            href: "/tools/password-generator",
-            icon: "🔑",
-            nameEn: "Password Generator",
-            nameVi: "Tạo mật khẩu",
-            descriptionEn: "Generate strong, secure passwords with customizable options",
-            descriptionVi: "Tạo mật khẩu mạnh, bảo mật với các tùy chọn tùy chỉnh",
-        },
-    ];
+    const relatedTools = getRelatedTools("/tools/gpa-calculator", 6);
 
     const jsonLd = {
         "@context": "https://schema.org",
@@ -232,7 +184,7 @@ function GpaCalculatorPage() {
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8 max-w-6xl'>
+                <div className='container mx-auto px-4 py-8'>
                     <GpaCalculatorClient />
                     <GpaCalculatorContent />
                     <RelatedTools tools={relatedTools} currentPath='/tools/gpa-calculator' />

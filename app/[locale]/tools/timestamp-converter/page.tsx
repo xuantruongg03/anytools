@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import TimestampConverterContent from "./TimestampConverterContent";
-import { RelatedTools } from "@/components";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -75,24 +76,7 @@ export default function TimestampConverterPage() {
         browserRequirements: "Requires JavaScript. Requires HTML5.",
     };
 
-    const relatedTools = [
-        {
-            href: "/tools/countdown",
-            icon: "⏳",
-            nameEn: "Countdown Timer",
-            nameVi: "Đếm Ngược Thời Gian",
-            descriptionEn: "Count down to your important events with live updates",
-            descriptionVi: "Đếm ngược đến các sự kiện quan trọng của bạn",
-        },
-        {
-            href: "/tools/world-clock",
-            icon: "🌍",
-            nameEn: "World Clock",
-            nameVi: "Đồng Hồ Thế Giới",
-            descriptionEn: "Check current time across multiple time zones worldwide",
-            descriptionVi: "Xem giờ hiện tại của các thành phố trên thế giới",
-        },
-    ];
+    const relatedTools = getRelatedTools("/tools/timestamp-converter", 6);
 
     return (
         <>
