@@ -15,6 +15,7 @@ import { stopwatchTranslations } from "./stopwatch";
 import { apiTesterTranslations } from "./api-tester";
 import { microphoneTestTranslations } from "./microphone-test";
 import { randomToolsTranslations } from "./random-tools";
+import { weatherTranslations } from "./weather";
 
 export const toolsTranslations = {
     en: {
@@ -35,6 +36,7 @@ export const toolsTranslations = {
         stopwatch: stopwatchTranslations.en.stopwatch,
         apiTester: apiTesterTranslations.en.apiTester,
         microphoneTest: microphoneTestTranslations.en.microphoneTest,
+        weather: weatherTranslations.en.weather,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -54,5 +56,6 @@ export const toolsTranslations = {
         stopwatch: stopwatchTranslations.vi.stopwatch,
         apiTester: apiTesterTranslations.vi.apiTester,
         microphoneTest: microphoneTestTranslations.vi.microphoneTest,
+        weather: weatherTranslations.vi.weather,
     },
 };
