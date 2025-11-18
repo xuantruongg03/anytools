@@ -61,6 +61,7 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/world-clock", icon: "🌍", key: "worldClock" },
             { href: "/tools/countdown", icon: "⏱️", key: "countdown" },
             { href: "/tools/stopwatch", icon: "⏲️", key: "stopwatch" },
+            { href: "/tools/microphone-test", icon: "🎤", key: "microphoneTest" },
         ],
     },
 ];

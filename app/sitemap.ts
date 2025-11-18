@@ -8,7 +8,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "text-case", "color-picker", "hash-generator", "tailwind-css", 
         "stun-turn-test", "uuid-generator", "password-generator", "qr-code-generator", 
         "url-shortener", "timestamp-converter", "jwt-decoder", "diff-checker", "regex-tester", 
-        "html-entity-encoder", "number-converter", "gpa-calculator", "lorem-ipsum", "repo-tree"];
+        "html-entity-encoder", "number-converter", "gpa-calculator", "lorem-ipsum", "repo-tree", 
+        "api-tester", "microphone-test", "world-clock", "countdown", "stopwatch"];
 
     const sitemap: MetadataRoute.Sitemap = [];
 

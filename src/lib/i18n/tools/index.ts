@@ -13,6 +13,7 @@ import { worldClockTranslations } from "./world-clock";
 import { countdownTranslations } from "./countdown";
 import { stopwatchTranslations } from "./stopwatch";
 import { apiTesterTranslations } from "./api-tester";
+import { microphoneTestTranslations } from "./microphone-test";
 
 export const toolsTranslations = {
     en: {
@@ -31,6 +32,7 @@ export const toolsTranslations = {
         countdown: countdownTranslations.en.countdown,
         stopwatch: stopwatchTranslations.en.stopwatch,
         apiTester: apiTesterTranslations.en.apiTester,
+        microphoneTest: microphoneTestTranslations.en.microphoneTest,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -48,5 +50,6 @@ export const toolsTranslations = {
         countdown: countdownTranslations.vi.countdown,
         stopwatch: stopwatchTranslations.vi.stopwatch,
         apiTester: apiTesterTranslations.vi.apiTester,
+        microphoneTest: microphoneTestTranslations.vi.microphoneTest,
     },
 };
