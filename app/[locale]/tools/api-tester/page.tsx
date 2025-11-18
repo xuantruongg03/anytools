@@ -23,11 +23,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: locale === "vi" ? "Công cụ test API miễn phí. Hỗ trợ GET, POST, PUT, DELETE. Kiểm tra headers, body, response. 100% client-side." : "Free API testing tool. Support GET, POST, PUT, DELETE. Check headers, body, response. 100% client-side.",
             type: "website",
             siteName: "AnyTools",
-            url: "https://anytools.online/tools/api-tester",
+            url: "https://www.anytools.online/tools/api-tester",
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "API Tester Online Tool",
@@ -39,13 +39,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "API Tester - Free Online Tool",
             description: "Test APIs instantly. Free and secure.",
             creator: "@anytools",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://anytools.online/tools/api-tester",
+            canonical: "https://www.anytools.online/tools/api-tester",
             languages: {
-                "en-US": "https://anytools.online/en/tools/api-tester",
-                "vi-VN": "https://anytools.online/vi/tools/api-tester",
+                "en-US": "https://www.anytools.online/en/tools/api-tester",
+                "vi-VN": "https://www.anytools.online/vi/tools/api-tester",
             },
         },
         robots: {
@@ -71,7 +71,7 @@ function ApiTesterPage() {
         name: "API Tester Online",
         applicationCategory: "DeveloperApplication",
         description: "Free online API testing tool. Send HTTP requests (GET, POST, PUT, DELETE, PATCH), test REST APIs, check responses and headers. Perfect alternative to Postman for quick API testing. 100% client-side processing.",
-        url: "https://anytools.online/tools/api-tester",
+        url: "https://www.anytools.online/tools/api-tester",
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",

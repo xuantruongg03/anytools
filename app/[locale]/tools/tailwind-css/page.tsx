@@ -43,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Convert Tailwind classes to CSS and vice versa. Learn Tailwind or migrate projects easily.",
         },
         alternates: {
-            canonical: "https://anytools.online/tools/tailwind-css",
+            canonical: "https://www.anytools.online/tools/tailwind-css",
         },
         robots: {
             index: true,

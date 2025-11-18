@@ -17,11 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Convert Unix timestamps to dates and vice versa. Free online tool for epoch time conversion. 100% client-side.",
             type: "website",
             siteName: "AnyTools",
-            url: "https://anytools.online/tools/timestamp-converter",
+            url: "https://www.anytools.online/tools/timestamp-converter",
             locale: "en_US",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Timestamp Converter Online Tool",
@@ -33,13 +33,13 @@ export async function generateMetadata(): Promise<Metadata> {
             title: "Timestamp Converter - Free Online Tool",
             description: "Convert Unix timestamps to dates instantly. Free and secure.",
             creator: "@anytools",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://anytools.online/tools/timestamp-converter",
+            canonical: "https://www.anytools.online/tools/timestamp-converter",
             languages: {
-                "en-US": "https://anytools.online/tools/timestamp-converter",
-                "vi-VN": "https://anytools.online/tools/timestamp-converter",
+                "en-US": "https://www.anytools.online/tools/timestamp-converter",
+                "vi-VN": "https://www.anytools.online/tools/timestamp-converter",
             },
         },
         robots: {
@@ -65,7 +65,7 @@ export default function TimestampConverterPage() {
         name: "Timestamp Converter Online",
         applicationCategory: "DeveloperApplication",
         description: "Free online Unix timestamp converter. Convert between Unix epoch timestamps and human-readable dates instantly. Support milliseconds and timezone handling. 100% client-side processing.",
-        url: "https://anytools.online/tools/timestamp-converter",
+        url: "https://www.anytools.online/tools/timestamp-converter",
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",

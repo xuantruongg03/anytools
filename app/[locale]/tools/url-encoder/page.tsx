@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Free URL encoder/decoder for web developers. Encode query parameters instantly.",
         },
         alternates: {
-            canonical: "https://anytools.online/tools/url-encoder",
+            canonical: "https://www.anytools.online/tools/url-encoder",
         },
         robots: {
             index: true,

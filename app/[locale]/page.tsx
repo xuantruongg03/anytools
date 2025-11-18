@@ -54,7 +54,7 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
 
     return (
         <div className='bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black'>
-            <StructuredData type='WebApplication' name='AnyTools - Free Online Tools' description='Free online tools for developers, designers, and content creators. Text formatters, JSON validators, color pickers, and more.' url='https://anytools.online' keywords={["online tools", "developer tools", "free tools", "text formatter", "JSON validator", "color picker", "công cụ trực tuyến", "công cụ lập trình viên"]} inLanguage={["en", "vi"]} />
+            <StructuredData type='WebApplication' name='AnyTools - Free Online Tools' description='Free online tools for developers, designers, and content creators. Text formatters, JSON validators, color pickers, and more.' url='https://www.anytools.online' keywords={["online tools", "developer tools", "free tools", "text formatter", "JSON validator", "color picker", "công cụ trực tuyến", "công cụ lập trình viên"]} inLanguage={["en", "vi"]} />
             <section className='container mx-auto px-4 py-16 text-center'>
                 <h1 className='text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-gray-100 max-w-4xl mx-auto leading-tight'>{t.home.title}</h1>
                 <p className='text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-3xl mx-auto'>{t.home.subtitle}</p>

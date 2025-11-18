@@ -23,11 +23,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: locale === "vi" ? "Kiểm tra microphone miễn phí. Xem sóng âm thanh, ghi âm, phát lại, đánh giá chất lượng. 100% client-side." : "Free microphone testing. View waveform, record, playback, analyze quality. 100% client-side.",
             type: "website",
             siteName: "AnyTools",
-            url: "https://anytools.online/tools/microphone-test",
+            url: "https://www.anytools.online/tools/microphone-test",
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Microphone Test Online Tool",
@@ -39,13 +39,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "Microphone Test - Free Online Tool",
             description: "Test your microphone instantly. Free and secure.",
             creator: "@anytools",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://anytools.online/tools/microphone-test",
+            canonical: "https://www.anytools.online/tools/microphone-test",
             languages: {
-                "en-US": "https://anytools.online/en/tools/microphone-test",
-                "vi-VN": "https://anytools.online/vi/tools/microphone-test",
+                "en-US": "https://www.anytools.online/en/tools/microphone-test",
+                "vi-VN": "https://www.anytools.online/vi/tools/microphone-test",
             },
         },
         robots: {
@@ -71,7 +71,7 @@ function MicrophoneTestPage() {
         name: "Microphone Test Online",
         applicationCategory: "UtilityApplication",
         description: "Free online microphone testing tool. Test your mic, view real-time audio waveform visualization, record and playback audio, analyze sound quality and volume levels. 100% client-side processing.",
-        url: "https://anytools.online/tools/microphone-test",
+        url: "https://www.anytools.online/tools/microphone-test",
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",

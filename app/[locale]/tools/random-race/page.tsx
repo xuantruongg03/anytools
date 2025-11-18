@@ -26,11 +26,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://anytools.online/${locale}/tools/random-race`,
+            url: `https://www.anytools.online/${locale}/tools/random-race`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Random Race Game Tool",
@@ -42,13 +42,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "Random Race Game - Free Tool",
             description: "Watch animated animals race to the finish!",
             creator: "@anytools",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://anytools.online/${locale}/tools/random-race`,
+            canonical: `https://www.anytools.online/${locale}/tools/random-race`,
             languages: {
-                "en-US": "https://anytools.online/en/tools/random-race",
-                "vi-VN": "https://anytools.online/vi/tools/random-race",
+                "en-US": "https://www.anytools.online/en/tools/random-race",
+                "vi-VN": "https://www.anytools.online/vi/tools/random-race",
             },
         },
         robots: {
@@ -77,7 +77,7 @@ export default async function RandomRacePage({ params }: Props) {
         name: isVi ? "Trò Chơi Đua Thú Ngẫu Nhiên" : "Random Race Game Online",
         applicationCategory: "GameApplication",
         description: isVi ? "Trò chơi đua thú ngẫu nhiên miễn phí. Xem các con vật hoạt hình đua đến đích. Hoàn hảo cho giải trí, cuộc thi và lựa chọn ngẫu nhiên với hoạt hình hồi hộp. 100% xử lý trên trình duyệt." : "Free online random race game. Watch animated animals race to the finish line. Perfect for fun selections, contests, and random choices with exciting animation. 100% client-side processing.",
-        url: `https://anytools.online/${locale}/tools/random-race`,
+        url: `https://www.anytools.online/${locale}/tools/random-race`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

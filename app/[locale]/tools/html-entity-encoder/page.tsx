@@ -9,22 +9,22 @@ export async function generateMetadata(): Promise<Metadata> {
         description: "Free HTML entity encoder and decoder tool. Convert special characters (&, <, >, quotes) to HTML entities for security. Prevent XSS attacks with proper encoding.",
         keywords: ["html entity encoder", "html entity decoder", "html entities", "encode html", "decode html", "xss prevention", "html special characters", "html escape", "mã hóa html", "giải mã html", "ký tự đặc biệt html", "bảo mật html", "ngăn chặn xss"],
         alternates: {
-            canonical: "https://anytools.online/tools/html-entity-encoder",
+            canonical: "https://www.anytools.online/tools/html-entity-encoder",
             languages: {
-                en: "https://anytools.online/en/tools/html-entity-encoder",
-                vi: "https://anytools.online/vi/tools/html-entity-encoder",
+                en: "https://www.anytools.online/en/tools/html-entity-encoder",
+                vi: "https://www.anytools.online/vi/tools/html-entity-encoder",
             },
         },
         openGraph: {
             title: "HTML Entity Encoder/Decoder - Convert Special Characters to HTML Entities 2025",
             description: "Free HTML entity encoder and decoder tool. Convert special characters to HTML entities for security. Prevent XSS attacks with proper encoding.",
-            url: "https://anytools.online/tools/html-entity-encoder",
+            url: "https://www.anytools.online/tools/html-entity-encoder",
             siteName: "AnyTools",
             locale: "en_US",
             type: "website",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "HTML Entity Encoder/Decoder",
@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
             card: "summary_large_image",
             title: "HTML Entity Encoder/Decoder - Convert Special Characters 2025",
             description: "Free HTML entity encoder and decoder. Prevent XSS attacks with proper HTML encoding. Convert &, <, >, quotes, and more.",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         robots: { index: true, follow: true },
     };
@@ -47,7 +47,7 @@ export default function HtmlEntityPage() {
         "@type": "WebApplication",
         name: "HTML Entity Encoder/Decoder",
         description: "Free online tool to encode and decode HTML entities. Convert special characters to HTML entities for security and prevent XSS attacks.",
-        url: "https://anytools.online/tools/html-entity-encoder",
+        url: "https://www.anytools.online/tools/html-entity-encoder",
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Any",
         offers: {

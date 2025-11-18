@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://anytools.online/${locale}/tools/json-formatter`,
+            url: `https://www.anytools.online/${locale}/tools/json-formatter`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -52,10 +52,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://anytools.online/${locale}/tools/json-formatter`,
+            canonical: `https://www.anytools.online/${locale}/tools/json-formatter`,
             languages: {
-                "en-US": "https://anytools.online/en/tools/json-formatter",
-                "vi-VN": "https://anytools.online/vi/tools/json-formatter",
+                "en-US": "https://www.anytools.online/en/tools/json-formatter",
+                "vi-VN": "https://www.anytools.online/vi/tools/json-formatter",
             },
         },
         robots: {

@@ -8,7 +8,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: "Diff Checker - Text Comparison Tool Online Free 2025",
         description: "Compare two texts and find differences online. Free diff checker tool to compare text files, code, documents. Highlight changes instantly.",
         keywords: ["diff checker", "text comparison", "compare text", "text diff", "file comparison"],
-        alternates: { canonical: "https://anytools.online/tools/diff-checker" },
+        alternates: { canonical: "https://www.anytools.online/tools/diff-checker" },
         robots: { index: true, follow: true },
     };
 }

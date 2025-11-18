@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: currentMetadata.description,
             type: "website",
             locale: locale === "vi" ? "vi_VN" : "en_US",
-            url: `https://anytools.online/${locale}/tools/repo-tree`,
+            url: `https://www.anytools.online/${locale}/tools/repo-tree`,
         },
         twitter: {
             card: "summary_large_image",
@@ -43,10 +43,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: currentMetadata.description,
         },
         alternates: {
-            canonical: `https://anytools.online/${locale}/tools/repo-tree`,
+            canonical: `https://www.anytools.online/${locale}/tools/repo-tree`,
             languages: {
-                en: "https://anytools.online/en/tools/repo-tree",
-                vi: "https://anytools.online/vi/tools/repo-tree",
+                en: "https://www.anytools.online/en/tools/repo-tree",
+                vi: "https://www.anytools.online/vi/tools/repo-tree",
             },
         },
     };
@@ -115,19 +115,19 @@ function RepoTreePage() {
                 "@type": "ListItem",
                 position: 1,
                 name: "Home",
-                item: "https://anytools.online",
+                item: "https://www.anytools.online",
             },
             {
                 "@type": "ListItem",
                 position: 2,
                 name: "Tools",
-                item: "https://anytools.online/#tools",
+                item: "https://www.anytools.online/#tools",
             },
             {
                 "@type": "ListItem",
                 position: 3,
                 name: "GitHub Repository Tree",
-                item: "https://anytools.online/en/tools/repo-tree",
+                item: "https://www.anytools.online/en/tools/repo-tree",
             },
         ],
     };
