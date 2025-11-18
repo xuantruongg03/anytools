@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Convert text between different cases: uppercase, lowercase, title case, camelCase, and more.",
         },
         alternates: {
-            canonical: "https://anytools.online/tools/text-case",
+            canonical: "https://www.anytools.online/tools/text-case",
         },
         robots: {
             index: true,

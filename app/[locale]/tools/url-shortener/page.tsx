@@ -33,18 +33,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: descriptions[currentLocale],
         keywords: keywords[currentLocale],
         alternates: {
-            canonical: `https://anytools.online/${locale}/tools/url-shortener`,
+            canonical: `https://www.anytools.online/${locale}/tools/url-shortener`,
             languages: {
-                en: "https://anytools.online/en/tools/url-shortener",
-                vi: "https://anytools.online/vi/tools/url-shortener",
-                "x-default": "https://anytools.online/en/tools/url-shortener",
+                en: "https://www.anytools.online/en/tools/url-shortener",
+                vi: "https://www.anytools.online/vi/tools/url-shortener",
+                "x-default": "https://www.anytools.online/en/tools/url-shortener",
             },
         },
         robots: { index: true, follow: true },
         openGraph: {
             title: titles[currentLocale],
             description: descriptions[currentLocale],
-            url: `https://anytools.online/${locale}/tools/url-shortener`,
+            url: `https://www.anytools.online/${locale}/tools/url-shortener`,
             type: "website",
         },
     };

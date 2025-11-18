@@ -26,11 +26,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://anytools.online/${locale}/tools/uuid-generator`,
+            url: `https://www.anytools.online/${locale}/tools/uuid-generator`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "UUID Generator Online Tool",
@@ -42,13 +42,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "UUID Generator - Free Online Tool",
             description: "Generate UUID v4 and v1 with bulk support. Fast and secure.",
             creator: "@anytools",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://anytools.online/${locale}/tools/uuid-generator`,
+            canonical: `https://www.anytools.online/${locale}/tools/uuid-generator`,
             languages: {
-                "en-US": "https://anytools.online/en/tools/uuid-generator",
-                "vi-VN": "https://anytools.online/vi/tools/uuid-generator",
+                "en-US": "https://www.anytools.online/en/tools/uuid-generator",
+                "vi-VN": "https://www.anytools.online/vi/tools/uuid-generator",
             },
         },
         robots: {
@@ -77,7 +77,7 @@ export default async function UuidGeneratorPage({ params }: Props) {
         name: isVi ? "Công Cụ Tạo UUID Trực Tuyến" : "UUID Generator Online",
         applicationCategory: "DeveloperApplication",
         description: isVi ? "Công cụ tạo UUID/GUID miễn phí trực tuyến. Tạo UUID v4 (ngẫu nhiên) và UUID v1 (dựa trên thời gian) với hỗ trợ tạo hàng loạt." : "Free online UUID/GUID generator. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk generation support.",
-        url: `https://anytools.online/${locale}/tools/uuid-generator`,
+        url: `https://www.anytools.online/${locale}/tools/uuid-generator`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

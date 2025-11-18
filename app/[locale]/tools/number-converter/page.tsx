@@ -9,22 +9,22 @@ export async function generateMetadata(): Promise<Metadata> {
         description: "Free number system converter and bitwise calculator. Convert between binary, decimal, hexadecimal, octal. Perform AND, OR, XOR, shift operations. Essential tool for programmers.",
         keywords: ["number converter", "binary to decimal", "hex to decimal", "number system converter", "base converter", "bitwise calculator", "bitwise operations", "binary calculator", "hexadecimal converter", "octal converter", "chuyển đổi hệ số", "nhị phân", "thập lục phân", "bitwise"],
         alternates: {
-            canonical: "https://anytools.online/tools/number-converter",
+            canonical: "https://www.anytools.online/tools/number-converter",
             languages: {
-                en: "https://anytools.online/en/tools/number-converter",
-                vi: "https://anytools.online/vi/tools/number-converter",
+                en: "https://www.anytools.online/en/tools/number-converter",
+                vi: "https://www.anytools.online/vi/tools/number-converter",
             },
         },
         openGraph: {
             title: "Number System Converter & Bitwise Calculator - Binary, Hex, Decimal 2025",
             description: "Convert between number systems and perform bitwise operations. Free online tool for binary, decimal, hexadecimal, octal conversion with AND, OR, XOR, shift operations.",
-            url: "https://anytools.online/tools/number-converter",
+            url: "https://www.anytools.online/tools/number-converter",
             siteName: "AnyTools",
             locale: "en_US",
             type: "website",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Number System Converter & Bitwise Calculator",
@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
             card: "summary_large_image",
             title: "Number System Converter & Bitwise Calculator 2025",
             description: "Convert binary, decimal, hex, octal. Perform bitwise operations: AND, OR, XOR, shifts. Free tool for programmers.",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         robots: { index: true, follow: true },
     };
@@ -47,7 +47,7 @@ export default function NumberConverterPage() {
         "@type": "WebApplication",
         name: "Number System Converter & Bitwise Calculator",
         description: "Free online tool to convert between number systems (binary, decimal, hexadecimal, octal) and perform bitwise operations (AND, OR, XOR, NOT, shifts).",
-        url: "https://anytools.online/tools/number-converter",
+        url: "https://www.anytools.online/tools/number-converter",
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Any",
         offers: {

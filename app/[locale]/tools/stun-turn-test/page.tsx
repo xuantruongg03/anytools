@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Free tool to test STUN/TURN server configuration. Real-time ICE candidate gathering and detailed diagnostics.",
         },
         alternates: {
-            canonical: "https://anytools.online/tools/stun-turn-test",
+            canonical: "https://www.anytools.online/tools/stun-turn-test",
         },
         robots: {
             index: true,

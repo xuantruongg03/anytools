@@ -59,11 +59,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://anytools.online/${locale}/tools/random-wheel`,
+            url: `https://www.anytools.online/${locale}/tools/random-wheel`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Random Wheel Spinner Tool",
@@ -75,13 +75,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "Random Wheel Spinner - Free Tool",
             description: "Spin the wheel to pick random choices instantly!",
             creator: "@anytools",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://anytools.online/${locale}/tools/random-wheel`,
+            canonical: `https://www.anytools.online/${locale}/tools/random-wheel`,
             languages: {
-                "en-US": "https://anytools.online/en/tools/random-wheel",
-                "vi-VN": "https://anytools.online/vi/tools/random-wheel",
+                "en-US": "https://www.anytools.online/en/tools/random-wheel",
+                "vi-VN": "https://www.anytools.online/vi/tools/random-wheel",
             },
         },
         robots: {
@@ -112,7 +112,7 @@ export default async function RandomWheelPage({ params }: Props) {
         description: isVi
             ? "Công cụ vòng quay may mắn và ra quyết định miễn phí. Quay vòng để chọn ngẫu nhiên cho tặng quà, cuộc thi, hoạt động lớp học, xây dựng đội nhóm, rút thăm, và trò chơi. Tính năng tùy chỉnh tùy chọn, thêm hàng loạt, hiệu ứng quay mượt mà, kết quả công bằng ngay lập tức. Hoàn hảo cho giáo viên, tổ chức sự kiện, và bất kỳ ai cần chọn ngẫu nhiên. 100% miễn phí, xử lý trên trình duyệt, không cần đăng ký."
             : "Free online random wheel spinner and decision maker tool. Spin the wheel to pick random choices for giveaways, contests, classroom activities, team building, prize draws, and games. Features customizable options, bulk add functionality, smooth spinning animation, and instant fair results. Perfect for teachers, event organizers, and anyone needing random selection. 100% free, client-side processing, no registration required.",
-        url: `https://anytools.online/${locale}/tools/random-wheel`,
+        url: `https://www.anytools.online/${locale}/tools/random-wheel`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

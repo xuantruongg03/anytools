@@ -17,11 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "Decode JWT tokens instantly. View header and payload. Free online JWT decoder for developers.",
             type: "website",
             siteName: "AnyTools",
-            url: "https://anytools.online/tools/jwt-decoder",
+            url: "https://www.anytools.online/tools/jwt-decoder",
             locale: "en_US",
             images: [
                 {
-                    url: "https://anytools.online/og-image.png",
+                    url: "https://www.anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "JWT Decoder Online Tool",
@@ -33,13 +33,13 @@ export async function generateMetadata(): Promise<Metadata> {
             title: "JWT Decoder - Free Online Tool",
             description: "Decode and inspect JWT tokens instantly. 100% client-side and secure.",
             creator: "@anytools",
-            images: ["https://anytools.online/og-image.png"],
+            images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://anytools.online/tools/jwt-decoder",
+            canonical: "https://www.anytools.online/tools/jwt-decoder",
             languages: {
-                "en-US": "https://anytools.online/tools/jwt-decoder",
-                "vi-VN": "https://anytools.online/tools/jwt-decoder",
+                "en-US": "https://www.anytools.online/tools/jwt-decoder",
+                "vi-VN": "https://www.anytools.online/tools/jwt-decoder",
             },
         },
         robots: {
@@ -65,7 +65,7 @@ export default function JwtDecoderPage() {
         name: "JWT Decoder Online",
         applicationCategory: "DeveloperApplication",
         description: "Free online JWT (JSON Web Token) decoder. Decode and inspect JWT header, payload, and signature instantly. 100% client-side processing.",
-        url: "https://anytools.online/tools/jwt-decoder",
+        url: "https://www.anytools.online/tools/jwt-decoder",
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",

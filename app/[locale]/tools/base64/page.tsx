@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://anytools.online/${locale}/tools/base64`,
+            url: `https://www.anytools.online/${locale}/tools/base64`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -58,10 +58,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://anytools.online/${locale}/tools/base64`,
+            canonical: `https://www.anytools.online/${locale}/tools/base64`,
             languages: {
-                "en-US": "https://anytools.online/en/tools/base64",
-                "vi-VN": "https://anytools.online/vi/tools/base64",
+                "en-US": "https://www.anytools.online/en/tools/base64",
+                "vi-VN": "https://www.anytools.online/vi/tools/base64",
             },
         },
         robots: {
