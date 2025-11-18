@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import UrlEncoderContent from "./UrlEncoderContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -56,10 +58,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function UrlEncoderPage() {
+    const relatedTools = getRelatedTools("/tools/url-encoder", 6);
+
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
             <div className='container mx-auto px-4 py-8'>
                 <UrlEncoderContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/url-encoder' />
             </div>
         </div>
     );

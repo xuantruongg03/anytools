@@ -1,22 +1,33 @@
 import type { Metadata } from "next";
 import RegexTesterContent from "./RegexTesterContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Kiểm Tra Regex - Công Cụ Test Biểu Thức Chính Quy 2025" : "Regex Tester - Regular Expression Testing Tool Online 2025";
+    const description = isVi ? "Kiểm tra và xác thực biểu thức chính quy trực tuyến. Công cụ kiểm tra regex miễn phí với khớp mẫu, hỗ trợ cờ và kết quả tức thì. Hoàn hảo cho lập trình viên gỡ lỗi mẫu regex. 100% xử lý phía client và an toàn." : "Test and validate regular expressions online. Free regex tester with pattern matching, flags support, and instant results. Perfect for developers debugging regex patterns. 100% client-side and secure.";
+
     return {
-        title: "Regex Tester - Regular Expression Testing Tool Online 2025",
-        description: "Test and validate regular expressions online. Free regex tester with pattern matching, flags support, and instant results. Perfect for developers debugging regex patterns. 100% client-side and secure.",
+        title,
+        description,
         keywords: ["regex tester", "regular expression", "regex validator", "pattern matching", "regex tool", "regex online", "test regex", "regex debugger", "regex matcher", "regexp tester", "regex checker", "regex builder", "regex generator", "regex pattern", "kiểm tra regex", "test biểu thức chính quy", "công cụ regex"],
         authors: [{ name: "AnyTools" }],
         creator: "AnyTools",
         publisher: "AnyTools",
         applicationName: "AnyTools Regex Tester",
         openGraph: {
-            title: "Regex Tester Online - Free Regular Expression Testing Tool 2025",
-            description: "Test and validate regular expressions instantly. Free online regex tester with pattern matching and flags support. 100% client-side.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
-            url: "https://anytools.online/tools/regex-tester",
-            locale: "en_US",
+            url: `https://anytools.online/${locale}/tools/regex-tester`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
                     url: "https://anytools.online/og-image.png",
@@ -34,10 +45,10 @@ export async function generateMetadata(): Promise<Metadata> {
             images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://anytools.online/tools/regex-tester",
+            canonical: `https://anytools.online/${locale}/tools/regex-tester`,
             languages: {
-                "en-US": "https://anytools.online/tools/regex-tester",
-                "vi-VN": "https://anytools.online/tools/regex-tester",
+                "en-US": "https://anytools.online/en/tools/regex-tester",
+                "vi-VN": "https://anytools.online/vi/tools/regex-tester",
             },
         },
         robots: {
@@ -56,14 +67,18 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function RegexTesterPage() {
+export default async function RegexTesterPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        name: "Regex Tester Online",
+        name: isVi ? "Công Cụ Kiểm Tra Regex" : "Regex Tester Online",
         applicationCategory: "DeveloperApplication",
-        description: "Free online regex (regular expression) tester. Test and validate regex patterns with instant matching results. Support all regex flags. 100% client-side processing.",
-        url: "https://anytools.online/tools/regex-tester",
+        description: isVi ? "Công cụ kiểm tra regex (biểu thức chính quy) miễn phí trực tuyến. Kiểm tra và xác thực mẫu regex với kết quả khớp tức thì. Hỗ trợ tất cả cờ regex. 100% xử lý phía client." : "Free online regex (regular expression) tester. Test and validate regex patterns with instant matching results. Support all regex flags. 100% client-side processing.",
+        url: `https://anytools.online/${locale}/tools/regex-tester`,
+        inLanguage: locale,
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",
@@ -74,12 +89,15 @@ export default function RegexTesterPage() {
         browserRequirements: "Requires JavaScript. Requires HTML5.",
     };
 
+    const relatedTools = getRelatedTools("/tools/regex-tester", 6);
+
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
-                <div className='w-full px-4 py-8'>
+                <div className='container mx-auto px-4 py-8'>
                     <RegexTesterContent />
+                    <RelatedTools tools={relatedTools} currentPath='/tools/regex-tester' />
                 </div>
             </div>
         </>

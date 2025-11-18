@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import CountdownClient from "./CountdownClient";
 import CountdownContent from "./CountdownContent";
-import { RelatedTools } from "@/components";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -16,28 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function CountdownPage() {
-    const relatedTools = [
-        {
-            href: "/tools/world-clock",
-            icon: "🌍",
-            nameEn: "World Clock",
-            nameVi: "Đồng Hồ Thế Giới",
-            descriptionEn: "Check current time across multiple time zones worldwide",
-            descriptionVi: "Xem giờ hiện tại của các thành phố trên thế giới",
-        },
-        {
-            href: "/tools/stopwatch",
-            icon: "⏱️",
-            nameEn: "Stopwatch",
-            nameVi: "Đồng Hồ Bấm Giây",
-            descriptionEn: "Precise time measurement with lap tracking",
-            descriptionVi: "Đo thời gian chính xác với tính năng bấm giờ từng vòng",
-        },
-    ];
+    const relatedTools = getRelatedTools("/tools/countdown", 6);
 
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8 max-w-6xl'>
+            <div className='container mx-auto px-4 py-8'>
                 <CountdownClient />
                 <CountdownContent />
                 <RelatedTools tools={relatedTools} currentPath='/tools/countdown' />

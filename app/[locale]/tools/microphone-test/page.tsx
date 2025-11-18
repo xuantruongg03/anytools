@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { RelatedTools } from "@/components";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 import MicrophoneTestClient from "./MicrophoneTestClient";
 import MicrophoneTestContent from "./MicrophoneTestContent";
 
@@ -81,30 +82,13 @@ function MicrophoneTestPage() {
         browserRequirements: "Requires JavaScript. Requires HTML5. Requires microphone access.",
     };
 
-    const relatedTools = [
-        {
-            href: "/tools/stopwatch",
-            icon: "⏱️",
-            nameEn: "Stopwatch",
-            nameVi: "Đồng Hồ Bấm Giây",
-            descriptionEn: "Precise time measurement with lap tracking",
-            descriptionVi: "Đo thời gian chính xác với tính năng bấm giờ từng vòng",
-        },
-        {
-            href: "/tools/qr-code-generator",
-            icon: "📱",
-            nameEn: "QR Code Generator",
-            nameVi: "Tạo mã QR",
-            descriptionEn: "Generate QR codes for text, URLs, contact information and more",
-            descriptionVi: "Tạo mã QR cho văn bản, URL, thông tin liên hệ và nhiều hơn nữa",
-        },
-    ];
+    const relatedTools = getRelatedTools("/tools/microphone-test", 6);
 
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8 max-w-6xl'>
+                <div className='container mx-auto px-4 py-8'>
                     <MicrophoneTestClient />
                     <MicrophoneTestContent />
                     <RelatedTools tools={relatedTools} currentPath='/tools/microphone-test' />

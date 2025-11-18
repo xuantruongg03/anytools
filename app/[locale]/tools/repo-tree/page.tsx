@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import RepoTreeClient from "./RepoTreeClient";
 import RepoTreeContent from "./RepoTreeContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -130,6 +132,8 @@ function RepoTreePage() {
         ],
     };
 
+    const relatedTools = getRelatedTools("/tools/repo-tree", 6);
+
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -140,6 +144,7 @@ function RepoTreePage() {
                 <div className='container mx-auto px-4 py-8 max-w-6xl'>
                     <RepoTreeClient />
                     <RepoTreeContent />
+                    <RelatedTools tools={relatedTools} currentPath='/tools/repo-tree' />
                 </div>
             </div>
         </>

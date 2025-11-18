@@ -10,9 +10,8 @@ export default function HashGeneratorContent() {
     const t = getTranslation(locale);
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <header className='mb-8'>
+        <div className='max-w-6xl mx-auto'>
+            <header className='mb-8'>
                     <h1 className='text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.tools.hashGenerator.page.title}</h1>
                     <p className='text-lg text-gray-600 dark:text-gray-400'>{t.tools.hashGenerator.page.subtitle}</p>
                 </header>
@@ -193,7 +192,6 @@ export default function HashGeneratorContent() {
                         { question: t.tools.hashGenerator.page.faqList.q5, answer: t.tools.hashGenerator.page.faqList.a5 },
                     ]}
                 />
-            </div>
         </div>
     );
 }

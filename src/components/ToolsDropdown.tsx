@@ -100,7 +100,7 @@ export function ToolsDropdown() {
                             {/* Submenu - Tools (Desktop: Flyout, Mobile: Accordion) */}
                             {((isMobile && expandedCategory === category.key) || (!isMobile && hoveredCategory === category.key)) && (
                                 <div className={isMobile ? "bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700" : "absolute left-full top-0 ml-1 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl animate-fadeIn z-50"} onMouseEnter={() => !isMobile && setHoveredCategory(category.key)} onMouseLeave={() => !isMobile && setHoveredCategory(null)}>
-                                    <div className={`py-1 ${isMobile ? "" : "max-h-[60vh] overflow-y-auto"}`} style={isMobile ? {} : { scrollbarWidth: "thin", scrollbarColor: "rgb(156 163 175) transparent" }}>
+                                    <div className={`py-1 ${isMobile ? "" : "max-h-[50vh] overflow-y-auto"}`} style={isMobile ? {} : { scrollbarWidth: "thin", scrollbarColor: "rgb(156 163 175) transparent" }}>
                                         {category.tools.map((tool) => {
                                             const toolData = t.tools[tool.key as keyof typeof t.tools] as any;
                                             const name = toolData.name || toolData.page?.title || tool.key;

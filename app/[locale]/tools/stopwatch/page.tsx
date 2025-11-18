@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import StopwatchClient from "./StopwatchClient";
 import StopwatchContent from "./StopwatchContent";
-import { RelatedTools } from "@/components";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -16,28 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function StopwatchPage() {
-    const relatedTools = [
-        {
-            href: "/tools/countdown",
-            icon: "⏳",
-            nameEn: "Countdown Timer",
-            nameVi: "Đếm Ngược Thời Gian",
-            descriptionEn: "Count down to your important events with live updates",
-            descriptionVi: "Đếm ngược đến các sự kiện quan trọng của bạn",
-        },
-        {
-            href: "/tools/world-clock",
-            icon: "🌍",
-            nameEn: "World Clock",
-            nameVi: "Đồng Hồ Thế Giới",
-            descriptionEn: "Check current time across multiple time zones worldwide",
-            descriptionVi: "Xem giờ hiện tại của các thành phố trên thế giới",
-        },
-    ];
+    const relatedTools = getRelatedTools("/tools/stopwatch", 6);
 
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8 max-w-6xl'>
+            <div className='container mx-auto px-4 py-8'>
                 <StopwatchClient />
                 <StopwatchContent />
                 <RelatedTools tools={relatedTools} currentPath='/tools/stopwatch' />

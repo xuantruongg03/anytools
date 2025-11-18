@@ -2,6 +2,7 @@
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
 import UuidGeneratorClient from "./UuidGeneratorClient";
+import FAQSection from "@/components/ui/FAQSection";
 
 export default function UuidGeneratorContent() {
     const { locale } = useLanguage();
@@ -117,43 +118,7 @@ export default function UuidGeneratorContent() {
                     </ul>
                 </section>
 
-                <section>
-                    <h2 className='text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.faq}</h2>
-                    <div className='space-y-4'>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q1}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a1}</p>
-                        </div>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q2}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a2}</p>
-                        </div>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q3}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a3}</p>
-                        </div>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q4}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a4}</p>
-                        </div>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q5}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a5}</p>
-                        </div>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q6}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a6}</p>
-                        </div>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q7}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a7}</p>
-                        </div>
-                        <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700'>
-                            <h3 className='font-bold text-gray-900 dark:text-gray-100 mb-2'>{t.faqList.q8}</h3>
-                            <p className='leading-relaxed'>{t.faqList.a8}</p>
-                        </div>
-                    </div>
-                </section>
+                <FAQSection title={t.faq} faqs={t.faqList} />
             </div>
         </div>
     );

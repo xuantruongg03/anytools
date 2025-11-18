@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
 import Base64Content from "./Base64Content";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Mã Hóa & Giải Mã Base64 - Công Cụ Chuyển Đổi Base64 Miễn Phí 2025" : "Base64 Encoder & Decoder Online - Free Base64 Converter Tool 2025";
+    const description = isVi ? "Công cụ mã hóa và giải mã Base64 miễn phí trực tuyến. Chuyển đổi văn bản và hình ảnh sang Base64 và giải mã chuỗi Base64 ngay lập tức. Nhanh, an toàn và dễ sử dụng. Hoàn hảo cho lập trình viên!" : "Free online Base64 encoder and decoder. Convert text and images to Base64 and decode Base64 strings instantly. Fast, secure, and easy to use. Perfect for developers!";
+
     return {
-        title: "Base64 Encoder & Decoder Online - Free Base64 Converter Tool 2025",
-        description: "Free online Base64 encoder and decoder. Convert text and images to Base64 and decode Base64 strings instantly. Fast, secure, and easy to use. Perfect for developers!",
+        title,
+        description,
         keywords: [
             // English keywords
             "base64 encoder",
@@ -34,18 +45,24 @@ export async function generateMetadata(): Promise<Metadata> {
             "chuyển hình ảnh sang base64",
         ],
         openGraph: {
-            title: "Base64 Encoder & Decoder Online - Free Base64 Converter Tool 2025",
-            description: "Free online Base64 encoder and decoder. Convert text and images to Base64 and decode Base64 strings instantly.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
+            url: `https://anytools.online/${locale}/tools/base64`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: "Base64 Encoder & Decoder - Free Online Tool",
-            description: "Encode and decode Base64 strings and images online. Fast and secure Base64 converter.",
+            title,
+            description,
         },
         alternates: {
-            canonical: "https://anytools.online/tools/base64",
+            canonical: `https://anytools.online/${locale}/tools/base64`,
+            languages: {
+                "en-US": "https://anytools.online/en/tools/base64",
+                "vi-VN": "https://anytools.online/vi/tools/base64",
+            },
         },
         robots: {
             index: true,
@@ -61,11 +78,14 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function Base64Page() {
+export default async function Base64Page({ params }: Props) {
+    const relatedTools = getRelatedTools("/tools/base64", 6);
+
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
             <div className='container mx-auto px-4 py-8'>
                 <Base64Content />
+                <RelatedTools tools={relatedTools} currentPath='/tools/base64' />
             </div>
         </div>
     );

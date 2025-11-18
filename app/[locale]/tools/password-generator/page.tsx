@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import PasswordGeneratorClient from "./PasswordGeneratorClient";
 import PasswordGeneratorContent from "./PasswordGeneratorContent";
+import RelatedTools from "@/components/RelatedTools";
+import { getRelatedTools } from "@/lib/utils/relatedTools";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -91,15 +93,18 @@ function PasswordGeneratorPage() {
         ],
     };
 
+    const relatedTools = getRelatedTools("/tools/password-generator", 6);
+
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8 max-w-4xl'>
+                <div className='container mx-auto px-4 py-8'>
                     <PasswordGeneratorClient />
                     <PasswordGeneratorContent />
+                    <RelatedTools tools={relatedTools} currentPath='/tools/password-generator' />
                 </div>
             </div>
         </>

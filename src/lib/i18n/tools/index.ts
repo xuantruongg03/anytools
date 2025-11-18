@@ -14,10 +14,12 @@ import { countdownTranslations } from "./countdown";
 import { stopwatchTranslations } from "./stopwatch";
 import { apiTesterTranslations } from "./api-tester";
 import { microphoneTestTranslations } from "./microphone-test";
+import { randomToolsTranslations } from "./random-tools";
 
 export const toolsTranslations = {
     en: {
         ...newToolsTranslations.en,
+        ...randomToolsTranslations.en,
         uuidGenerator: uuidGeneratorTranslations.en,
         jwtDecoder: jwtDecoderTranslations.en,
         timestampConverter: timestampConverterTranslations.en.timestampConverter,
@@ -36,6 +38,7 @@ export const toolsTranslations = {
     },
     vi: {
         ...newToolsTranslations.vi,
+        ...randomToolsTranslations.vi,
         uuidGenerator: uuidGeneratorTranslations.vi,
         jwtDecoder: jwtDecoderTranslations.vi,
         timestampConverter: timestampConverterTranslations.vi.timestampConverter,
