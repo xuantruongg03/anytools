@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
+import { HTTP_REQUEST_PATTERN, HOST_HEADER_PATTERN, HTTP_HEADER_LINE_PATTERN, CURL_URL_PATTERN, CURL_URL_FALLBACK_PATTERN, CURL_METHOD_PATTERN, CURL_HEADER_PATTERN, CURL_DATA_PATTERN } from "@/constants/regex";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 
@@ -42,6 +43,122 @@ export default function ApiTesterClient() {
     const [error, setError] = useState("");
     const [activeTab, setActiveTab] = useState<"params" | "headers" | "body">("params");
     const [showCurl, setShowCurl] = useState(false);
+    const [curlInput, setCurlInput] = useState("");
+    const [showCurlImport, setShowCurlImport] = useState(false);
+
+    const parseCurl = (input: string) => {
+        try {
+            const trimmedInput = input.trim();
+            const httpRequestMatch = trimmedInput.match(HTTP_REQUEST_PATTERN);
+
+            if (httpRequestMatch) {
+                parseHttpRequest(trimmedInput, httpRequestMatch);
+            } else {
+                parseCurlCommand(trimmedInput);
+            }
+
+            setShowCurlImport(false);
+            setCurlInput("");
+            alert(locale === "vi" ? "Đã import thành công!" : "Imported successfully!");
+        } catch (err: any) {
+            alert((locale === "vi" ? "Lỗi parse: " : "Error parsing: ") + err.message);
+        }
+    };
+
+    const parseHttpRequest = (input: string, match: RegExpMatchArray) => {
+        const method = match[1].toUpperCase() as HttpMethod;
+        const pathAndQuery = match[2];
+        setMethod(method);
+
+        const hostMatch = input.match(HOST_HEADER_PATTERN);
+        if (!hostMatch) throw new Error("Cannot find Host header");
+
+        const host = hostMatch[1].trim();
+        const fullUrl = `https://${host}${pathAndQuery}`;
+
+        extractQueryParamsFromUrl(fullUrl);
+
+        const headerLines = input.split(/\r?\n/).slice(1);
+        const extractedHeaders: Header[] = [];
+
+        for (const line of headerLines) {
+            if (line.trim() === "") break;
+            const headerMatch = line.match(HTTP_HEADER_LINE_PATTERN);
+            if (headerMatch && headerMatch[1].toLowerCase() !== "host") {
+                extractedHeaders.push({
+                    id: Date.now().toString() + Math.random(),
+                    key: headerMatch[1].trim(),
+                    value: headerMatch[2].trim(),
+                    enabled: true,
+                });
+            }
+        }
+
+        if (extractedHeaders.length > 0) {
+            setHeaders(extractedHeaders);
+        }
+    };
+
+    const parseCurlCommand = (input: string) => {
+        const cmd = input.replace(/\\\s*\n\s*/g, " ").replace(/\s+/g, " ");
+
+        const urlMatch = cmd.match(CURL_URL_PATTERN) || cmd.match(CURL_URL_FALLBACK_PATTERN);
+        if (!urlMatch) throw new Error("Cannot find URL in command");
+
+        const extractedUrl = urlMatch[1];
+
+        const methodMatch = cmd.match(CURL_METHOD_PATTERN);
+        setMethod(methodMatch ? (methodMatch[1].toUpperCase() as HttpMethod) : "GET");
+
+        const extractedHeaders: Header[] = [];
+        let headerMatch;
+        while ((headerMatch = CURL_HEADER_PATTERN.exec(cmd)) !== null) {
+            extractedHeaders.push({
+                id: Date.now().toString() + Math.random(),
+                key: headerMatch[1].trim(),
+                value: headerMatch[2].trim(),
+                enabled: true,
+            });
+        }
+        if (extractedHeaders.length > 0) {
+            setHeaders(extractedHeaders);
+        }
+
+        const dataMatch = cmd.match(CURL_DATA_PATTERN);
+        if (dataMatch) {
+            const bodyData = dataMatch[1].replace(/\\'/g, "'");
+            setBody(bodyData);
+            try {
+                JSON.parse(bodyData);
+                setBodyType("json");
+            } catch {
+                setBodyType("text");
+            }
+        }
+
+        extractQueryParamsFromUrl(extractedUrl);
+    };
+
+    const extractQueryParamsFromUrl = (urlString: string) => {
+        try {
+            const urlObj = new URL(urlString);
+            const params: QueryParam[] = [];
+            urlObj.searchParams.forEach((value, key) => {
+                params.push({
+                    id: Date.now().toString() + Math.random(),
+                    key,
+                    value,
+                    enabled: true,
+                });
+            });
+            if (params.length > 0) {
+                setQueryParams(params);
+            }
+            setUrl(urlObj.origin + urlObj.pathname);
+        } catch (e) {
+            setUrl(urlString);
+        }
+    };
 
     const addPresetHeader = (type: "bearer" | "apikey" | "cookie" | "requestid" | "correlationid") => {
         const presets: Record<string, { key: string; value: string }> = {
@@ -167,9 +284,15 @@ export default function ApiTesterClient() {
 
             let data;
             const contentType = res.headers.get("content-type");
-            if (contentType?.includes("application/json")) {
-                data = await res.json();
-            } else {
+
+            try {
+                if (contentType?.includes("application/json")) {
+                    data = await res.json();
+                } else {
+                    data = await res.text();
+                }
+            } catch (parseError) {
+                // If parsing fails, try to get raw text
                 data = await res.text();
             }
 
@@ -180,8 +303,42 @@ export default function ApiTesterClient() {
                 data,
                 time: Math.round(endTime - startTime),
             });
+
+            // Show error message for failed requests (4xx, 5xx)
+            if (!res.ok) {
+                const errorMsg = locale === "vi" ? `Yêu cầu thất bại với status ${res.status} ${res.statusText}` : `Request failed with status ${res.status} ${res.statusText}`;
+                setError(errorMsg);
+            }
         } catch (err: any) {
-            setError(err.message || t.requestFailed || "Request failed");
+            const endTime = performance.now();
+
+            // Detailed error information
+            let errorMessage = "";
+
+            if (err.name === "TypeError" && err.message.includes("Failed to fetch")) {
+                errorMessage = locale === "vi" ? "❌ Lỗi kết nối: Không thể kết nối đến server. Kiểm tra URL, CORS policy, hoặc kết nối mạng." : "❌ Network Error: Failed to connect to server. Check URL, CORS policy, or network connection.";
+            } else if (err.name === "AbortError") {
+                errorMessage = locale === "vi" ? "⏱️ Lỗi timeout: Request bị hủy do timeout." : "⏱️ Timeout Error: Request was aborted.";
+            } else if (err.name === "SyntaxError") {
+                errorMessage = locale === "vi" ? `📝 Lỗi cú pháp: ${err.message}. Kiểm tra định dạng request body.` : `📝 Syntax Error: ${err.message}. Check request body format.`;
+            } else {
+                errorMessage = locale === "vi" ? `⚠️ Lỗi: ${err.name || "Unknown"} - ${err.message || "Có lỗi xảy ra"}` : `⚠️ Error: ${err.name || "Unknown"} - ${err.message || "An error occurred"}`;
+            }
+
+            setError(errorMessage);
+
+            // Set a basic error response for display
+            setResponse({
+                status: 0,
+                statusText: err.name || "Error",
+                headers: {},
+                data: {
+                    error: err.message,
+                    type: err.name,
+                    details: err.stack || "No stack trace available",
+                },
+                time: Math.round(endTime - startTime),
+            });
         } finally {
             setLoading(false);
         }
@@ -218,10 +375,13 @@ export default function ApiTesterClient() {
                     </button>
                 </div>
 
-                {/* cURL Button */}
-                <div className='mt-2 flex gap-2'>
+                {/* cURL Buttons */}
+                <div className='mt-2 flex gap-2 flex-wrap'>
+                    <button onClick={() => setShowCurlImport(!showCurlImport)} className='px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
+                        📥 {locale === "vi" ? "Import cURL" : "Import cURL"}
+                    </button>
                     <button onClick={() => setShowCurl(!showCurl)} className='px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
-                        {showCurl ? "🔽" : "▶️"} {locale === "vi" ? "Lệnh cURL" : "cURL Command"}
+                        {showCurl ? "🔽" : "▶️"} {locale === "vi" ? "Xem cURL" : "View cURL"}
                     </button>
                     {showCurl && (
                         <button onClick={copyCurl} className='px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
@@ -229,6 +389,28 @@ export default function ApiTesterClient() {
                         </button>
                     )}
                 </div>
+
+                {/* cURL Import */}
+                {showCurlImport && (
+                    <div className='mt-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800'>
+                        <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2'>{locale === "vi" ? "Dán cURL hoặc HTTP Request:" : "Paste cURL or HTTP Request:"}</h3>
+                        <textarea value={curlInput} onChange={(e) => setCurlInput(e.target.value)} placeholder={`curl -X POST "https://api.example.com" -H "Authorization: Bearer token"\n\nOR\n\nGET /api/endpoint HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer token`} rows={8} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm mb-2' />
+                        <div className='flex gap-2'>
+                            <button onClick={() => parseCurl(curlInput)} disabled={!curlInput.trim()} className='px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
+                                {locale === "vi" ? "Parse & Load" : "Parse & Load"}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowCurlImport(false);
+                                    setCurlInput("");
+                                }}
+                                className='px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-gray-100 rounded-lg text-sm font-semibold transition-colors cursor-pointer'
+                            >
+                                {locale === "vi" ? "Hủy" : "Cancel"}
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* cURL Display */}
                 {showCurl && (

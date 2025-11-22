@@ -50,6 +50,14 @@ export const translations = {
             footer: "All tools are free to use.",
         },
 
+        // Header
+        header: {
+            tools: "Tools",
+            viewAllTools: "View All Tools",
+            home: "Home",
+            about: "About",
+        },
+
         // Tools
         tools: {
             jsonFormatter: {
@@ -670,13 +678,6 @@ export const translations = {
         },
 
         // About
-        header: {
-            tools: "Tools",
-            viewAllTools: "View All Tools",
-            home: "Home",
-            about: "About",
-        },
-
         about: {
             title: "About AnyTools",
             url: "/about",
@@ -806,6 +807,14 @@ export const translations = {
                 },
             },
             footer: "Tất cả công cụ đều miễn phí sử dụng.",
+        },
+
+        // Header
+        header: {
+            tools: "Công Cụ",
+            viewAllTools: "Xem Tất Cả Công Cụ",
+            home: "Trang Chủ",
+            about: "Về Chúng Tôi",
         },
 
         // Tools
@@ -1427,16 +1436,7 @@ export const translations = {
             ...toolsTranslations.vi,
         },
 
-        // Repo Tree Viewer
-
         // About
-        header: {
-            tools: "Công Cụ",
-            viewAllTools: "Xem Tất Cả Công Cụ",
-            home: "Trang Chủ",
-            about: "Về Chúng Tôi",
-        },
-
         about: {
             title: "Về AnyTools",
             url: "/about",

@@ -75,7 +75,7 @@ export function ToolsDropdown() {
         <div ref={dropdownRef} className='relative' onMouseEnter={handleMainMouseEnter} onMouseLeave={handleMainMouseLeave}>
             {/* Trigger Button */}
             <button onClick={handleButtonClick} className='flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium'>
-                <span>{t.header.tools}</span>
+                <span>{t?.header.tools}</span>
                 <svg className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
                 </svg>

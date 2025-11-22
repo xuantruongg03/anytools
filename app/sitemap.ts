@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "url-shortener", "timestamp-converter", "jwt-decoder", "diff-checker", "regex-tester", 
         "html-entity-encoder", "number-converter", "gpa-calculator", "lorem-ipsum", "repo-tree", 
         "api-tester", "microphone-test", "world-clock", "countdown", "stopwatch", "random-wheel",
-        "random-race"];
+        "random-race", "weather", "slideshare-downloader"];
 
     const sitemap: MetadataRoute.Sitemap = [];
 

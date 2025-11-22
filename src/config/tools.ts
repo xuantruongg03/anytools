@@ -72,6 +72,7 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/stopwatch", icon: "⏲️", key: "stopwatch" },
             { href: "/tools/microphone-test", icon: "🎤", key: "microphoneTest" },
             { href: "/tools/stun-turn-test", icon: "🧪", key: "stunTurnTest" },
+            { href: "/tools/slideshare-downloader", icon: "📥", key: "slideshareDownloader" },
         ],
     },
 ];
