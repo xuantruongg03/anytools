@@ -8,7 +8,9 @@ export const CURL_URL_PATTERN = /curl\s+(?:-X\s+\w+\s+)?['"]?([^'"\s]+)['"]?/;
 export const CURL_URL_FALLBACK_PATTERN = /['"]?(https?:\/\/[^'"\s]+)['"]?/;
 export const CURL_METHOD_PATTERN = /-X\s+(\w+)/i;
 export const CURL_HEADER_PATTERN = /-H\s+['"]([^:]+):\s*([^'"]+)['"]/g;
-export const CURL_DATA_PATTERN = /(?:-d|--data|--data-raw)\s+['"]([\s\S]+?)['"]/;
+// Match -d with either single quotes or double quotes, capturing everything until the matching closing quote
+export const CURL_DATA_PATTERN = /-d\s+'([\s\S]*?)'(?:\s|$)|-d\s+"([\s\S]*?)"(?:\s|$)/;
+export const CURL_DATA_RAW_PATTERN = /(?:--data(?:-raw)?)\s+'([\s\S]*?)'(?:\s|$)|(?:--data(?:-raw)?)\s+"([\s\S]*?)"(?:\s|$)/;
 
 // SlideShare URL validation
 export const SLIDESHARE_URL_PATTERN = /^https?:\/\/(www\.)?(slideshare\.net|linkedin\.com\/posts)\/.+/i;

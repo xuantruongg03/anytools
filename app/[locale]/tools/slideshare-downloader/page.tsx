@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import SlideShareDownloaderContent from "./SlideShareDownloaderContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -10,13 +11,13 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tải SlideShare - Tải PPT & PDF | Công Cụ Online Miễn Phí" : "SlideShare Downloader - Download PPT & PDF | Free Online Tool";
-    const description = isVi ? "Tải bài thuyết trình SlideShare dưới dạng PDF hoặc PPT ngay lập tức. Công cụ tải SlideShare miễn phí với chất lượng cao. Không cần đăng ký!" : "Download SlideShare presentations as PDF or PPT files instantly. Free online SlideShare downloader with high-quality output. No registration required!";
+    const title = isVi ? "Tải SlideShare PDF Miễn Phí - Công Cụ Tải Nhanh 2025 | AnyTools" : "Free SlideShare to PDF Downloader - Fast & Easy 2025 | AnyTools";
+    const description = isVi ? "Tải bài thuyết trình SlideShare thành PDF chất lượng cao ngay lập tức. Miễn phí, nhanh chóng, không cần đăng ký. Hỗ trợ tải từ SlideShare và LinkedIn SlideShare." : "Download SlideShare presentations as high-quality PDF files instantly. Free, fast, and no registration required. Works with SlideShare and LinkedIn SlideShare.";
 
     return {
         title,
         description,
-        keywords: ["slideshare downloader", "download slideshare", "slideshare to pdf", "slideshare to ppt", "presentation downloader", "slideshare tool", "free slideshare downloader", "tải slideshare", "download ppt", "download pdf"],
+        keywords: ["slideshare downloader", "slideshare to pdf", "download slideshare pdf", "free slideshare downloader", "slideshare pdf converter", "slideshare download tool", "linkedin slideshare downloader", "tải slideshare", "tải slideshare pdf", "convert slideshare to pdf", "slideshare saver", "slideshare pdf online"],
         authors: [{ name: "AnyTools" }],
         creator: "AnyTools",
         publisher: "AnyTools",
@@ -76,7 +77,7 @@ export default async function SlideShareDownloaderPage({ params }: Props) {
         "@type": "WebApplication",
         name: isVi ? "Công Cụ Tải SlideShare" : "SlideShare Downloader Online",
         applicationCategory: "UtilityApplication",
-        description: isVi ? "Công cụ tải bài thuyết trình SlideShare miễn phí. Tải xuống dưới dạng PDF hoặc PPT với chất lượng cao. Không cần đăng ký, hoàn toàn miễn phí." : "Free online SlideShare downloader tool. Download presentations as PDF or PPT with high quality. No registration required, completely free.",
+        description: isVi ? "Công cụ tải bài thuyết trình SlideShare thành PDF miễn phí. Tải xuống chất lượng cao, nhanh chóng và bảo mật. Không cần đăng ký, hoàn toàn miễn phí. Hỗ trợ SlideShare và LinkedIn." : "Free online SlideShare to PDF downloader tool. Download presentations in high quality, fast and secure. No registration required, completely free. Supports SlideShare and LinkedIn.",
         url: `https://www.anytools.online/${locale}/tools/slideshare-downloader`,
         inLanguage: locale,
         operatingSystem: "Any",
@@ -85,7 +86,7 @@ export default async function SlideShareDownloaderPage({ params }: Props) {
             price: "0",
             priceCurrency: "USD",
         },
-        featureList: ["Download SlideShare presentations", "PDF format support", "PPT/PPTX format support", "High-quality downloads", "Fast processing", "No registration required", "100% Free", "Secure & Private"],
+        featureList: ["Download SlideShare to PDF", "High-quality PDF output", "LinkedIn SlideShare support", "Fast processing speed", "No registration required", "100% Free forever", "Secure & Private", "Multiple API fallback", "Auto open in new tab"],
         browserRequirements: "Requires JavaScript. Requires HTML5.",
     };
 
@@ -94,12 +95,10 @@ export default async function SlideShareDownloaderPage({ params }: Props) {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
-                <div className='container mx-auto px-4 py-8'>
-                    <SlideShareDownloaderContent locale={locale as "en" | "vi"} />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/slideshare-downloader' />
-                </div>
-            </div>
+            <ToolPageLayout title={isVi ? "Tải SlideShare PDF Miễn Phí - Công Cụ Tải Nhanh" : "Free SlideShare to PDF Downloader - Fast & Easy"} description={isVi ? "Tải bài thuyết trình SlideShare thành PDF chất lượng cao ngay lập tức. Miễn phí, nhanh chóng, không cần đăng ký." : "Download SlideShare presentations as high-quality PDF files instantly. Free, fast, and no registration required."}>
+                <SlideShareDownloaderContent locale={locale as "en" | "vi"} />
+                <RelatedTools tools={relatedTools} currentPath='/tools/slideshare-downloader' />
+            </ToolPageLayout>
         </>
     );
 }

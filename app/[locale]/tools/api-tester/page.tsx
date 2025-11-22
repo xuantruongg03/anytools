@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
+import { ToolPageLayout } from "@/components/layout";
 import ApiTesterClient from "./ApiTesterClient";
 import ApiTesterContent from "./ApiTesterContent";
 
@@ -87,13 +88,11 @@ function ApiTesterPage() {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8'>
-                    <ApiTesterClient />
-                    <ApiTesterContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/api-tester' />
-                </div>
-            </div>
+            <ToolPageLayout title='API Tester' description='Test REST APIs with custom headers, query parameters, and request body. Free online API testing tool.'>
+                <ApiTesterClient />
+                <ApiTesterContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/api-tester' />
+            </ToolPageLayout>
         </>
     );
 }
