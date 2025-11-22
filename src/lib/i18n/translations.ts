@@ -32,6 +32,11 @@ export const translations = {
                 security: "Security",
                 utility: "Utility",
                 fun: "Fun & Games",
+                education: "Education",
+                productivity: "Productivity",
+                multimedia: "Multimedia",
+                weather: "Weather",
+                downloader: "Downloader",
             },
             features: {
                 fast: {
@@ -791,6 +796,11 @@ export const translations = {
                 security: "Bảo Mật",
                 utility: "Tiện Ích",
                 fun: "Vui Chơi",
+                education: "Giáo Dục",
+                productivity: "Năng Suất",
+                multimedia: "Đa Phương Tiện",
+                weather: "Thời Tiết",
+                downloader: "Tải Xuống",
             },
             features: {
                 fast: {

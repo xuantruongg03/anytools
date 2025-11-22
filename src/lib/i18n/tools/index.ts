@@ -17,6 +17,7 @@ import { microphoneTestTranslations } from "./microphone-test";
 import { randomToolsTranslations } from "./random-tools";
 import { weatherTranslations } from "./weather";
 import { slideshareDownloaderTranslations } from "./slideshare-downloader";
+import { studocuDownloaderTranslations } from "./studocu-downloader";
 
 export const toolsTranslations = {
     en: {
@@ -39,6 +40,7 @@ export const toolsTranslations = {
         microphoneTest: microphoneTestTranslations.en.microphoneTest,
         weather: weatherTranslations.en.weather,
         slideshareDownloader: slideshareDownloaderTranslations.en,
+        studocuDownloader: studocuDownloaderTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -60,5 +62,6 @@ export const toolsTranslations = {
         microphoneTest: microphoneTestTranslations.vi.microphoneTest,
         weather: weatherTranslations.vi.weather,
         slideshareDownloader: slideshareDownloaderTranslations.vi,
+        studocuDownloader: studocuDownloaderTranslations.vi,
     },
 };

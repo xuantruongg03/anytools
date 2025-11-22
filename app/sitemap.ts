@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = "https://www.anytools.online";
+    const baseUrlWithoutWWW = "https://anytools.online";
     const locales = ["en", "vi"];
 
     const tools = ["json-formatter", "base64", "url-encoder", 
@@ -10,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "url-shortener", "timestamp-converter", "jwt-decoder", "diff-checker", "regex-tester", 
         "html-entity-encoder", "number-converter", "gpa-calculator", "lorem-ipsum", "repo-tree", 
         "api-tester", "microphone-test", "world-clock", "countdown", "stopwatch", "random-wheel",
-        "random-race", "weather", "slideshare-downloader"];
+        "random-race", "weather", "slideshare-downloader", "studocu-downloader"];
 
     const sitemap: MetadataRoute.Sitemap = [];
 
@@ -25,6 +26,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
                 languages: {
                     en: `${baseUrl}/en`,
                     vi: `${baseUrl}/vi`,
+                },
+            },
+        });
+        // Add non-www version
+        sitemap.push({
+            url: `${baseUrlWithoutWWW}/${locale}`,
+            lastModified: new Date(),
+            changeFrequency: "daily",
+            priority: 1,
+            alternates: {
+                languages: {
+                    en: `${baseUrlWithoutWWW}/en`,
+                    vi: `${baseUrlWithoutWWW}/vi`,
                 },
             },
         });
@@ -44,6 +58,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
                 },
             },
         });
+        // Add non-www version
+        sitemap.push({
+            url: `${baseUrlWithoutWWW}/${locale}/about`,
+            lastModified: new Date(),
+            changeFrequency: "monthly",
+            priority: 0.8,
+            alternates: {
+                languages: {
+                    en: `${baseUrlWithoutWWW}/en/about`,
+                    vi: `${baseUrlWithoutWWW}/vi/about`,
+                },
+            },
+        });
     });
 
     // Add all tools for each locale
@@ -58,6 +85,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
                     languages: {
                         en: `${baseUrl}/en/tools/${tool}`,
                         vi: `${baseUrl}/vi/tools/${tool}`,
+                    },
+                },
+            });
+            // Add non-www version
+            sitemap.push({
+                url: `${baseUrlWithoutWWW}/${locale}/tools/${tool}`,
+                lastModified: new Date(),
+                changeFrequency: "weekly",
+                priority: 0.9,
+                alternates: {
+                    languages: {
+                        en: `${baseUrlWithoutWWW}/en/tools/${tool}`,
+                        vi: `${baseUrlWithoutWWW}/vi/tools/${tool}`,
                     },
                 },
             });
