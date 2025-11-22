@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
-import { HTTP_REQUEST_PATTERN, HOST_HEADER_PATTERN, HTTP_HEADER_LINE_PATTERN, CURL_URL_PATTERN, CURL_URL_FALLBACK_PATTERN, CURL_METHOD_PATTERN, CURL_HEADER_PATTERN, CURL_DATA_PATTERN } from "@/constants/regex";
+import { HTTP_REQUEST_PATTERN, HOST_HEADER_PATTERN, HTTP_HEADER_LINE_PATTERN, CURL_URL_PATTERN, CURL_URL_FALLBACK_PATTERN, CURL_METHOD_PATTERN, CURL_HEADER_PATTERN, CURL_DATA_PATTERN, CURL_DATA_RAW_PATTERN } from "@/constants/regex";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 
@@ -45,6 +45,7 @@ export default function ApiTesterClient() {
     const [showCurl, setShowCurl] = useState(false);
     const [curlInput, setCurlInput] = useState("");
     const [showCurlImport, setShowCurlImport] = useState(false);
+    const [copiedCurl, setCopiedCurl] = useState(false);
 
     const parseCurl = (input: string) => {
         try {
@@ -100,19 +101,42 @@ export default function ApiTesterClient() {
     };
 
     const parseCurlCommand = (input: string) => {
-        const cmd = input.replace(/\\\s*\n\s*/g, " ").replace(/\s+/g, " ");
+        // Normalize line breaks and multiple spaces
+        const cmd = input.replace(/\\\s*[\r\n]+\s*/g, " ").trim();
 
-        const urlMatch = cmd.match(CURL_URL_PATTERN) || cmd.match(CURL_URL_FALLBACK_PATTERN);
-        if (!urlMatch) throw new Error("Cannot find URL in command");
+        // Extract URL - try multiple patterns
+        let extractedUrl = "";
 
-        const extractedUrl = urlMatch[1];
+        // Pattern 1: curl -X METHOD 'url'
+        const urlPattern1 = /curl\s+-X\s+\w+\s+['"]([^'"]+)['"]/;
+        // Pattern 2: curl 'url'
+        const urlPattern2 = /curl\s+['"]([^'"]+)['"]/;
+        // Pattern 3: any http(s) URL
+        const urlPattern3 = /(https?:\/\/[^\s'"]+)/;
 
+        const match1 = cmd.match(urlPattern1);
+        const match2 = cmd.match(urlPattern2);
+        const match3 = cmd.match(urlPattern3);
+
+        if (match1) {
+            extractedUrl = match1[1];
+        } else if (match2) {
+            extractedUrl = match2[1];
+        } else if (match3) {
+            extractedUrl = match3[1];
+        } else {
+            throw new Error("Cannot find URL in cURL command");
+        }
+
+        // Extract method
         const methodMatch = cmd.match(CURL_METHOD_PATTERN);
         setMethod(methodMatch ? (methodMatch[1].toUpperCase() as HttpMethod) : "GET");
 
+        // Extract headers - reset regex before use
         const extractedHeaders: Header[] = [];
+        const headerRegex = /-H\s+['"]([^:]+):\s*([^'"]+)['"]/g;
         let headerMatch;
-        while ((headerMatch = CURL_HEADER_PATTERN.exec(cmd)) !== null) {
+        while ((headerMatch = headerRegex.exec(cmd)) !== null) {
             extractedHeaders.push({
                 id: Date.now().toString() + Math.random(),
                 key: headerMatch[1].trim(),
@@ -124,14 +148,33 @@ export default function ApiTesterClient() {
             setHeaders(extractedHeaders);
         }
 
+        // Extract body data - try multiple patterns
+        let bodyData = "";
+
+        // Try -d first (matches either single or double quotes)
         const dataMatch = cmd.match(CURL_DATA_PATTERN);
         if (dataMatch) {
-            const bodyData = dataMatch[1].replace(/\\'/g, "'");
-            setBody(bodyData);
+            // Group 1 for single quotes, group 2 for double quotes
+            bodyData = dataMatch[1] || dataMatch[2] || "";
+        } else {
+            // Try --data or --data-raw
+            const dataRawMatch = cmd.match(CURL_DATA_RAW_PATTERN);
+            if (dataRawMatch) {
+                bodyData = dataRawMatch[1] || dataRawMatch[2] || "";
+            }
+        }
+
+        if (bodyData) {
+            // Clean up escaped quotes
+            bodyData = bodyData.replace(/\\'/g, "'").replace(/\\"/g, '"');
+
+            // Try to parse and format JSON
             try {
-                JSON.parse(bodyData);
+                const parsed = JSON.parse(bodyData);
+                setBody(JSON.stringify(parsed, null, 2));
                 setBodyType("json");
             } catch {
+                setBody(bodyData);
                 setBodyType("text");
             }
         }
@@ -198,7 +241,8 @@ export default function ApiTesterClient() {
     const copyCurl = async () => {
         try {
             await navigator.clipboard.writeText(generateCurl());
-            alert(locale === "vi" ? "Đã sao chép lệnh cURL!" : "cURL command copied!");
+            setCopiedCurl(true);
+            setTimeout(() => setCopiedCurl(false), 2000);
         } catch (err) {
             alert(locale === "vi" ? "Không thể sao chép" : "Failed to copy");
         }
@@ -250,8 +294,6 @@ export default function ApiTesterClient() {
         setError("");
         setResponse(null);
 
-        const startTime = performance.now();
-
         try {
             const finalUrl = buildUrl();
             const enabledHeaders = headers.filter((h) => h.enabled && h.key);
@@ -260,63 +302,50 @@ export default function ApiTesterClient() {
                 headerObj[h.key] = h.value;
             });
 
-            const options: RequestInit = {
-                method,
-                headers: headerObj,
-            };
-
+            // Prepare body if needed
+            let requestBody = undefined;
             if (["POST", "PUT", "PATCH"].includes(method) && body) {
-                if (bodyType === "json") {
-                    options.headers = { ...options.headers, "Content-Type": "application/json" };
-                    options.body = body;
-                } else {
-                    options.body = body;
+                if (bodyType === "json" && !headerObj["Content-Type"]) {
+                    headerObj["Content-Type"] = "application/json";
                 }
+                requestBody = body;
             }
 
-            const res = await fetch(finalUrl, options);
-            const endTime = performance.now();
-
-            const responseHeaders: Record<string, string> = {};
-            res.headers.forEach((value, key) => {
-                responseHeaders[key] = value;
+            // Send request through Next.js proxy to bypass CORS
+            const proxyResponse = await fetch("/api/proxy", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    url: finalUrl,
+                    method: method,
+                    headers: headerObj,
+                    body: requestBody,
+                }),
             });
 
-            let data;
-            const contentType = res.headers.get("content-type");
-
-            try {
-                if (contentType?.includes("application/json")) {
-                    data = await res.json();
-                } else {
-                    data = await res.text();
-                }
-            } catch (parseError) {
-                // If parsing fails, try to get raw text
-                data = await res.text();
-            }
+            const result = await proxyResponse.json();
 
             setResponse({
-                status: res.status,
-                statusText: res.statusText,
-                headers: responseHeaders,
-                data,
-                time: Math.round(endTime - startTime),
+                status: result.status,
+                statusText: result.statusText,
+                headers: result.headers,
+                data: result.data,
+                time: result.time,
             });
 
             // Show error message for failed requests (4xx, 5xx)
-            if (!res.ok) {
-                const errorMsg = locale === "vi" ? `Yêu cầu thất bại với status ${res.status} ${res.statusText}` : `Request failed with status ${res.status} ${res.statusText}`;
+            if (result.status >= 400) {
+                const errorMsg = locale === "vi" ? `Yêu cầu thất bại với status ${result.status} ${result.statusText}` : `Request failed with status ${result.status} ${result.statusText}`;
                 setError(errorMsg);
             }
         } catch (err: any) {
-            const endTime = performance.now();
-
             // Detailed error information
             let errorMessage = "";
 
             if (err.name === "TypeError" && err.message.includes("Failed to fetch")) {
-                errorMessage = locale === "vi" ? "❌ Lỗi kết nối: Không thể kết nối đến server. Kiểm tra URL, CORS policy, hoặc kết nối mạng." : "❌ Network Error: Failed to connect to server. Check URL, CORS policy, or network connection.";
+                errorMessage = locale === "vi" ? "❌ Lỗi kết nối: Không thể kết nối đến proxy server." : "❌ Network Error: Failed to connect to proxy server.";
             } else if (err.name === "AbortError") {
                 errorMessage = locale === "vi" ? "⏱️ Lỗi timeout: Request bị hủy do timeout." : "⏱️ Timeout Error: Request was aborted.";
             } else if (err.name === "SyntaxError") {
@@ -337,7 +366,7 @@ export default function ApiTesterClient() {
                     type: err.name,
                     details: err.stack || "No stack trace available",
                 },
-                time: Math.round(endTime - startTime),
+                time: 0,
             });
         } finally {
             setLoading(false);
@@ -345,16 +374,11 @@ export default function ApiTesterClient() {
     };
 
     return (
-        <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8'>
-            <div className='text-center mb-6'>
-                <h1 className='text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400'>{t.subtitle}</p>
-            </div>
-
+        <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-8'>
             {/* Method and URL */}
             <div className='mb-6'>
                 <div className='flex gap-2 flex-col sm:flex-row'>
-                    <select value={method} onChange={(e) => setMethod(e.target.value as HttpMethod)} className='px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:w-32'>
+                    <select value={method} onChange={(e) => setMethod(e.target.value as HttpMethod)} className='px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:w-32'>
                         <option value='GET'>GET</option>
                         <option value='POST'>POST</option>
                         <option value='PUT'>PUT</option>
@@ -363,7 +387,7 @@ export default function ApiTesterClient() {
                         <option value='HEAD'>HEAD</option>
                         <option value='OPTIONS'>OPTIONS</option>
                     </select>
-                    <input type='text' value={url} onChange={(e) => setUrl(e.target.value)} placeholder={t.urlPlaceholder || "https://api.example.com/endpoint"} className='flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent' />
+                    <input type='text' value={url} onChange={(e) => setUrl(e.target.value)} placeholder={t.urlPlaceholder || "https://api.example.com/endpoint"} className='flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent' />
                     <button onClick={sendRequest} disabled={loading} className='px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer flex items-center gap-2'>
                         {loading && (
                             <svg className='animate-spin h-4 w-4 text-white' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
@@ -384,8 +408,8 @@ export default function ApiTesterClient() {
                         {showCurl ? "🔽" : "▶️"} {locale === "vi" ? "Xem cURL" : "View cURL"}
                     </button>
                     {showCurl && (
-                        <button onClick={copyCurl} className='px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
-                            📋 {locale === "vi" ? "Sao chép cURL" : "Copy cURL"}
+                        <button onClick={copyCurl} disabled={copiedCurl} className={`px-4 py-2 ${copiedCurl ? "bg-green-500" : "bg-green-600 hover:bg-green-700"} text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer`}>
+                            {copiedCurl ? (locale === "vi" ? "✓ Đã sao chép!" : "✓ Copied!") : locale === "vi" ? "📋 Sao chép cURL" : "📋 Copy cURL"}
                         </button>
                     )}
                 </div>
@@ -394,7 +418,7 @@ export default function ApiTesterClient() {
                 {showCurlImport && (
                     <div className='mt-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800'>
                         <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2'>{locale === "vi" ? "Dán cURL hoặc HTTP Request:" : "Paste cURL or HTTP Request:"}</h3>
-                        <textarea value={curlInput} onChange={(e) => setCurlInput(e.target.value)} placeholder={`curl -X POST "https://api.example.com" -H "Authorization: Bearer token"\n\nOR\n\nGET /api/endpoint HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer token`} rows={8} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm mb-2' />
+                        <textarea value={curlInput} onChange={(e) => setCurlInput(e.target.value)} placeholder={`curl -X POST "https://api.example.com" -H "Authorization: Bearer token"\n\nOR\n\nGET /api/endpoint HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer token`} rows={8} className='w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 font-mono text-sm mb-2' />
                         <div className='flex gap-2'>
                             <button onClick={() => parseCurl(curlInput)} disabled={!curlInput.trim()} className='px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
                                 {locale === "vi" ? "Parse & Load" : "Parse & Load"}
@@ -414,8 +438,8 @@ export default function ApiTesterClient() {
 
                 {/* cURL Display */}
                 {showCurl && (
-                    <div className='mt-2 bg-gray-900 dark:bg-black rounded-lg p-4'>
-                        <pre className='text-sm text-green-400 overflow-x-auto'>{generateCurl()}</pre>
+                    <div className='mt-2 bg-gray-900 dark:bg-black rounded-lg p-4 overflow-auto'>
+                        <pre className='text-sm text-green-400 whitespace-pre wrap-break-word min-h-[100px]'>{generateCurl()}</pre>
                     </div>
                 )}
             </div>
@@ -442,8 +466,8 @@ export default function ApiTesterClient() {
                         {queryParams.map((param) => (
                             <div key={param.id} className='flex gap-2 items-center'>
                                 <input type='checkbox' checked={param.enabled} onChange={(e) => updateQueryParam(param.id, "enabled", e.target.checked)} className='w-4 h-4' />
-                                <input type='text' value={param.key} onChange={(e) => updateQueryParam(param.id, "key", e.target.value)} placeholder='Key' className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100' />
-                                <input type='text' value={param.value} onChange={(e) => updateQueryParam(param.id, "value", e.target.value)} placeholder='Value' className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100' />
+                                <input type='text' value={param.key} onChange={(e) => updateQueryParam(param.id, "key", e.target.value)} placeholder='Key' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
+                                <input type='text' value={param.value} onChange={(e) => updateQueryParam(param.id, "value", e.target.value)} placeholder='Value' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
                                 <button onClick={() => removeQueryParam(param.id)} className='px-3 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer'>
                                     ✕
                                 </button>
@@ -482,8 +506,8 @@ export default function ApiTesterClient() {
                         {headers.map((header) => (
                             <div key={header.id} className='flex gap-2 items-center'>
                                 <input type='checkbox' checked={header.enabled} onChange={(e) => updateHeader(header.id, "enabled", e.target.checked)} className='w-4 h-4' />
-                                <input type='text' value={header.key} onChange={(e) => updateHeader(header.id, "key", e.target.value)} placeholder='Header Name' className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100' />
-                                <input type='text' value={header.value} onChange={(e) => updateHeader(header.id, "value", e.target.value)} placeholder='Header Value' className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100' />
+                                <input type='text' value={header.key} onChange={(e) => updateHeader(header.id, "key", e.target.value)} placeholder='Header Name' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
+                                <input type='text' value={header.value} onChange={(e) => updateHeader(header.id, "value", e.target.value)} placeholder='Header Value' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
                                 <button onClick={() => removeHeader(header.id)} className='px-3 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer'>
                                     ✕
                                 </button>
@@ -500,13 +524,13 @@ export default function ApiTesterClient() {
             {activeTab === "body" && (
                 <div className='mb-6'>
                     <div className='mb-2'>
-                        <select value={bodyType} onChange={(e) => setBodyType(e.target.value as any)} className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100'>
+                        <select value={bodyType} onChange={(e) => setBodyType(e.target.value as any)} className='px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100'>
                             <option value='json'>JSON</option>
                             <option value='text'>Text</option>
                             <option value='form'>Form Data</option>
                         </select>
                     </div>
-                    <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder={bodyType === "json" ? '{\n  "key": "value"\n}' : "Request body"} rows={10} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm' />
+                    <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder={bodyType === "json" ? '{\n  "key": "value"\n}' : "Request body"} rows={10} className='w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 font-mono text-sm' />
                 </div>
             )}
 
