@@ -16,6 +16,7 @@ import { apiTesterTranslations } from "./api-tester";
 import { microphoneTestTranslations } from "./microphone-test";
 import { randomToolsTranslations } from "./random-tools";
 import { weatherTranslations } from "./weather";
+import { slideshareDownloaderTranslations } from "./slideshare-downloader";
 
 export const toolsTranslations = {
     en: {
@@ -37,6 +38,7 @@ export const toolsTranslations = {
         apiTester: apiTesterTranslations.en.apiTester,
         microphoneTest: microphoneTestTranslations.en.microphoneTest,
         weather: weatherTranslations.en.weather,
+        slideshareDownloader: slideshareDownloaderTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -57,5 +59,6 @@ export const toolsTranslations = {
         apiTester: apiTesterTranslations.vi.apiTester,
         microphoneTest: microphoneTestTranslations.vi.microphoneTest,
         weather: weatherTranslations.vi.weather,
+        slideshareDownloader: slideshareDownloaderTranslations.vi,
     },
 };
