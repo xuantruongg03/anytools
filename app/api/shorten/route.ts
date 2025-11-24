@@ -1,3 +1,5 @@
+import { withErrorHandler } from "@/lib/api-wrapper";
+import { tryServicesWithFallback } from "@/lib/service-fallback";
 import { NextRequest, NextResponse } from "next/server";
 
 // Validate URL format
@@ -103,37 +105,31 @@ const urlShortenerServices: ShortenerService[] = [
     },
 ];
 
-export async function POST(request: NextRequest) {
-    try {
-        const { url } = await request.json();
+async function handleShorten(request: NextRequest) {
+    const { url } = await request.json();
 
-        // Validate URL
-        if (!url || !isValidUrl(url)) {
-            return NextResponse.json({ error: "Please enter a valid URL (must start with http:// or https://)" }, { status: 400 });
-        }
-
-        // Try shortening with fallback logic
-        let lastError: Error | null = null;
-
-        for (const service of urlShortenerServices) {
-            try {
-                console.log(`Trying ${service.name}...`);
-                const shortUrl = await service.shorten(url);
-                return NextResponse.json({
-                    shortUrl: shortUrl.trim(),
-                    service: service.name,
-                });
-            } catch (err) {
-                console.warn(`${service.name} failed:`, err);
-                lastError = err as Error;
-                // Continue to next service
-            }
-        }
-
-        // All services failed
-        return NextResponse.json({ error: lastError?.message || "All shortening services are currently unavailable. Please try again later." }, { status: 503 });
-    } catch (error) {
-        console.error("API Route Error:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    // Validate URL
+    if (!url || !isValidUrl(url)) {
+        return NextResponse.json({ error: "Please enter a valid URL (must start with http:// or https://)" }, { status: 400 });
     }
+
+    const result = await tryServicesWithFallback<string>(
+        urlShortenerServices.map((service) => ({
+            name: service.name,
+            handler: () => service.shorten(url),
+        })),
+        {
+            endpoint: "/api/shorten",
+            method: request.method,
+            userAgent: request.headers.get("user-agent") || undefined,
+            additionalParams: { originalUrl: url },
+        }
+    );
+
+    return NextResponse.json({
+        shortUrl: result.data?.trim(),
+        service: result.usedService,
+    });
 }
+
+export const POST = withErrorHandler(handleShorten, "/api/shorten");

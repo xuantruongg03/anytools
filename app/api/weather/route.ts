@@ -1,35 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withErrorHandler } from "@/lib/api-wrapper";
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const WEATHERAPI_KEY = process.env.WEATHERAPI_KEY;
 const ACCUWEATHER_KEY = process.env.ACCUWEATHER_KEY;
 
-export async function GET(request: NextRequest) {
-    try {
-        const searchParams = request.nextUrl.searchParams;
-        const city = searchParams.get("city");
-        const lat = searchParams.get("lat");
-        const lon = searchParams.get("lon");
-        const units = searchParams.get("units") || "metric";
-        const provider = searchParams.get("provider") || "openweather";
+async function handleWeather(request: NextRequest) {
+    const searchParams = request.nextUrl.searchParams;
+    const city = searchParams.get("city");
+    const lat = searchParams.get("lat");
+    const lon = searchParams.get("lon");
+    const units = searchParams.get("units") || "metric";
+    const provider = searchParams.get("provider") || "openweather";
 
-        // Route to appropriate provider
-        switch (provider) {
-            case "weatherapi":
-                return await getWeatherFromWeatherAPI(city, lat, lon, units);
-            case "accuweather":
-                return await getWeatherFromAccuWeather(city, lat, lon, units);
-            case "vietnam":
-                return await getWeatherFromVietnamWeather(city, lat, lon, units);
-            case "openweather":
-            default:
-                return await getWeatherFromOpenWeather(city, lat, lon, units);
-        }
-    } catch (error) {
-        console.error("Weather API error:", error);
-        return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
+    // Route to appropriate provider
+    switch (provider) {
+        case "weatherapi":
+            return await getWeatherFromWeatherAPI(city, lat, lon, units);
+        case "accuweather":
+            return await getWeatherFromAccuWeather(city, lat, lon, units);
+        case "vietnam":
+            return await getWeatherFromVietnamWeather(city, lat, lon, units);
+        case "openweather":
+        default:
+            return await getWeatherFromOpenWeather(city, lat, lon, units);
     }
 }
+
+export const GET = withErrorHandler(handleWeather, "/api/weather");
 
 async function getWeatherFromOpenWeather(city: string | null, lat: string | null, lon: string | null, units: string) {
     try {

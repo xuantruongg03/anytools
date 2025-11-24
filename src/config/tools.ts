@@ -79,7 +79,11 @@ export const toolsConfig: ToolCategory[] = [
     {
         key: "multimedia",
         icon: "🎬",
-        tools: [{ href: "/tools/microphone-test", icon: "🎤", key: "microphoneTest" }],
+        tools: [
+            { href: "/tools/microphone-test", icon: "🎤", key: "microphoneTest" },
+            { href: "/tools/speech-to-text", icon: "🎙️", key: "speechToText" },
+            { href: "/tools/remove-background", icon: "✂️", key: "removeBackground" },
+        ],
     },
     {
         key: "fun",

@@ -17,6 +17,7 @@
     "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "resend": "^6.5.2",
     "wavesurfer.js": "^7.11.1"
   },
   "devDependencies": {

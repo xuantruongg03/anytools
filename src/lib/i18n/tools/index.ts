@@ -18,6 +18,8 @@ import { randomToolsTranslations } from "./random-tools";
 import { weatherTranslations } from "./weather";
 import { slideshareDownloaderTranslations } from "./slideshare-downloader";
 import { studocuDownloaderTranslations } from "./studocu-downloader";
+import { speechToTextTranslations } from "./speech-to-text";
+import { removeBackgroundTranslations } from "./remove-background";
 
 export const toolsTranslations = {
     en: {
@@ -41,6 +43,8 @@ export const toolsTranslations = {
         weather: weatherTranslations.en.weather,
         slideshareDownloader: slideshareDownloaderTranslations.en,
         studocuDownloader: studocuDownloaderTranslations.en,
+        speechToText: speechToTextTranslations.en,
+        removeBackground: removeBackgroundTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -63,5 +67,7 @@ export const toolsTranslations = {
         weather: weatherTranslations.vi.weather,
         slideshareDownloader: slideshareDownloaderTranslations.vi,
         studocuDownloader: studocuDownloaderTranslations.vi,
+        speechToText: speechToTextTranslations.vi,
+        removeBackground: removeBackgroundTranslations.vi,
     },
 };

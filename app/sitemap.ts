@@ -5,13 +5,41 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrlWithoutWWW = "https://anytools.online";
     const locales = ["en", "vi"];
 
-    const tools = ["json-formatter", "base64", "url-encoder", 
-        "text-case", "color-picker", "hash-generator", "tailwind-css", 
-        "stun-turn-test", "uuid-generator", "password-generator", "qr-code-generator", 
-        "url-shortener", "timestamp-converter", "jwt-decoder", "diff-checker", "regex-tester", 
-        "html-entity-encoder", "number-converter", "gpa-calculator", "lorem-ipsum", "repo-tree", 
-        "api-tester", "microphone-test", "world-clock", "countdown", "stopwatch", "random-wheel",
-        "random-race", "weather", "slideshare-downloader", "studocu-downloader"];
+    const tools = [
+        "json-formatter",
+        "base64",
+        "url-encoder",
+        "text-case",
+        "color-picker",
+        "hash-generator",
+        "tailwind-css",
+        "stun-turn-test",
+        "uuid-generator",
+        "password-generator",
+        "qr-code-generator",
+        "url-shortener",
+        "timestamp-converter",
+        "jwt-decoder",
+        "diff-checker",
+        "regex-tester",
+        "html-entity-encoder",
+        "number-converter",
+        "gpa-calculator",
+        "lorem-ipsum",
+        "repo-tree",
+        "api-tester",
+        "microphone-test",
+        "world-clock",
+        "countdown",
+        "stopwatch",
+        "random-wheel",
+        "random-race",
+        "weather",
+        "slideshare-downloader",
+        "studocu-downloader",
+        "speech-to-text",
+        "remove-background",
+    ];
 
     const sitemap: MetadataRoute.Sitemap = [];
 
