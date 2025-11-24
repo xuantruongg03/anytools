@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SLIDESHARE_URL_PATTERN } from "@/constants/regex";
+import { withErrorHandler } from "@/lib/api-wrapper";
+import { tryServicesWithFallback } from "@/lib/service-fallback";
 
 const RAPIDAPI_KEY = process.env.NEXT_RAPIDAPI_KEY;
 
@@ -203,7 +205,7 @@ async function downloadWithSlideSilo(url: string, format: string) {
     }
 }
 
-export async function POST(request: NextRequest) {
+async function handleSlideshareDownload(request: NextRequest) {
     try {
         const body: SlideShareDownloadRequest = await request.json();
         const { url, format } = body;
@@ -216,73 +218,37 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Invalid SlideShare URL" }, { status: 400 });
         }
 
-        let result: { url?: string; blob?: Blob; filename: string } | null = null;
-        const errors: string[] = [];
+        const services = [];
 
-        // Try RapidAPI first if key is available
+        // Add RapidAPI if key is available
         if (RAPIDAPI_KEY) {
-            try {
-                console.log("[Download] Trying RapidAPI...");
-                result = await downloadWithRapidAPI(url, format);
-                console.log("[Download] RapidAPI succeeded");
-            } catch (rapidError) {
-                const errorMsg = rapidError instanceof Error ? rapidError.message : "Unknown error";
-                console.log("[Download] RapidAPI failed:", errorMsg);
-                errors.push(`RapidAPI: ${errorMsg}`);
-            }
+            services.push({ name: "RapidAPI", handler: () => downloadWithRapidAPI(url, format) });
         }
 
-        // Try SlideSilo if RapidAPI failed
-        if (!result) {
-            try {
-                console.log("[Download] Trying SlideSilo...");
-                result = await downloadWithSlideSilo(url, format);
-                console.log("[Download] SlideSilo succeeded");
-            } catch (slideSiloError) {
-                const errorMsg = slideSiloError instanceof Error ? slideSiloError.message : "Unknown error";
-                console.log("[Download] SlideSilo failed:", errorMsg);
-                errors.push(`SlideSilo: ${errorMsg}`);
-            }
-        }
+        services.push({ name: "SlideSilo", handler: () => downloadWithSlideSilo(url, format) }, { name: "SlideSaver", handler: () => downloadWithSlideSaver(url, format) });
 
-        // Try SlideSaver as last resort
-        if (!result) {
-            try {
-                console.log("[Download] Trying SlideSaver...");
-                result = await downloadWithSlideSaver(url, format);
-                console.log("[Download] SlideSaver succeeded");
-            } catch (slideSaverError) {
-                const errorMsg = slideSaverError instanceof Error ? slideSaverError.message : "Unknown error";
-                console.log("[Download] SlideSaver failed:", errorMsg);
-                errors.push(`SlideSaver: ${errorMsg}`);
-            }
-        }
-
-        // If all methods failed, return error
-        if (!result) {
-            return NextResponse.json(
-                {
-                    error: "All download methods failed. Note: Currently only PDF format is supported by these APIs.",
-                    details: errors,
-                },
-                { status: 500 }
-            );
-        }
+        const result = await tryServicesWithFallback<{ url?: string; blob?: Blob; filename: string }>(services, {
+            endpoint: "/api/slideshare-download",
+            method: request.method,
+            userAgent: request.headers.get("user-agent") || undefined,
+            additionalParams: {
+                slideshareUrl: url,
+                format,
+            },
+        });
 
         // Check if result has URL or blob
-        if (result.url) {
-            // Return JSON with URL for frontend to open
+        if (result.data?.url) {
             return NextResponse.json({
-                url: result.url,
-                filename: result.filename,
+                url: result.data.url,
+                filename: result.data.filename,
                 format: format,
             });
-        } else if (result.blob) {
-            // Return file directly
-            return new NextResponse(result.blob, {
+        } else if (result.data?.blob) {
+            return new NextResponse(result.data.blob, {
                 headers: {
                     "Content-Type": format === "pdf" ? "application/pdf" : "application/vnd.ms-powerpoint",
-                    "Content-Disposition": `attachment; filename="${result.filename}"`,
+                    "Content-Disposition": `attachment; filename="${result.data.filename}"`,
                 },
             });
         } else {
@@ -297,3 +263,5 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+
+export const POST = withErrorHandler(handleSlideshareDownload, "/api/slideshare-download");
