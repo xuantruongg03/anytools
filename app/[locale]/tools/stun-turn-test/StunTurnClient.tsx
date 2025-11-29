@@ -287,10 +287,17 @@ export default function StunTurnClient() {
             </div>
 
             {/* Results/Logs */}
-            <div className='bg-gray-100 dark:bg-gray-800 rounded-lg p-4 max-h-[500px] overflow-y-auto mb-6'>
-                {logs.length === 0 ? (
+            <div className='bg-gray-100 dark:bg-gray-800 rounded-lg p-4 max-h-[500px] overflow-y-auto mb-6 relative'>
+                {logs.length === 0 && !testing ? (
                     <div className='text-center py-8 text-gray-500 dark:text-gray-400'>
                         <p>ℹ️ {t.logs.ready}</p>
+                    </div>
+                ) : logs.length === 0 && testing ? (
+                    <div className='text-center py-8'>
+                        <div className='inline-flex items-center gap-3'>
+                            <div className='w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin'></div>
+                            <span className='text-gray-600 dark:text-gray-300 font-medium'>{t.logs.initializing || "Initializing test..."}</span>
+                        </div>
                     </div>
                 ) : (
                     <div>
@@ -300,6 +307,12 @@ export default function StunTurnClient() {
                                 <span dangerouslySetInnerHTML={{ __html: log.message }} />
                             </div>
                         ))}
+                        {testing && (
+                            <div className='flex items-center gap-2 p-3 mt-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700'>
+                                <div className='w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin'></div>
+                                <span className='text-blue-700 dark:text-blue-300 text-sm font-medium'>{t.logs.gatheringCandidates || "Gathering ICE candidates..."}</span>
+                            </div>
+                        )}
                         <div ref={logsEndRef} />
                     </div>
                 )}

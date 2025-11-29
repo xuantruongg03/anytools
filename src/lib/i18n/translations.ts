@@ -655,6 +655,8 @@ export const translations = {
                     browserInfo: "Browser",
                     platform: "Platform",
                     ready: "Ready to test. Click 'Start Test' button.",
+                    initializing: "Initializing test...",
+                    gatheringCandidates: "Gathering ICE candidates...",
                 },
 
                 // Summary
@@ -1419,6 +1421,8 @@ export const translations = {
                     browserInfo: "Trình duyệt",
                     platform: "Nền tảng",
                     ready: "Sẵn sàng kiểm tra. Nhấp nút 'Bắt Đầu Kiểm Tra'.",
+                    initializing: "Đang khởi tạo kiểm tra...",
+                    gatheringCandidates: "Đang thu thập ICE candidates...",
                 },
 
                 // Summary
