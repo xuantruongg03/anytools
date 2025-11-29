@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import RandomRaceContent from "./RandomRaceContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -47,8 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/random-race`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/random-race",
-                "vi-VN": "https://www.anytools.online/vi/tools/random-race",
+                en: "https://www.anytools.online/en/tools/random-race",
+                vi: "https://www.anytools.online/vi/tools/random-race",
+                "x-default": "https://www.anytools.online/en/tools/random-race",
             },
         },
         robots: {
@@ -94,12 +96,10 @@ export default async function RandomRacePage({ params }: Props) {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
-                <div className='container mx-auto px-4 py-8'>
-                    <RandomRaceContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/random-race' />
-                </div>
-            </div>
+            <ToolPageLayout title={isVi ? "Đua Thú Ngẫu Nhiên" : "Random Race Game"} description={isVi ? "Trò chơi đua thú ngẫu nhiên miễn phí với hoạt hình sinh động!" : "Free random race game with animated animals! Watch cute animals race to the finish line."}>
+                <RandomRaceContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/random-race' />
+            </ToolPageLayout>
         </>
     );
 }

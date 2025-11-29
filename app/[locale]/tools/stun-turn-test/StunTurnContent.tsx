@@ -10,11 +10,6 @@ export default function StunTurnContent() {
 
     return (
         <div className='max-w-6xl mx-auto'>
-            {/* Header */}
-            <header className='mb-8'>
-                <h1 className='text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.page.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400'>{t.page.subtitle}</p>
-            </header>
 
             {/* Tool */}
             <StunTurnClient />

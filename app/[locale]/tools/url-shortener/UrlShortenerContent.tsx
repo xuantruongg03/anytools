@@ -63,11 +63,6 @@ export default function UrlShortenerContent({ locale }: UrlShortenerContentProps
     return (
         <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
             <div className='container mx-auto px-4 py-8'>
-                {/* Header */}
-                <header className='mb-8'>
-                    <h1 className='text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{page.title}</h1>
-                    <p className='text-lg text-gray-600 dark:text-gray-400'>{page.subtitle}</p>
-                </header>
 
                 {/* Tool Section */}
                 <div className='max-w-3xl mx-auto mb-12'>

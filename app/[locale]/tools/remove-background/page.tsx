@@ -48,8 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/remove-background`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/remove-background",
-                "vi-VN": "https://www.anytools.online/vi/tools/remove-background",
+                en: "https://www.anytools.online/en/tools/remove-background",
+                vi: "https://www.anytools.online/vi/tools/remove-background",
+                "x-default": "https://www.anytools.online/en/tools/remove-background",
             },
         },
         robots: {

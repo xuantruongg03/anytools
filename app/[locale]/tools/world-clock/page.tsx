@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import WorldClockClient from "./WorldClockClient";
 import WorldClockContent from "./WorldClockContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -10,24 +11,56 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Đồng Hồ Thế Giới - Xem Giờ Trực Tuyến Miễn Phí 2025" : "World Clock - Free Online Time Zone Checker 2025";
+    const description = isVi ? "Xem giờ hiện tại của các thành phố trên thế giới. Công cụ đồng hồ thế giới miễn phí." : "Check current time across multiple time zones worldwide. Free online world clock tool.";
+
     return {
-        title: locale === "vi" ? "Đồng Hồ Thế Giới | AnyTools" : "World Clock | AnyTools",
-        description: locale === "vi" ? "Xem giờ hiện tại của các thành phố trên thế giới" : "Check current time across multiple time zones worldwide",
+        title,
+        description,
+        keywords: ["world clock", "time zones", "current time", "international clock", "đồng hồ thế giới", "múi giờ", "giờ quốc tế"],
+        openGraph: {
+            title,
+            description,
+            type: "website",
+            siteName: "AnyTools",
+            url: `https://www.anytools.online/${locale}/tools/world-clock`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+        },
+        alternates: {
+            canonical: `https://www.anytools.online/${locale}/tools/world-clock`,
+            languages: {
+                en: "https://www.anytools.online/en/tools/world-clock",
+                vi: "https://www.anytools.online/vi/tools/world-clock",
+                "x-default": "https://www.anytools.online/en/tools/world-clock",
+            },
+        },
+        robots: {
+            index: true,
+            follow: true,
+            googleBot: {
+                index: true,
+                follow: true,
+            },
+        },
     };
 }
 
-function WorldClockPage() {
+export default async function WorldClockPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const relatedTools = getRelatedTools("/tools/world-clock", 6);
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8 max-w-6xl'>
-                <WorldClockClient />
-                <WorldClockContent />
-                <RelatedTools tools={relatedTools} currentPath='/tools/world-clock' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Đồng Hồ Thế Giới" : "World Clock"} description={isVi ? "Xem giờ hiện tại của các thành phố trên thế giới" : "Check current time across multiple time zones worldwide"}>
+            <WorldClockClient />
+            <WorldClockContent />
+            <RelatedTools tools={relatedTools} currentPath='/tools/world-clock' />
+        </ToolPageLayout>
     );
 }
-
-export default WorldClockPage;

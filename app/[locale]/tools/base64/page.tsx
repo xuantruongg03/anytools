@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Base64Content from "./Base64Content";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
+import { ToolPageLayout } from "@/components/layout";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -60,8 +61,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/base64`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/base64",
-                "vi-VN": "https://www.anytools.online/vi/tools/base64",
+                en: "https://www.anytools.online/en/tools/base64",
+                vi: "https://www.anytools.online/vi/tools/base64",
+                "x-default": "https://www.anytools.online/en/tools/base64",
             },
         },
         robots: {
@@ -79,14 +81,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Base64Page({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const relatedTools = getRelatedTools("/tools/base64", 6);
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <Base64Content />
-                <RelatedTools tools={relatedTools} currentPath='/tools/base64' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Mã Hóa & Giải Mã Base64" : "Base64 Encoder & Decoder"} description={isVi ? "Công cụ mã hóa và giải mã Base64 miễn phí. Chuyển đổi văn bản và hình ảnh sang Base64 và giải mã chuỗi Base64 ngay lập tức. Nhanh, an toàn và dễ sử dụng. Hoàn hảo cho lập trình viên!" : "Free online Base64 encoder and decoder. Convert text and images to Base64 and decode Base64 strings instantly. Fast, secure, and easy to use. Perfect for developers!"}>
+            <Base64Content />
+            <RelatedTools tools={relatedTools} currentPath='/tools/base64' />
+        </ToolPageLayout>
     );
 }

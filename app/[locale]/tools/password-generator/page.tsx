@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import PasswordGeneratorClient from "./PasswordGeneratorClient";
 import PasswordGeneratorContent from "./PasswordGeneratorContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             languages: {
                 en: "https://www.anytools.online/en/tools/password-generator",
                 vi: "https://www.anytools.online/vi/tools/password-generator",
+                "x-default": "https://www.anytools.online/en/tools/password-generator",
             },
         },
         robots: { index: true, follow: true },
@@ -99,14 +101,11 @@ function PasswordGeneratorPage() {
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8'>
-                    <PasswordGeneratorClient />
-                    <PasswordGeneratorContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/password-generator' />
-                </div>
-            </div>
+            <ToolPageLayout title='Password Generator & Strengthener' description='Generate strong random passwords, create memorable passphrases, or strengthen existing passwords. Free online tool with entropy calculation and security analysis.'>
+                <PasswordGeneratorClient />
+                <PasswordGeneratorContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/password-generator' />
+            </ToolPageLayout>
         </>
     );
 }

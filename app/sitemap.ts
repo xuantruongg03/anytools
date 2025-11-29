@@ -2,43 +2,44 @@ import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = "https://www.anytools.online";
-    const baseUrlWithoutWWW = "https://anytools.online";
     const locales = ["en", "vi"];
+    const defaultLocale = "en";
 
+    // All tools - synced with tools.ts
     const tools = [
-        "json-formatter",
+        "api-tester",
         "base64",
-        "url-encoder",
-        "text-case",
         "color-picker",
+        "countdown",
+        "css-unit-converter",
+        "diff-checker",
+        "gpa-calculator",
         "hash-generator",
-        "tailwind-css",
-        "stun-turn-test",
-        "uuid-generator",
+        "html-entity-encoder",
+        "json-formatter",
+        "jwt-decoder",
+        "microphone-test",
+        "number-converter",
         "password-generator",
         "qr-code-generator",
-        "url-shortener",
-        "timestamp-converter",
-        "jwt-decoder",
-        "diff-checker",
-        "regex-tester",
-        "html-entity-encoder",
-        "number-converter",
-        "gpa-calculator",
-        "lorem-ipsum",
-        "repo-tree",
-        "api-tester",
-        "microphone-test",
-        "world-clock",
-        "countdown",
-        "stopwatch",
-        "random-wheel",
         "random-race",
-        "weather",
-        "slideshare-downloader",
-        "studocu-downloader",
-        "speech-to-text",
+        "random-wheel",
+        "regex-tester",
         "remove-background",
+        "repo-tree",
+        "slideshare-downloader",
+        "speech-to-text",
+        "stopwatch",
+        "studocu-downloader",
+        "stun-turn-test",
+        "tailwind-css",
+        "text-case",
+        "timestamp-converter",
+        "url-encoder",
+        "url-shortener",
+        "uuid-generator",
+        "weather",
+        "world-clock",
     ];
 
     const sitemap: MetadataRoute.Sitemap = [];
@@ -54,19 +55,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
                 languages: {
                     en: `${baseUrl}/en`,
                     vi: `${baseUrl}/vi`,
-                },
-            },
-        });
-        // Add non-www version
-        sitemap.push({
-            url: `${baseUrlWithoutWWW}/${locale}`,
-            lastModified: new Date(),
-            changeFrequency: "daily",
-            priority: 1,
-            alternates: {
-                languages: {
-                    en: `${baseUrlWithoutWWW}/en`,
-                    vi: `${baseUrlWithoutWWW}/vi`,
+                    "x-default": `${baseUrl}/${defaultLocale}`,
                 },
             },
         });
@@ -83,19 +72,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
                 languages: {
                     en: `${baseUrl}/en/about`,
                     vi: `${baseUrl}/vi/about`,
+                    "x-default": `${baseUrl}/${defaultLocale}/about`,
                 },
             },
         });
-        // Add non-www version
+    });
+
+    // Add donate page for each locale
+    locales.forEach((locale) => {
         sitemap.push({
-            url: `${baseUrlWithoutWWW}/${locale}/about`,
+            url: `${baseUrl}/${locale}/donate`,
             lastModified: new Date(),
             changeFrequency: "monthly",
-            priority: 0.8,
+            priority: 0.5,
             alternates: {
                 languages: {
-                    en: `${baseUrlWithoutWWW}/en/about`,
-                    vi: `${baseUrlWithoutWWW}/vi/about`,
+                    en: `${baseUrl}/en/donate`,
+                    vi: `${baseUrl}/vi/donate`,
+                    "x-default": `${baseUrl}/${defaultLocale}/donate`,
                 },
             },
         });
@@ -113,19 +107,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
                     languages: {
                         en: `${baseUrl}/en/tools/${tool}`,
                         vi: `${baseUrl}/vi/tools/${tool}`,
-                    },
-                },
-            });
-            // Add non-www version
-            sitemap.push({
-                url: `${baseUrlWithoutWWW}/${locale}/tools/${tool}`,
-                lastModified: new Date(),
-                changeFrequency: "weekly",
-                priority: 0.9,
-                alternates: {
-                    languages: {
-                        en: `${baseUrlWithoutWWW}/en/tools/${tool}`,
-                        vi: `${baseUrlWithoutWWW}/vi/tools/${tool}`,
+                        "x-default": `${baseUrl}/${defaultLocale}/tools/${tool}`,
                     },
                 },
             });

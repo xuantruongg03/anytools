@@ -43,10 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://www.anytools.online/tools/api-tester",
+            canonical: `https://www.anytools.online/${locale}/tools/api-tester`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/api-tester",
-                "vi-VN": "https://www.anytools.online/vi/tools/api-tester",
+                en: "https://www.anytools.online/en/tools/api-tester",
+                vi: "https://www.anytools.online/vi/tools/api-tester",
+                "x-default": "https://www.anytools.online/en/tools/api-tester",
             },
         },
         robots: {

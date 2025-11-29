@@ -36,12 +36,12 @@ export default function DiffCheckerClient() {
         <div className='space-y-6'>
             <div className='grid md:grid-cols-2 gap-4'>
                 <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
-                    <h3 className='text-lg font-semibold mb-3'>Original Text</h3>
+                    <h3 className='text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100'>Original Text</h3>
                     <textarea value={text1} onChange={(e) => setText1(e.target.value)} placeholder='Enter original text...' rows={15} className='w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 font-mono text-sm' />
                 </div>
 
                 <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
-                    <h3 className='text-lg font-semibold mb-3'>Modified Text</h3>
+                    <h3 className='text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100'>Modified Text</h3>
                     <textarea value={text2} onChange={(e) => setText2(e.target.value)} placeholder='Enter modified text...' rows={15} className='w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 font-mono text-sm' />
                 </div>
             </div>
@@ -52,10 +52,10 @@ export default function DiffCheckerClient() {
 
             {differences.length > 0 && (
                 <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
-                    <h3 className='text-lg font-semibold mb-3'>Differences Found: {differences.length}</h3>
+                    <h3 className='text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100'>Differences Found: {differences.length}</h3>
                     <div className='space-y-2'>
                         {differences.map((diff, index) => (
-                            <div key={index} className='p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 text-sm'>
+                            <div key={index} className='p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 text-sm text-gray-900 dark:text-gray-100'>
                                 {diff}
                             </div>
                         ))}

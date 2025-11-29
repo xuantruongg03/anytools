@@ -80,14 +80,7 @@ export default function SpeechToTextClient() {
 
     return (
         <div className='space-y-4'>
-            {/* Header */}
-            <div className='text-center'>
-                <h1 className='text-2xl font-bold mb-2 text-gray-900 dark:text-white flex items-center justify-center gap-2'>
-                    <span className='text-3xl'>🎤</span>
-                    {tool_t.name}
-                </h1>
-                <p className='text-sm text-gray-600 dark:text-gray-400'>{tool_t.description}</p>
-            </div>
+
 
             {/* Input Card */}
             <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700'>

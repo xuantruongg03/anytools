@@ -1,49 +1,43 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import TailwindCssContent from "./TailwindCssContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Chuyển Đổi Tailwind CSS sang CSS - Công Cụ Miễn Phí 2025" : "Tailwind CSS to CSS Converter - Convert Tailwind Classes to Vanilla CSS 2025";
+    const description = isVi ? "Chuyển đổi Tailwind CSS sang CSS thuần và ngược lại. Hoàn hảo để học Tailwind, debug và migrate dự án." : "Free online Tailwind CSS to vanilla CSS converter. Convert Tailwind utility classes to CSS styles and vice versa. Perfect for learning Tailwind, debugging, and project migration.";
+
     return {
-        title: "Tailwind CSS to CSS Converter - Convert Tailwind Classes to Vanilla CSS 2025",
-        description: "Free online Tailwind CSS to vanilla CSS converter. Convert Tailwind utility classes to CSS styles and vice versa. Perfect for learning Tailwind, debugging, and project migration. Works offline in your browser.",
-        keywords: [
-            // English keywords
-            "tailwind to css",
-            "css to tailwind",
-            "tailwind converter",
-            "tailwind css converter",
-            "utility classes converter",
-            "tailwind to vanilla css",
-            "css converter online",
-            "tailwind class to css",
-            "tailwind migration tool",
-            "learn tailwind css",
-            "tailwind css cheat sheet",
-            "tailwind utility converter",
-            "css to tailwind classes",
-            "tailwind debugging tool",
-            // Vietnamese keywords
-            "chuyển tailwind sang css",
-            "chuyển css sang tailwind",
-            "công cụ chuyển đổi tailwind",
-            "học tailwind css",
-            "tailwind converter tiếng việt",
-            "công cụ tailwind",
-        ],
+        title,
+        description,
+        keywords: ["tailwind to css", "css to tailwind", "tailwind converter", "tailwind css converter", "utility classes converter", "tailwind to vanilla css", "chuyển tailwind sang css", "chuyển css sang tailwind", "công cụ chuyển đổi tailwind", "học tailwind css"],
         openGraph: {
-            title: "Tailwind CSS ↔ Vanilla CSS Converter - Free Online Tool",
-            description: "Convert between Tailwind utility classes and vanilla CSS styles. Perfect for learning Tailwind or migrating projects.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
+            url: `https://www.anytools.online/${locale}/tools/tailwind-css`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: "Tailwind CSS ↔ CSS Converter - Free Tool",
-            description: "Convert Tailwind classes to CSS and vice versa. Learn Tailwind or migrate projects easily.",
+            title,
+            description,
         },
         alternates: {
-            canonical: "https://www.anytools.online/tools/tailwind-css",
+            canonical: `https://www.anytools.online/${locale}/tools/tailwind-css`,
+            languages: {
+                en: "https://www.anytools.online/en/tools/tailwind-css",
+                vi: "https://www.anytools.online/vi/tools/tailwind-css",
+                "x-default": "https://www.anytools.online/en/tools/tailwind-css",
+            },
         },
         robots: {
             index: true,
@@ -56,15 +50,15 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function TailwindCssPage() {
+export default async function TailwindCssPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const relatedTools = getRelatedTools("/tools/tailwind-css", 6);
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <TailwindCssContent />
-                <RelatedTools tools={relatedTools} currentPath='/tools/tailwind-css' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Chuyển Đổi Tailwind CSS ↔ CSS" : "Tailwind CSS ↔ CSS Converter"} description={isVi ? "Chuyển đổi giữa Tailwind utility classes và CSS thuần. Hoàn hảo để học Tailwind hoặc migrate dự án." : "Convert Tailwind utility classes to vanilla CSS and vice versa. Perfect for learning Tailwind or migrating projects."}>
+            <TailwindCssContent />
+            <RelatedTools tools={relatedTools} currentPath='/tools/tailwind-css' />
+        </ToolPageLayout>
     );
 }

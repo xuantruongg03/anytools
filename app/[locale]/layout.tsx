@@ -5,6 +5,11 @@ type Props = {
     children: React.ReactNode;
 };
 
+// Generate static params for all locales - important for SEO
+export async function generateStaticParams() {
+    return [{ locale: "en" }, { locale: "vi" }];
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
 
@@ -14,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             languages: {
                 en: "https://www.anytools.online/en",
                 vi: "https://www.anytools.online/vi",
-                "x-default": "https://www.anytools.online/vi",
+                "x-default": "https://www.anytools.online/en",
             },
         },
     };

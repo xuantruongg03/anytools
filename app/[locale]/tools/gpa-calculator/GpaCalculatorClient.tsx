@@ -327,12 +327,6 @@ export default function GpaCalculatorClient() {
 
     return (
         <div className='space-y-8'>
-            {/* Header */}
-            <div className='bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8'>
-                <h1 className='text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2'>{locale === "vi" ? "Máy tính GPA - Tính điểm trung bình tích lũy" : "GPA Calculator - Grade Point Average"}</h1>
-                <p className='text-gray-600 dark:text-gray-300'>{locale === "vi" ? "Tính GPA, dự đoán điểm cần thiết, và mô phỏng kết quả học tập" : "Calculate GPA, predict required grades, and simulate academic results"}</p>
-            </div>
-
             {/* Import Messages */}
             {importError && (
                 <div className='bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-lg flex items-start gap-3'>

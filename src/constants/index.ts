@@ -4,6 +4,8 @@
 
 export const APP_NAME = "AnyTools";
 
+export * from "./categories";
+
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export const SUPPORTED_IMAGE_FORMATS = ["image/jpeg", "image/png", "image/webp"] as const;

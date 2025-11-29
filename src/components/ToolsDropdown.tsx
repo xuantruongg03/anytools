@@ -83,7 +83,7 @@ export function ToolsDropdown() {
 
             {/* Dropdown Menu - Categories */}
             {isOpen && (
-                <div className={`absolute top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl animate-fadeIn ${isMobile ? "left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md max-h-[80vh] overflow-y-auto" : "left-0 w-56"}`}>
+                <div className={`absolute top-full mt-2 bg-white dark:text-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl animate-fadeIn ${isMobile ? "left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md max-h-[80vh] overflow-y-auto" : "left-0 w-56"}`}>
                     {toolsConfig.map((category) => (
                         <div key={category.key} className='relative group/item'>
                             {/* Category Item */}

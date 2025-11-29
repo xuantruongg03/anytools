@@ -464,11 +464,11 @@ export default function ApiTesterClient() {
                 <div className='mb-6'>
                     <div className='space-y-2'>
                         {queryParams.map((param) => (
-                            <div key={param.id} className='flex gap-2 items-center'>
-                                <input type='checkbox' checked={param.enabled} onChange={(e) => updateQueryParam(param.id, "enabled", e.target.checked)} className='w-4 h-4' />
-                                <input type='text' value={param.key} onChange={(e) => updateQueryParam(param.id, "key", e.target.value)} placeholder='Key' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
-                                <input type='text' value={param.value} onChange={(e) => updateQueryParam(param.id, "value", e.target.value)} placeholder='Value' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
-                                <button onClick={() => removeQueryParam(param.id)} className='px-3 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer'>
+                            <div key={param.id} className='flex flex-wrap sm:flex-nowrap gap-2 items-center'>
+                                <input type='checkbox' checked={param.enabled} onChange={(e) => updateQueryParam(param.id, "enabled", e.target.checked)} className='w-4 h-4 shrink-0' />
+                                <input type='text' value={param.key} onChange={(e) => updateQueryParam(param.id, "key", e.target.value)} placeholder='Key' className='flex-1 min-w-0 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
+                                <input type='text' value={param.value} onChange={(e) => updateQueryParam(param.id, "value", e.target.value)} placeholder='Value' className='flex-1 min-w-0 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
+                                <button onClick={() => removeQueryParam(param.id)} className='shrink-0 px-3 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer'>
                                     ✕
                                 </button>
                             </div>
@@ -504,10 +504,10 @@ export default function ApiTesterClient() {
 
                     <div className='space-y-2'>
                         {headers.map((header) => (
-                            <div key={header.id} className='flex gap-2 items-center'>
+                            <div key={header.id} className='flex flex-wrap sm:flex-nowrap gap-2 items-center'>
                                 <input type='checkbox' checked={header.enabled} onChange={(e) => updateHeader(header.id, "enabled", e.target.checked)} className='w-4 h-4' />
-                                <input type='text' value={header.key} onChange={(e) => updateHeader(header.id, "key", e.target.value)} placeholder='Header Name' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
-                                <input type='text' value={header.value} onChange={(e) => updateHeader(header.id, "value", e.target.value)} placeholder='Header Value' className='flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
+                                <input type='text' value={header.key} onChange={(e) => updateHeader(header.id, "key", e.target.value)} placeholder='Header Name' className='flex-1 min-w-0 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
+                                <input type='text' value={header.value} onChange={(e) => updateHeader(header.id, "value", e.target.value)} placeholder='Header Value' className='flex-1 min-w-0 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
                                 <button onClick={() => removeHeader(header.id)} className='px-3 py-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer'>
                                     ✕
                                 </button>

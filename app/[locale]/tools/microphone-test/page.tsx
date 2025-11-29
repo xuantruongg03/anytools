@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 import MicrophoneTestClient from "./MicrophoneTestClient";
@@ -42,10 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             images: ["https://www.anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: "https://www.anytools.online/tools/microphone-test",
+            canonical: `https://www.anytools.online/${locale}/tools/microphone-test`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/microphone-test",
-                "vi-VN": "https://www.anytools.online/vi/tools/microphone-test",
+                en: "https://www.anytools.online/en/tools/microphone-test",
+                vi: "https://www.anytools.online/vi/tools/microphone-test",
+                "x-default": "https://www.anytools.online/en/tools/microphone-test",
             },
         },
         robots: {
@@ -87,13 +89,11 @@ function MicrophoneTestPage() {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8'>
-                    <MicrophoneTestClient />
-                    <MicrophoneTestContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/microphone-test' />
-                </div>
-            </div>
+            <ToolPageLayout title='Microphone Test' description='Test your microphone, view real-time audio waveform, record and playback, analyze audio quality.'>
+                <MicrophoneTestClient />
+                <MicrophoneTestContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/microphone-test' />
+            </ToolPageLayout>
         </>
     );
 }

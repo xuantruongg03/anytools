@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import GpaCalculatorClient from "./GpaCalculatorClient";
 import GpaCalculatorContent from "./GpaCalculatorContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -47,6 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             languages: {
                 en: "https://www.anytools.online/en/tools/gpa-calculator",
                 vi: "https://www.anytools.online/vi/tools/gpa-calculator",
+                "x-default": "https://www.anytools.online/en/tools/gpa-calculator",
             },
         },
         robots: {
@@ -183,13 +185,11 @@ function GpaCalculatorPage() {
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8'>
-                    <GpaCalculatorClient />
-                    <GpaCalculatorContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/gpa-calculator' />
-                </div>
-            </div>
+            <ToolPageLayout title='GPA Calculator' description='Calculate grade point average and credit system. Support multiple grading systems (4.0, 10-point, 100-point scale).'>
+                <GpaCalculatorClient />
+                <GpaCalculatorContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/gpa-calculator' />
+            </ToolPageLayout>
         </>
     );
 }

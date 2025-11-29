@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import RandomWheelContent from "./RandomWheelContent";
 import { getTranslation } from "@/lib/i18n";
 import RelatedTools from "@/components/RelatedTools";
@@ -80,8 +81,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/random-wheel`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/random-wheel",
-                "vi-VN": "https://www.anytools.online/vi/tools/random-wheel",
+                en: "https://www.anytools.online/en/tools/random-wheel",
+                vi: "https://www.anytools.online/vi/tools/random-wheel",
+                "x-default": "https://www.anytools.online/en/tools/random-wheel",
             },
         },
         robots: {
@@ -135,12 +137,10 @@ export default async function RandomWheelPage({ params }: Props) {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
-                <div className='container mx-auto px-4 py-8'>
-                    <RandomWheelContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/random-wheel' />
-                </div>
-            </div>
+            <ToolPageLayout title={isVi ? "Vòng Quay May Mắn" : "Random Wheel Spinner"} description={isVi ? "Vòng quay may mắn miễn phí - Quay vòng để chọn ngẫu nhiên, ra quyết định, chọn người thắng." : "Free random wheel spinner - Spin the wheel to pick random choices, make decisions, choose winners."}>
+                <RandomWheelContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/random-wheel' />
+            </ToolPageLayout>
         </>
     );
 }

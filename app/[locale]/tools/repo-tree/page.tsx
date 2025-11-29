@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import RepoTreeClient from "./RepoTreeClient";
 import RepoTreeContent from "./RepoTreeContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -47,6 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             languages: {
                 en: "https://www.anytools.online/en/tools/repo-tree",
                 vi: "https://www.anytools.online/vi/tools/repo-tree",
+                "x-default": "https://www.anytools.online/en/tools/repo-tree",
             },
         },
     };
@@ -140,13 +142,11 @@ function RepoTreePage() {
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-                <div className='container mx-auto px-4 py-8 max-w-6xl'>
-                    <RepoTreeClient />
-                    <RepoTreeContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/repo-tree' />
-                </div>
-            </div>
+            <ToolPageLayout title='GitHub Repository Tree Viewer' description='Visualize GitHub repository structure and generate markdown tree for README documentation.'>
+                <RepoTreeClient />
+                <RepoTreeContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/repo-tree' />
+            </ToolPageLayout>
         </>
     );
 }

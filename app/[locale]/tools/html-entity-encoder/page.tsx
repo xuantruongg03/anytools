@@ -1,47 +1,51 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import HtmlEntityContent from "./HtmlEntityContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Mã Hóa/Giải Mã HTML Entity - Chuyển Đổi Ký Tự Đặc Biệt 2025" : "HTML Entity Encoder/Decoder - Convert Special Characters to HTML Entities 2025";
+    const description = isVi ? "Công cụ mã hóa và giải mã HTML entity miễn phí. Chuyển đổi ký tự đặc biệt (&, <, >) thành HTML entities. Ngăn chặn tấn công XSS." : "Free HTML entity encoder and decoder tool. Convert special characters (&, <, >, quotes) to HTML entities for security. Prevent XSS attacks with proper encoding.";
+
     return {
-        title: "HTML Entity Encoder/Decoder - Convert Special Characters to HTML Entities 2025",
-        description: "Free HTML entity encoder and decoder tool. Convert special characters (&, <, >, quotes) to HTML entities for security. Prevent XSS attacks with proper encoding.",
+        title,
+        description,
         keywords: ["html entity encoder", "html entity decoder", "html entities", "encode html", "decode html", "xss prevention", "html special characters", "html escape", "mã hóa html", "giải mã html", "ký tự đặc biệt html", "bảo mật html", "ngăn chặn xss"],
         alternates: {
-            canonical: "https://www.anytools.online/tools/html-entity-encoder",
+            canonical: `https://www.anytools.online/${locale}/tools/html-entity-encoder`,
             languages: {
                 en: "https://www.anytools.online/en/tools/html-entity-encoder",
                 vi: "https://www.anytools.online/vi/tools/html-entity-encoder",
+                "x-default": "https://www.anytools.online/en/tools/html-entity-encoder",
             },
         },
         openGraph: {
-            title: "HTML Entity Encoder/Decoder - Convert Special Characters to HTML Entities 2025",
-            description: "Free HTML entity encoder and decoder tool. Convert special characters to HTML entities for security. Prevent XSS attacks with proper encoding.",
-            url: "https://www.anytools.online/tools/html-entity-encoder",
+            title,
+            description,
+            url: `https://www.anytools.online/${locale}/tools/html-entity-encoder`,
             siteName: "AnyTools",
-            locale: "en_US",
+            locale: locale === "vi" ? "vi_VN" : "en_US",
             type: "website",
-            images: [
-                {
-                    url: "https://www.anytools.online/og-image.png",
-                    width: 1200,
-                    height: 630,
-                    alt: "HTML Entity Encoder/Decoder",
-                },
-            ],
         },
         twitter: {
             card: "summary_large_image",
-            title: "HTML Entity Encoder/Decoder - Convert Special Characters 2025",
-            description: "Free HTML entity encoder and decoder. Prevent XSS attacks with proper HTML encoding. Convert &, <, >, quotes, and more.",
-            images: ["https://www.anytools.online/og-image.png"],
+            title,
+            description,
         },
         robots: { index: true, follow: true },
     };
 }
 
-export default function HtmlEntityPage() {
+export default async function HtmlEntityPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const webAppSchema = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -104,12 +108,10 @@ export default function HtmlEntityPage() {
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }} />
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors'>
-                <div className='container mx-auto px-4 py-8'>
-                    <HtmlEntityContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/html-entity-encoder' />
-                </div>
-            </div>
+            <ToolPageLayout title='HTML Entity Encoder/Decoder' description='Convert special characters to HTML entities for security. Prevent XSS attacks with proper encoding.'>
+                <HtmlEntityContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/html-entity-encoder' />
+            </ToolPageLayout>
         </>
     );
 }

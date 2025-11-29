@@ -70,11 +70,6 @@ export default function StopwatchClient() {
 
     return (
         <div className='max-w-4xl mx-auto'>
-            {/* Header */}
-            <div className='text-center mb-8'>
-                <h1 className='text-4xl font-bold text-gray-900 dark:text-white mb-4'>{page.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400'>{page.subtitle}</p>
-            </div>
 
             {/* Stopwatch Display */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-6'>

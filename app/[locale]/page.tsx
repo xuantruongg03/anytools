@@ -1,147 +1,66 @@
-"use client";
-
-import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { getTranslation } from "@/lib/i18n";
-import { useState, use, useEffect, useRef } from "react";
+import type { Metadata } from "next";
 import { StructuredData } from "../components/StructuredData";
-import { allTools, toolsConfig } from "@/config/tools";
-import Button from "@/components/ui/Button";
+import HomeContent from "./HomeContent";
 
-export default function Home({ params }: { params: Promise<{ locale: string }> }) {
-    const { setLocale } = useLanguage();
-    const { locale: urlLocale } = use(params);
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+
+    const title = isVi ? "AnyTools - Công Cụ Trực Tuyến Miễn Phí Cho Lập Trình Viên 2025" : "AnyTools - Free Online Tools for Developers & Creators 2025";
+
+    const description = isVi ? "Bộ sưu tập công cụ trực tuyến miễn phí cho lập trình viên, nhà thiết kế và người sáng tạo nội dung. JSON formatter, Base64 encoder, Color picker, Hash generator và nhiều hơn nữa." : "Free online tools for developers, designers, and content creators. JSON formatter, Base64 encoder, Color picker, Hash generator, and more.";
+
+    return {
+        title,
+        description,
+        keywords: ["online tools", "developer tools", "free tools", "JSON formatter", "Base64 encoder", "color picker", "hash generator", "URL encoder", "password generator", "công cụ trực tuyến", "công cụ lập trình viên", "công cụ miễn phí"],
+        openGraph: {
+            title,
+            description,
+            type: "website",
+            siteName: "AnyTools",
+            url: `https://www.anytools.online/${locale}`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+        },
+        alternates: {
+            canonical: `https://www.anytools.online/${locale}`,
+            languages: {
+                en: "https://www.anytools.online/en",
+                vi: "https://www.anytools.online/vi",
+                "x-default": "https://www.anytools.online/en",
+            },
+        },
+        robots: {
+            index: true,
+            follow: true,
+            googleBot: {
+                index: true,
+                follow: true,
+                "max-video-preview": -1,
+                "max-image-preview": "large",
+                "max-snippet": -1,
+            },
+        },
+    };
+}
+
+export default async function Home({ params }: Props) {
+    const { locale: urlLocale } = await params;
     const locale = (urlLocale === "en" || urlLocale === "vi" ? urlLocale : "en") as "en" | "vi";
-    const hasSynced = useRef(false);
-
-    // Sync locale from URL only once
-    useEffect(() => {
-        if (!hasSynced.current) {
-            setLocale(locale);
-            hasSynced.current = true;
-        }
-    }, [locale, setLocale]);
-
-    const t = getTranslation(locale);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-    // Featured tools to show on homepage (only 6 tools for 2 rows)
-    const featuredToolKeys = ["base64", "jsonFormatter", "colorPicker", "hashGenerator", "urlEncoder", "passwordGenerator"];
-
-    const filteredTools = allTools.filter((tool) => {
-        const toolData = t.tools[tool.key as keyof typeof t.tools] as any;
-        const matchesSearch = !searchQuery || toolData?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || toolData?.description?.toLowerCase().includes(searchQuery.toLowerCase());
-
-        // Find category of this tool
-        const toolCategory = toolsConfig.find((cat) => cat.tools.some((t) => t.key === tool.key));
-        const matchesCategory = !selectedCategory || toolCategory?.key === selectedCategory;
-
-        return matchesSearch && matchesCategory;
-    });
-
-    // Show featured tools or filtered tools
-    const displayTools = searchQuery || selectedCategory ? filteredTools : filteredTools.filter((tool) => featuredToolKeys.includes(tool.key));
-
-    const categories = [
-        { key: "developer", label: t.home.categories.developer },
-        { key: "text", label: t.home.categories.text },
-        { key: "image", label: t.home.categories.image },
-        { key: "pdf", label: t.home.categories.pdf },
-        { key: "audio", label: t.home.categories.audio },
-        { key: "ai", label: t.home.categories.ai },
-    ];
 
     return (
         <div className='bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black'>
             <StructuredData type='WebApplication' name='AnyTools - Free Online Tools' description='Free online tools for developers, designers, and content creators. Text formatters, JSON validators, color pickers, and more.' url='https://www.anytools.online' keywords={["online tools", "developer tools", "free tools", "text formatter", "JSON validator", "color picker", "công cụ trực tuyến", "công cụ lập trình viên"]} inLanguage={["en", "vi"]} />
-            <section className='container mx-auto px-4 py-16 text-center'>
-                <h1 className='text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-gray-100 max-w-4xl mx-auto leading-tight'>{t.home.title}</h1>
-                <p className='text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-3xl mx-auto'>{t.home.subtitle}</p>
-
-                {/* Search Input */}
-                <div className='max-w-2xl mx-auto mb-8'>
-                    <div className='relative'>
-                        <svg className='absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-                        </svg>
-                        <input type='text' placeholder={t.home.searchPlaceholder} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className='w-full pl-12 pr-4 py-4 text-lg border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm' />
-                    </div>
-                </div>
-
-                {/* Category Pills */}
-                <div className='flex items-center justify-center gap-3 flex-wrap mb-6'>
-                    <span className='text-sm text-gray-600 dark:text-gray-400 font-medium'>{t.home.popularCategories}</span>
-                    {categories.map((category) => (
-                        <button key={category.key} onClick={() => setSelectedCategory(selectedCategory === category.key ? null : category.key)} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === category.key ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
-                            {category.label}
-                        </button>
-                    ))}
-                </div>
-            </section>
-
-            <main id='tools' className='container mx-auto px-4 py-12'>
-                <div className='flex items-center justify-between mb-8 max-w-6xl mx-auto'>
-                    <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-100'>{searchQuery || selectedCategory ? `${filteredTools.length} ${t.home.availableTools}` : locale === "vi" ? "Công cụ nổi bật" : "Featured Tools"}</h2>
-                    {(searchQuery || selectedCategory) && (
-                        <Button
-                            onClick={() => {
-                                setSearchQuery("");
-                                setSelectedCategory(null);
-                            }}
-                            variant='primary'
-                            size='sm'
-                        >
-                            {locale === "vi" ? "Xóa bộ lọc" : "Clear filters"}
-                        </Button>
-                    )}
-                </div>
-
-                {displayTools.length > 0 ? (
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto'>
-                        {displayTools.map((tool) => {
-                            const toolData = t.tools[tool.key as keyof typeof t.tools] as any;
-                            if (!toolData) return null;
-                            return (
-                                <Link key={tool.href} href={`/${locale}${tool.href}`} className='block p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-lg transition-all hover:scale-105'>
-                                    <div className='flex items-start gap-4'>
-                                        <div className='text-3xl shrink-0 w-12 h-12 flex items-center justify-center bg-blue-50 dark:bg-blue-900/30 rounded-lg text-gray-900 dark:text-gray-100'>{tool.icon}</div>
-                                        <div className='flex-1'>
-                                            <div className='text-xs text-blue-600 dark:text-blue-400 font-medium mb-1'>{toolData.category}</div>
-                                            <h3 className='text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100'>{toolData.name}</h3>
-                                            <p className='text-sm text-gray-600 dark:text-gray-400'>{toolData.description}</p>
-                                        </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className='text-center py-16'>
-                        <p className='text-xl text-gray-500 dark:text-gray-400'>{locale === "vi" ? "Không tìm thấy công cụ phù hợp" : "No tools found matching your search."}</p>
-                    </div>
-                )}
-            </main>
-
-            <section className='container mx-auto px-4 py-16'>
-                <div className='max-w-4xl mx-auto grid md:grid-cols-3 gap-8 text-center'>
-                    <div>
-                        <div className='text-4xl mb-3'>⚡</div>
-                        <h3 className='font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.home.features.fast.title}</h3>
-                        <p className='text-sm text-gray-600 dark:text-gray-400'>{t.home.features.fast.description}</p>
-                    </div>
-                    <div>
-                        <div className='text-4xl mb-3'>🔒</div>
-                        <h3 className='font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.home.features.secure.title}</h3>
-                        <p className='text-sm text-gray-600 dark:text-gray-400'>{t.home.features.secure.description}</p>
-                    </div>
-                    <div>
-                        <div className='text-4xl mb-3'>✨</div>
-                        <h3 className='font-semibold mb-2 text-gray-900 dark:text-gray-100'>{t.home.features.free.title}</h3>
-                        <p className='text-sm text-gray-600 dark:text-gray-400'>{t.home.features.free.description}</p>
-                    </div>
-                </div>
-            </section>
+            <HomeContent locale={locale} />
         </div>
     );
 }

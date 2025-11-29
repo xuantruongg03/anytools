@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { use } from "react";
+import { ToolPageLayout } from "@/components/layout";
 import UrlShortenerContent from "./UrlShortenerContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -54,13 +55,12 @@ export default function UrlShortenerPage({ params }: Props) {
     const { locale: urlLocale } = use(params);
     const locale = (urlLocale === "en" || urlLocale === "vi" ? urlLocale : "en") as "en" | "vi";
     const relatedTools = getRelatedTools("/tools/url-shortener", 6);
+    const isVi = locale === "vi";
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <UrlShortenerContent locale={locale} />
-                <RelatedTools tools={relatedTools} currentPath='/tools/url-shortener' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Rút Gọn Link" : "URL Shortener"} description={isVi ? "Rút gọn URL dài ngay lập tức miễn phí. Nhiều dịch vụ đáng tin cậy." : "Shorten long URLs instantly for free. Multiple reliable services with automatic fallback."}>
+            <UrlShortenerContent locale={locale} />
+            <RelatedTools tools={relatedTools} currentPath='/tools/url-shortener' />
+        </ToolPageLayout>
     );
 }

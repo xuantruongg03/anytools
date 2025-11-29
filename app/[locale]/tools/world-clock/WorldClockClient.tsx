@@ -92,11 +92,6 @@ export default function WorldClockClient() {
 
     return (
         <div className='max-w-6xl mx-auto'>
-            {/* Header */}
-            <div className='text-center mb-8'>
-                <h1 className='text-4xl font-bold text-gray-900 dark:text-white mb-4'>{page.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400'>{page.subtitle}</p>
-            </div>
 
             {/* Add Timezone */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6'>

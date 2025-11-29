@@ -48,8 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/studocu-downloader`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/studocu-downloader",
-                "vi-VN": "https://www.anytools.online/vi/tools/studocu-downloader",
+                en: "https://www.anytools.online/en/tools/studocu-downloader",
+                vi: "https://www.anytools.online/vi/tools/studocu-downloader",
+                "x-default": "https://www.anytools.online/en/tools/studocu-downloader",
             },
         },
         robots: {
