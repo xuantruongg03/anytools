@@ -16,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "gpa-calculator",
         "hash-generator",
         "html-entity-encoder",
+        "image-to-text",
         "json-formatter",
         "jwt-decoder",
         "microphone-test",

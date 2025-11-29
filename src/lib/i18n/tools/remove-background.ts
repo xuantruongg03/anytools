@@ -7,6 +7,7 @@ export const removeBackgroundTranslations = {
         // Upload
         uploadButton: "Choose Image",
         uploadHint: "Supported formats: JPG, PNG, WEBP (Max 10MB)",
+        pasteHint: "Or press Ctrl+V to paste an image from clipboard",
         fileName: "File name",
         fileSize: "File size",
         dimensions: "Dimensions",
@@ -109,6 +110,7 @@ export const removeBackgroundTranslations = {
         // Upload
         uploadButton: "Chọn Ảnh",
         uploadHint: "Định dạng hỗ trợ: JPG, PNG, WEBP (Tối đa 10MB)",
+        pasteHint: "Hoặc nhấn Ctrl+V để dán ảnh từ bộ nhớ tạm",
         fileName: "Tên file",
         fileSize: "Kích thước",
         dimensions: "Kích thước ảnh",

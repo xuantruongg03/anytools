@@ -1,22 +1,34 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n/translations";
 import { useImageUpload } from "@/lib/hooks/useImageUpload";
-import { useBackgroundRemover } from "@/lib/hooks/useBackgroundRemover";
+import { useImageToText } from "@/lib/hooks";
+import { ServiceProviderSelector, ServiceProviderOption } from "@/components";
 
-export default function RemoveBackgroundClient() {
+export default function ImageToTextClient() {
     const { locale } = useLanguage();
     const t = getTranslation(locale);
-    const tool_t = t.tools.removeBackground;
+    const tool_t = t.tools.imageToText;
 
-    const [comparing, setComparing] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [provider, setProvider] = useState("auto");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Custom hooks
     const { file, fileName, fileSize, dimensions, preview, error: uploadError, handleFileSelect, handlePaste, clearFile } = useImageUpload();
-    const { resultImage, isProcessing, error: processError, success, removeBackground, clearResult } = useBackgroundRemover();
+    const { extractedText, isProcessing, error: processError, success, usedService, extractText, clearResult } = useImageToText();
+
+    // Provider options
+    const providerOptions: ServiceProviderOption[] = useMemo(
+        () => [
+            { value: "auto", label: tool_t.auto, icon: "🔄" },
+            { value: "ocr-space", label: "OCR.space", icon: "📝" },
+            { value: "optiic", label: "Optiic", icon: "🔍" },
+        ],
+        [tool_t.auto]
+    );
 
     // Listen for paste events
     useEffect(() => {
@@ -30,22 +42,38 @@ export default function RemoveBackgroundClient() {
         };
     }, [handlePaste]);
 
-    // Handle remove background
-    const handleRemoveBackground = async () => {
+    // Handle extract text
+    const handleExtractText = async () => {
         if (file) {
-            await removeBackground(file, "auto");
+            await extractText(file, locale, provider);
         }
     };
 
-    // Handle download result
+    // Handle copy text
+    const handleCopy = async () => {
+        if (extractedText) {
+            try {
+                await navigator.clipboard.writeText(extractedText);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (err) {
+                console.error("Failed to copy:", err);
+            }
+        }
+    };
+
+    // Handle download text
     const handleDownload = () => {
-        if (resultImage) {
+        if (extractedText) {
+            const blob = new Blob([extractedText], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.href = resultImage;
-            link.download = `${fileName.replace(/\.[^/.]+$/, "")}_no_bg.png`;
+            link.href = url;
+            link.download = `${fileName.replace(/\.[^/.]+$/, "")}_text.txt`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
     };
 
@@ -53,7 +81,7 @@ export default function RemoveBackgroundClient() {
     const handleClearAll = () => {
         clearFile();
         clearResult();
-        setComparing(false);
+        setCopied(false);
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -63,16 +91,15 @@ export default function RemoveBackgroundClient() {
 
     return (
         <div className='space-y-4'>
-            {/* Input Card */}
-                <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700'>
+            <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700'>
                     {/* Image Upload / Preview */}
                     <div className='mb-4'>
-                        <input ref={fileInputRef} type='file' accept='image/jpeg,image/jpg,image/png,image/webp' onChange={handleFileSelect} className='hidden' id='image-file-input' />
+                        <input ref={fileInputRef} type='file' accept='image/jpeg,image/jpg,image/png,image/webp,image/gif,image/bmp' onChange={handleFileSelect} className='hidden' id='image-file-input' />
                         {!preview ? (
                             <label htmlFor='image-file-input' className='cursor-pointer block'>
                                 <div className='border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors'>
                                     <svg className='w-12 h-12 mx-auto mb-3 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' />
                                     </svg>
                                     <p className='text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{tool_t.uploadButton}</p>
                                     <p className='text-xs text-gray-500 dark:text-gray-400'>{tool_t.uploadHint}</p>
@@ -81,40 +108,18 @@ export default function RemoveBackgroundClient() {
                             </label>
                         ) : (
                             <div className='space-y-3'>
-                                {/* Image Preview with Compare */}
-                                <div className={`grid ${comparing && resultImage ? "grid-cols-2" : "grid-cols-1"} gap-4`}>
-                                    {/* Original Image */}
-                                    {preview && comparing && resultImage && (
-                                        <div className='flex flex-col'>
-                                            <p className='text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{tool_t.originalImage}</p>
-                                            <div className='relative bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center' style={{ height: "400px", backgroundImage: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 20px 20px" }}>
-                                                <img src={preview} alt='Original' className='max-w-full max-h-full w-auto h-auto object-contain' />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Result or Preview Image */}
-                                    {resultImage ? (
-                                        <div className='flex flex-col'>
-                                            {comparing && <p className='text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{tool_t.resultImage}</p>}
-                                            <div className='relative bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center' style={{ height: "400px", backgroundImage: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 20px 20px" }}>
-                                                <img src={resultImage} alt='Result' className='max-w-full max-h-full w-auto h-auto object-contain' />
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className='relative bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center' style={{ height: "400px", backgroundImage: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 20px 20px" }}>
-                                            <img src={preview} alt='Preview' className='max-w-full max-h-full w-auto h-auto object-contain' />
-                                        </div>
-                                    )}
+                                {/* Image Preview */}
+                                <div className='relative bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center' style={{ height: "300px" }}>
+                                    <img src={preview} alt='Preview' className='max-w-full max-h-full w-auto h-auto object-contain' />
                                 </div>
                                 <label htmlFor='image-file-input' className='cursor-pointer block'>
-                                    <div className='px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg transition-colors text-center font-medium'>🔄 Change Image</div>
+                                    <div className='px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg transition-colors text-center font-medium'>🔄 {tool_t.changeImage}</div>
                                 </label>
                             </div>
                         )}
                     </div>
 
-                    {/* File Info & Actions */}
+                    {/* File Info */}
                     {file && (
                         <div className='mt-4 space-y-3'>
                             <div className='bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-2'>
@@ -138,6 +143,9 @@ export default function RemoveBackgroundClient() {
                         </div>
                     )}
 
+                    {/* Service Provider Selector */}
+                    <ServiceProviderSelector value={provider} onChange={setProvider} options={providerOptions} label={tool_t.serviceProvider} hint={tool_t.serviceProviderHint} className='mt-4' />
+
                     {/* Info Note */}
                     <p className='text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-3'>
                         <svg className='w-3 h-3' fill='currentColor' viewBox='0 0 20 20'>
@@ -148,30 +156,48 @@ export default function RemoveBackgroundClient() {
 
                     {/* Action Buttons */}
                     <div className='flex gap-2 mt-4'>
-                        <button onClick={handleRemoveBackground} disabled={isProcessing || !file} className='flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm hover:shadow-md cursor-pointer'>
+                        <button onClick={handleExtractText} disabled={isProcessing || !file} className='flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm hover:shadow-md'>
                             {isProcessing ? (
                                 <div className='flex items-center justify-center gap-2'>
                                     <div className='animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full'></div>
                                     <span>{tool_t.processing}</span>
                                 </div>
                             ) : (
-                                <span>{tool_t.removeBackground}</span>
+                                <span>🔍 {tool_t.extractText}</span>
                             )}
                         </button>
-                        {resultImage && (
-                            <button onClick={() => setComparing(!comparing)} className='px-6 py-3 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-sm rounded-lg transition-colors cursor-pointer font-medium'>
-                                {comparing ? "👁️ Single" : "🔀 Compare"}
-                            </button>
-                        )}
-                        {resultImage && (
-                            <button onClick={handleDownload} className='px-6 py-3 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors cursor-pointer font-medium shadow-sm hover:shadow-md'>
-                                ⬇️ {tool_t.download}
-                            </button>
-                        )}
-                        <button onClick={handleClearAll} disabled={isProcessing} className='px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium cursor-pointer'>
+                        <button onClick={handleClearAll} disabled={isProcessing} className='px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium'>
                             {tool_t.clear}
                         </button>
                     </div>
+
+                    {/* Extracted Text Result */}
+                    {extractedText && (
+                        <div className='mt-4'>
+                            <div className='flex items-center justify-between mb-2'>
+                                <h3 className='text-sm font-medium text-gray-700 dark:text-gray-300'>{tool_t.extractedText}:</h3>
+                                <div className='flex gap-2'>
+                                    <button onClick={handleCopy} className='px-3 py-1.5 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs rounded-lg transition-colors font-medium'>
+                                        {copied ? "✅ Copied!" : "📋 Copy"}
+                                    </button>
+                                    <button onClick={handleDownload} className='px-3 py-1.5 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 text-xs rounded-lg transition-colors font-medium'>
+                                        ⬇️ {tool_t.download}
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea value={extractedText} readOnly className='w-full h-48 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500' />
+                            <div className='flex items-center justify-between mt-1'>
+                                <p className='text-xs text-gray-500 dark:text-gray-400'>
+                                    {tool_t.characterCount}: {extractedText.length}
+                                </p>
+                                {usedService && (
+                                    <p className='text-xs text-gray-500 dark:text-gray-400'>
+                                        {tool_t.usedService}: <span className='font-medium text-blue-600 dark:text-blue-400'>{usedService}</span>
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Error Display */}
                     {currentError && (
@@ -181,7 +207,7 @@ export default function RemoveBackgroundClient() {
                                     <path fillRule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z' clipRule='evenodd' />
                                 </svg>
                                 <div className='flex-1'>
-                                    <p className='text-xs font-medium text-red-800 dark:text-red-300'>Error</p>
+                                    <p className='text-xs font-medium text-red-800 dark:text-red-300'>{tool_t.error}</p>
                                     <p className='text-xs text-red-700 dark:text-red-400 mt-0.5'>{currentError}</p>
                                 </div>
                             </div>

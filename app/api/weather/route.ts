@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withErrorHandler } from "@/lib/api-wrapper";
+import { withErrorHandler } from "@/lib/utils/api-wrapper";
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const WEATHERAPI_KEY = process.env.WEATHERAPI_KEY;

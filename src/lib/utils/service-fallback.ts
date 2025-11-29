@@ -1,4 +1,4 @@
-import { handleError } from "./error-handler";
+import { handleError } from "./utils/error-handler";
 
 interface ServiceResult<T> {
     success: boolean;

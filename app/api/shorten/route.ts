@@ -1,5 +1,5 @@
-import { withErrorHandler } from "@/lib/api-wrapper";
-import { tryServicesWithFallback } from "@/lib/service-fallback";
+import { withErrorHandler } from "@/lib/utils/api-wrapper";
+import { tryServicesWithFallback } from "@/lib/utils/service-fallback";
 import { NextRequest, NextResponse } from "next/server";
 
 // Validate URL format
