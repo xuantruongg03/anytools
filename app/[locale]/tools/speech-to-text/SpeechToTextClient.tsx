@@ -80,8 +80,6 @@ export default function SpeechToTextClient() {
 
     return (
         <div className='space-y-4'>
-
-
             {/* Input Card */}
             <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700'>
                 <div className='space-y-4'>
@@ -121,9 +119,7 @@ export default function SpeechToTextClient() {
                 </div>
 
                 {/* Service Provider Selector */}
-                <div className='mt-4'>
-                    <ServiceProviderSelector value={provider} onChange={setProvider} options={providerOptions} label={tool_t.serviceProvider} hint={tool_t.serviceProviderHint} disabled={isLoading} />
-                </div>
+                <ServiceProviderSelector value={provider} onChange={setProvider} options={providerOptions} label={tool_t.serviceProvider} hint={tool_t.serviceProviderHint} disabled={isLoading} className='mt-4' />
 
                 {/* Info Note */}
                 <p className='text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-4'>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withErrorHandler } from "@/lib/api-wrapper";
+import { withErrorHandler } from "@/lib/utils/api-wrapper";
 
 async function handleGeocode(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;

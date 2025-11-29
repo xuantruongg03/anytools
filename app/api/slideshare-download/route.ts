@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SLIDESHARE_URL_PATTERN } from "@/constants/regex";
-import { withErrorHandler } from "@/lib/api-wrapper";
-import { tryServicesWithFallback } from "@/lib/service-fallback";
+import { withErrorHandler } from "@/lib/utils/api-wrapper";
+import { tryServicesWithFallback } from "@/lib/utils/service-fallback";
 
 const RAPIDAPI_KEY = process.env.NEXT_RAPIDAPI_KEY;
 

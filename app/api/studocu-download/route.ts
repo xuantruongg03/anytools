@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SLIDESHARE_URL_PATTERN } from "@/constants/regex";
-import { withErrorHandler } from "@/lib/api-wrapper";
+import { withErrorHandler } from "@/lib/utils/api-wrapper";
 
 const RAPIDAPI_KEY = process.env.NEXT_RAPIDAPI_KEY;
 

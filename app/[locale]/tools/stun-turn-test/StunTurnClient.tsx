@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Button from "@/components/ui/Button";
 
 interface TestResults {
@@ -43,7 +43,7 @@ export default function StunTurnClient() {
     });
 
     const pcRef = useRef<RTCPeerConnection | null>(null);
-    const logsEndRef = useRef<HTMLDivElement>(null);
+    const logsContainerRef = useRef<HTMLDivElement>(null);
 
     const addLog = (message: string, type: LogEntry["type"] = "info") => {
         const timestamp = new Date().toLocaleTimeString("en-US", {
@@ -54,10 +54,18 @@ export default function StunTurnClient() {
             fractionalSecondDigits: 3,
         });
         setLogs((prev) => [...prev, { message, type, timestamp }]);
-        setTimeout(() => {
-            logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
     };
+
+    // Scroll to bottom of logs container when logs change (only if content overflows)
+    useEffect(() => {
+        if (logs.length > 0 && logsContainerRef.current) {
+            const container = logsContainerRef.current;
+            // Only scroll if content overflows the container
+            if (container.scrollHeight > container.clientHeight) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+    }, [logs]);
 
     const clearResults = () => {
         setLogs([]);
@@ -287,7 +295,7 @@ export default function StunTurnClient() {
             </div>
 
             {/* Results/Logs */}
-            <div className='bg-gray-100 dark:bg-gray-800 rounded-lg p-4 max-h-[500px] overflow-y-auto mb-6 relative'>
+            <div ref={logsContainerRef} className='bg-gray-100 dark:bg-gray-800 rounded-lg p-4 max-h-[500px] overflow-y-auto mb-6 relative'>
                 {logs.length === 0 && !testing ? (
                     <div className='text-center py-8 text-gray-500 dark:text-gray-400'>
                         <p>ℹ️ {t.logs.ready}</p>
@@ -313,7 +321,6 @@ export default function StunTurnClient() {
                                 <span className='text-blue-700 dark:text-blue-300 text-sm font-medium'>{t.logs.gatheringCandidates || "Gathering ICE candidates..."}</span>
                             </div>
                         )}
-                        <div ref={logsEndRef} />
                     </div>
                 )}
             </div>

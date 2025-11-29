@@ -8,4 +8,5 @@ export { useFileUpload } from "./useFileUpload";
 export { useSpeechToText } from "./useSpeechToText";
 export { useImageUpload } from "./useImageUpload";
 export { useBackgroundRemover } from "./useBackgroundRemover";
+export { useImageToText } from "./useImageToText";
 export type { LocationAddress } from "./useGeolocation";
