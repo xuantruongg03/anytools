@@ -11,11 +11,6 @@ export default function ColorPickerContent() {
 
     return (
         <div className='max-w-6xl mx-auto'>
-            <header className='mb-8'>
-                <h1 className='text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.tools.colorPicker.page.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400'>{t.tools.colorPicker.page.subtitle}</p>
-            </header>
-
             <ColorPickerClient />
 
             {/* What is Color Picker */}

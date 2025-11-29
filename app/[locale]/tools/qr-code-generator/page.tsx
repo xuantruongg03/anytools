@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { use } from "react";
+import { ToolPageLayout } from "@/components/layout";
 import QrCodeGeneratorContent from "./QrCodeGeneratorContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -54,13 +55,12 @@ export default function QrCodeGeneratorPage({ params }: Props) {
     const { locale: urlLocale } = use(params);
     const locale = (urlLocale === "en" || urlLocale === "vi" ? urlLocale : "en") as "en" | "vi";
     const relatedTools = getRelatedTools("/tools/qr-code-generator", 6);
+    const isVi = locale === "vi";
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <QrCodeGeneratorContent locale={locale} />
-                <RelatedTools tools={relatedTools} currentPath='/tools/qr-code-generator' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Tạo Mã QR" : "QR Code Generator"} description={isVi ? "Tạo mã QR tùy chỉnh online miễn phí. Thêm logo, đổi màu sắc, điều chỉnh kích thước và phong cách." : "Generate customizable QR codes online for free. Add logos, change colors, adjust size and style."}>
+            <QrCodeGeneratorContent locale={locale} />
+            <RelatedTools tools={relatedTools} currentPath='/tools/qr-code-generator' />
+        </ToolPageLayout>
     );
 }

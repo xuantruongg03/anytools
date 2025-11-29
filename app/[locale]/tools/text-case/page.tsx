@@ -1,26 +1,43 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import TextCaseContent from "./TextCaseContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Chuyển Đổi Kiểu Chữ - Công Cụ Đổi Chữ Hoa Thường Miễn Phí 2025" : "Text Case Converter - Convert to Uppercase, Lowercase, Title Case, camelCase 2025";
+    const description = isVi ? "Chuyển đổi văn bản sang CHỮ HOA, chữ thường, Kiểu Tiêu Đề, camelCase, snake_case và kebab-case ngay lập tức." : "Free online text case converter. Convert text to UPPERCASE, lowercase, Title Case, camelCase, snake_case, and kebab-case instantly.";
+
     return {
-        title: "Text Case Converter - Convert to Uppercase, Lowercase, Title Case, camelCase, snake_case 2025",
-        description: "Free online text case converter. Instantly convert text to UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case, and kebab-case. Fast, secure, and works entirely in your browser.",
-        keywords: ["text case converter", "uppercase converter", "lowercase converter", "title case converter", "camelCase converter", "snake_case converter", "kebab-case converter", "convert text case", "case changer", "text formatter", "programming case converter", "chuyển đổi chữ hoa thường", "công cụ chuyển đổi chữ", "camelCase snake_case"],
+        title,
+        description,
+        keywords: ["text case converter", "uppercase converter", "lowercase converter", "title case converter", "camelCase converter", "snake_case converter", "chuyển đổi chữ hoa thường", "công cụ chuyển đổi chữ"],
         openGraph: {
-            title: "Text Case Converter - Free Online Tool",
-            description: "Convert text between different cases: uppercase, lowercase, title case, camelCase, snake_case, and more.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
+            url: `https://www.anytools.online/${locale}/tools/text-case`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: "Text Case Converter - Free Online Tool",
-            description: "Convert text between different cases: uppercase, lowercase, title case, camelCase, and more.",
+            title,
+            description,
         },
         alternates: {
-            canonical: "https://www.anytools.online/tools/text-case",
+            canonical: `https://www.anytools.online/${locale}/tools/text-case`,
+            languages: {
+                en: "https://www.anytools.online/en/tools/text-case",
+                vi: "https://www.anytools.online/vi/tools/text-case",
+                "x-default": "https://www.anytools.online/en/tools/text-case",
+            },
         },
         robots: {
             index: true,
@@ -33,15 +50,15 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function TextCasePage() {
+export default async function TextCasePage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const relatedTools = getRelatedTools("/tools/text-case", 6);
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <TextCaseContent />
-                <RelatedTools tools={relatedTools} currentPath='/tools/text-case' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Chuyển Đổi Kiểu Chữ" : "Text Case Converter"} description={isVi ? "Chuyển đổi văn bản sang CHỮ HOA, chữ thường, Kiểu Tiêu Đề, camelCase, snake_case và kebab-case." : "Convert text to UPPERCASE, lowercase, Title Case, camelCase, snake_case, and kebab-case instantly."}>
+            <TextCaseContent />
+            <RelatedTools tools={relatedTools} currentPath='/tools/text-case' />
+        </ToolPageLayout>
     );
 }

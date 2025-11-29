@@ -205,11 +205,6 @@ export default function RepoTreeClient() {
 
     return (
         <div className='space-y-6'>
-            {/* Header */}
-            <div className='text-center'>
-                <h1 className='text-4xl font-bold text-gray-900 dark:text-white mb-3'>{t.tools.repoTree.title || "GitHub Repository Tree Viewer"}</h1>
-                <p className='text-gray-600 dark:text-gray-400 max-w-2xl mx-auto'>{t.tools.repoTree.subtitle || "Visualize your GitHub repository structure and generate markdown tree for README"}</p>
-            </div>
 
             {/* Input Section */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-4'>

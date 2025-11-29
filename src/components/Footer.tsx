@@ -30,7 +30,7 @@ export function Footer() {
     };
 
     return (
-        <footer className='border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 mt-auto'>
+        <footer className='border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 mt-auto relative z-40'>
             <div className='container mx-auto px-4 py-12'>
                 <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
                     {/* About */}

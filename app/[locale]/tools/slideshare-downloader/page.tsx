@@ -48,8 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/slideshare-downloader`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/slideshare-downloader",
-                "vi-VN": "https://www.anytools.online/vi/tools/slideshare-downloader",
+                en: "https://www.anytools.online/en/tools/slideshare-downloader",
+                vi: "https://www.anytools.online/vi/tools/slideshare-downloader",
+                "x-default": "https://www.anytools.online/en/tools/slideshare-downloader",
             },
         },
         robots: {

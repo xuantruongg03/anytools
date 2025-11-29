@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import JsonFormatterContent from "./JsonFormatterContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -54,8 +55,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/json-formatter`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/json-formatter",
-                "vi-VN": "https://www.anytools.online/vi/tools/json-formatter",
+                en: "https://www.anytools.online/en/tools/json-formatter",
+                vi: "https://www.anytools.online/vi/tools/json-formatter",
+                "x-default": "https://www.anytools.online/en/tools/json-formatter",
             },
         },
         robots: {
@@ -74,14 +76,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function JsonFormatterPage({ params }: Props) {
     const { locale } = await params;
+    const isVi = locale === "vi";
     const relatedTools = getRelatedTools("/tools/json-formatter", 6);
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <JsonFormatterContent />
-                <RelatedTools tools={relatedTools} currentPath='/tools/json-formatter' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Định Dạng JSON" : "JSON Formatter"} description={isVi ? "Công cụ định dạng, xác thực và làm đẹp JSON miễn phí trực tuyến. Định dạng, xác thực, thu gọn JSON ngay lập tức." : "Free online JSON formatter, validator and beautifier. Format, validate, minify JSON instantly."}>
+            <JsonFormatterContent />
+            <RelatedTools tools={relatedTools} currentPath='/tools/json-formatter' />
+        </ToolPageLayout>
     );
 }

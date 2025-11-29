@@ -10,11 +10,6 @@ export default function RegexTesterContent() {
 
     return (
         <div className='w-full max-w-6xl mx-auto overflow-x-hidden'>
-            <div className='text-center mb-8'>
-                <h1 className='text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto'>{t.subtitle}</p>
-            </div>
-
             <RegexTesterClient />
 
             <div className='mt-12 space-y-8 text-gray-700 dark:text-gray-300 wrap-break-word'>

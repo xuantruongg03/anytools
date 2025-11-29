@@ -1,26 +1,43 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import StunTurnContent from "./StunTurnContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Kiểm Tra STUN/TURN Server - Công Cụ Test WebRTC 2025" : "STUN/TURN Server Test - WebRTC ICE Candidate Testing Tool 2025";
+    const description = isVi ? "Công cụ kiểm tra STUN/TURN server miễn phí cho WebRTC. Test cấu hình server, xác thực ICE candidate, chẩn đoán kết nối." : "Free online STUN/TURN server tester for WebRTC applications. Test server configuration, validate ICE candidate gathering, and diagnose connectivity issues.";
+
     return {
-        title: "STUN/TURN Server Test - WebRTC ICE Candidate Testing Tool 2025",
-        description: "Free online STUN/TURN server tester for WebRTC applications. Test server configuration, validate ICE candidate gathering, and diagnose connectivity issues. Real-time logging and detailed test summary.",
-        keywords: ["stun server test", "turn server test", "webrtc test", "ice candidate", "stun turn tester", "webrtc debug", "nat traversal", "peer connection test", "coturn test", "twilio stun", "kiểm tra stun", "kiểm tra turn", "webrtc test tool", "ice gathering", "srflx relay test"],
+        title,
+        description,
+        keywords: ["stun server test", "turn server test", "webrtc test", "ice candidate", "stun turn tester", "webrtc debug", "kiểm tra stun", "kiểm tra turn", "webrtc test tool"],
         openGraph: {
-            title: "STUN/TURN Server Test - Test WebRTC Server Configuration",
-            description: "Test your STUN/TURN servers for WebRTC. Validate ICE candidates, diagnose connectivity issues, and ensure reliable peer-to-peer connections.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
+            url: `https://www.anytools.online/${locale}/tools/stun-turn-test`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: "STUN/TURN Server Test - WebRTC Testing Tool",
-            description: "Free tool to test STUN/TURN server configuration. Real-time ICE candidate gathering and detailed diagnostics.",
+            title,
+            description,
         },
         alternates: {
-            canonical: "https://www.anytools.online/tools/stun-turn-test",
+            canonical: `https://www.anytools.online/${locale}/tools/stun-turn-test`,
+            languages: {
+                en: "https://www.anytools.online/en/tools/stun-turn-test",
+                vi: "https://www.anytools.online/vi/tools/stun-turn-test",
+                "x-default": "https://www.anytools.online/en/tools/stun-turn-test",
+            },
         },
         robots: {
             index: true,
@@ -33,15 +50,15 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function StunTurnTestPage() {
+export default async function StunTurnTestPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const relatedTools = getRelatedTools("/tools/stun-turn-test", 6);
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-            <div className='container mx-auto px-4 py-8'>
-                <StunTurnContent />
-                <RelatedTools tools={relatedTools} currentPath='/tools/stun-turn-test' />
-            </div>
-        </div>
+        <ToolPageLayout title={isVi ? "Kiểm Tra STUN/TURN Server" : "STUN/TURN Server Test"} description={isVi ? "Kiểm tra STUN/TURN server cho WebRTC. Xác thực ICE candidates và chẩn đoán kết nối." : "Test STUN/TURN servers for WebRTC. Validate ICE candidates and diagnose connectivity issues."}>
+            <StunTurnContent />
+            <RelatedTools tools={relatedTools} currentPath='/tools/stun-turn-test' />
+        </ToolPageLayout>
     );
 }

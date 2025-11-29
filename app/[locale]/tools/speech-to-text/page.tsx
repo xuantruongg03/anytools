@@ -48,8 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/speech-to-text`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/speech-to-text",
-                "vi-VN": "https://www.anytools.online/vi/tools/speech-to-text",
+                en: "https://www.anytools.online/en/tools/speech-to-text",
+                vi: "https://www.anytools.online/vi/tools/speech-to-text",
+                "x-default": "https://www.anytools.online/en/tools/speech-to-text",
             },
         },
         robots: {

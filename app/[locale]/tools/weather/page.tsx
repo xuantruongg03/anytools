@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import WeatherClient from "./WeatherClient";
 import WeatherContent from "./WeatherContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -37,10 +38,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `/${locale}/tools/weather`,
+            canonical: `https://www.anytools.online/${locale}/tools/weather`,
             languages: {
-                en: "/en/tools/weather",
-                vi: "/vi/tools/weather",
+                en: "https://www.anytools.online/en/tools/weather",
+                vi: "https://www.anytools.online/vi/tools/weather",
+                "x-default": "https://www.anytools.online/en/tools/weather",
             },
         },
         robots: {
@@ -82,13 +84,13 @@ export default async function WeatherPage({ params }: Props) {
     };
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+        <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-            <div className='container mx-auto px-4 py-8 max-w-6xl'>
+            <ToolPageLayout title={weather_t.name} description={weather_t.page.subtitle}>
                 <WeatherClient />
                 <WeatherContent />
                 <RelatedTools tools={relatedTools} currentPath='/tools/weather' />
-            </div>
-        </div>
+            </ToolPageLayout>
+        </>
     );
 }

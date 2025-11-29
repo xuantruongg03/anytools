@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import UuidGeneratorContent from "./UuidGeneratorContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -47,8 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/uuid-generator`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/uuid-generator",
-                "vi-VN": "https://www.anytools.online/vi/tools/uuid-generator",
+                en: "https://www.anytools.online/en/tools/uuid-generator",
+                vi: "https://www.anytools.online/vi/tools/uuid-generator",
+                "x-default": "https://www.anytools.online/en/tools/uuid-generator",
             },
         },
         robots: {
@@ -94,12 +96,10 @@ export default async function UuidGeneratorPage({ params }: Props) {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors'>
-                <div className='container mx-auto px-4 py-8'>
-                    <UuidGeneratorContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/uuid-generator' />
-                </div>
-            </div>
+            <ToolPageLayout title={isVi ? "Tạo UUID/GUID" : "UUID Generator"} description={isVi ? "Tạo UUID/GUID trực tuyến ngay lập tức. Tạo UUID v4 và UUID v1 với hỗ trợ tạo hàng loạt." : "Generate UUID/GUID online instantly. Create UUID v4 and v1 with bulk generation support."}>
+                <UuidGeneratorContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/uuid-generator' />
+            </ToolPageLayout>
         </>
     );
 }

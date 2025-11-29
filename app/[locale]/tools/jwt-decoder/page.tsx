@@ -1,45 +1,42 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import JwtDecoderContent from "./JwtDecoderContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Giải Mã JWT Online - Công Cụ Decode JSON Web Token Miễn Phí 2025" : "JWT Decoder Online - Decode JSON Web Tokens Free Tool 2025";
+    const description = isVi ? "Giải mã và kiểm tra JWT (JSON Web Token) trực tuyến. Xem header, payload và signature. 100% client-side, bảo mật." : "Decode and inspect JWT (JSON Web Token) online instantly. View header, payload, and signature. Free JWT decoder and parser for developers. 100% client-side, secure, and private.";
+
     return {
-        title: "JWT Decoder Online - Decode JSON Web Tokens Free Tool 2025",
-        description: "Decode and inspect JWT (JSON Web Token) online instantly. View header, payload, and signature. Free JWT decoder and parser for developers. 100% client-side, secure, and private. No data sent to server.",
-        keywords: ["jwt decoder", "decode jwt", "json web token", "jwt parser", "jwt inspector", "jwt online", "jwt debugger", "jwt validator", "decode json web token", "jwt token decoder", "jwt authentication", "oauth token", "jwt payload", "jwt header", "giải mã jwt", "jwt trực tuyến", "công cụ jwt"],
-        authors: [{ name: "AnyTools" }],
-        creator: "AnyTools",
-        publisher: "AnyTools",
-        applicationName: "AnyTools JWT Decoder",
+        title,
+        description,
+        keywords: ["jwt decoder", "decode jwt", "json web token", "jwt parser", "jwt inspector", "jwt online", "jwt debugger", "jwt validator", "giải mã jwt", "jwt trực tuyến", "công cụ jwt"],
         openGraph: {
-            title: "JWT Decoder Online - Free JSON Web Token Decoder Tool 2025",
-            description: "Decode JWT tokens instantly. View header and payload. Free online JWT decoder for developers.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
-            url: "https://www.anytools.online/tools/jwt-decoder",
-            locale: "en_US",
-            images: [
-                {
-                    url: "https://www.anytools.online/og-image.png",
-                    width: 1200,
-                    height: 630,
-                    alt: "JWT Decoder Online Tool",
-                },
-            ],
+            url: `https://www.anytools.online/${locale}/tools/jwt-decoder`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: "JWT Decoder - Free Online Tool",
-            description: "Decode and inspect JWT tokens instantly. 100% client-side and secure.",
-            creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            title,
+            description,
         },
         alternates: {
-            canonical: "https://www.anytools.online/tools/jwt-decoder",
+            canonical: `https://www.anytools.online/${locale}/tools/jwt-decoder`,
             languages: {
-                "en-US": "https://www.anytools.online/tools/jwt-decoder",
-                "vi-VN": "https://www.anytools.online/tools/jwt-decoder",
+                en: "https://www.anytools.online/en/tools/jwt-decoder",
+                vi: "https://www.anytools.online/vi/tools/jwt-decoder",
+                "x-default": "https://www.anytools.online/en/tools/jwt-decoder",
             },
         },
         robots: {
@@ -48,17 +45,14 @@ export async function generateMetadata(): Promise<Metadata> {
             googleBot: {
                 index: true,
                 follow: true,
-                "max-video-preview": -1,
-                "max-image-preview": "large",
-                "max-snippet": -1,
             },
         },
-        category: "Web Tools",
-        classification: "Developer Tools",
     };
 }
 
-export default function JwtDecoderPage() {
+export default async function JwtDecoderPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -81,14 +75,10 @@ export default function JwtDecoderPage() {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
-                <div className='w-full px-4 py-8'>
-                    <JwtDecoderContent />
-                    <div className='max-w-4xl mx-auto mt-8'>
-                        <RelatedTools tools={relatedTools} currentPath='/tools/jwt-decoder' />
-                    </div>
-                </div>
-            </div>
+            <ToolPageLayout title='JWT Decoder' description='Decode and inspect JWT (JSON Web Token) online instantly. View header, payload, and signature.'>
+                <JwtDecoderContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/jwt-decoder' />
+            </ToolPageLayout>
         </>
     );
 }

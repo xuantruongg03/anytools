@@ -264,11 +264,6 @@ export default function PasswordGeneratorClient() {
 
     return (
         <div className='max-w-4xl mx-auto'>
-            {/* Header */}
-            <div className='text-center mb-8'>
-                <h1 className='text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{pageT.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400'>{pageT.subtitle}</p>
-            </div>
 
             <div className='space-y-8'>
                 {/* Password Strengthener */}

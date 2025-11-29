@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import RegexTesterContent from "./RegexTesterContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -47,8 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `https://www.anytools.online/${locale}/tools/regex-tester`,
             languages: {
-                "en-US": "https://www.anytools.online/en/tools/regex-tester",
-                "vi-VN": "https://www.anytools.online/vi/tools/regex-tester",
+                en: "https://www.anytools.online/en/tools/regex-tester",
+                vi: "https://www.anytools.online/vi/tools/regex-tester",
+                "x-default": "https://www.anytools.online/en/tools/regex-tester",
             },
         },
         robots: {
@@ -94,12 +96,10 @@ export default async function RegexTesterPage({ params }: Props) {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
-                <div className='container mx-auto px-4 py-8'>
-                    <RegexTesterContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/regex-tester' />
-                </div>
-            </div>
+            <ToolPageLayout title={isVi ? "Kiểm Tra Regex" : "Regex Tester"} description={isVi ? "Kiểm tra và xác thực biểu thức chính quy trực tuyến. Công cụ kiểm tra regex miễn phí." : "Test and validate regular expressions online. Free regex tester with pattern matching and instant results."}>
+                <RegexTesterContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/regex-tester' />
+            </ToolPageLayout>
         </>
     );
 }

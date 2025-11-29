@@ -1,47 +1,51 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import NumberConverterContent from "./NumberConverterContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Chuyển Đổi Hệ Số & Máy Tính Bitwise - Nhị Phân, Hex, Decimal 2025" : "Number System Converter & Bitwise Calculator - Binary, Hex, Decimal Online 2025";
+    const description = isVi ? "Công cụ chuyển đổi hệ số và máy tính bitwise miễn phí. Chuyển đổi giữa nhị phân, thập phân, thập lục phân, bát phân. Thực hiện AND, OR, XOR." : "Free number system converter and bitwise calculator. Convert between binary, decimal, hexadecimal, octal. Perform AND, OR, XOR, shift operations.";
+
     return {
-        title: "Number System Converter & Bitwise Calculator - Binary, Hex, Decimal Online 2025",
-        description: "Free number system converter and bitwise calculator. Convert between binary, decimal, hexadecimal, octal. Perform AND, OR, XOR, shift operations. Essential tool for programmers.",
-        keywords: ["number converter", "binary to decimal", "hex to decimal", "number system converter", "base converter", "bitwise calculator", "bitwise operations", "binary calculator", "hexadecimal converter", "octal converter", "chuyển đổi hệ số", "nhị phân", "thập lục phân", "bitwise"],
+        title,
+        description,
+        keywords: ["number converter", "binary to decimal", "hex to decimal", "number system converter", "base converter", "bitwise calculator", "chuyển đổi hệ số", "nhị phân", "thập lục phân", "bitwise"],
         alternates: {
-            canonical: "https://www.anytools.online/tools/number-converter",
+            canonical: `https://www.anytools.online/${locale}/tools/number-converter`,
             languages: {
                 en: "https://www.anytools.online/en/tools/number-converter",
                 vi: "https://www.anytools.online/vi/tools/number-converter",
+                "x-default": "https://www.anytools.online/en/tools/number-converter",
             },
         },
         openGraph: {
-            title: "Number System Converter & Bitwise Calculator - Binary, Hex, Decimal 2025",
-            description: "Convert between number systems and perform bitwise operations. Free online tool for binary, decimal, hexadecimal, octal conversion with AND, OR, XOR, shift operations.",
-            url: "https://www.anytools.online/tools/number-converter",
+            title,
+            description,
+            url: `https://www.anytools.online/${locale}/tools/number-converter`,
             siteName: "AnyTools",
-            locale: "en_US",
+            locale: locale === "vi" ? "vi_VN" : "en_US",
             type: "website",
-            images: [
-                {
-                    url: "https://www.anytools.online/og-image.png",
-                    width: 1200,
-                    height: 630,
-                    alt: "Number System Converter & Bitwise Calculator",
-                },
-            ],
         },
         twitter: {
             card: "summary_large_image",
-            title: "Number System Converter & Bitwise Calculator 2025",
-            description: "Convert binary, decimal, hex, octal. Perform bitwise operations: AND, OR, XOR, shifts. Free tool for programmers.",
-            images: ["https://www.anytools.online/og-image.png"],
+            title,
+            description,
         },
         robots: { index: true, follow: true },
     };
 }
 
-export default function NumberConverterPage() {
+export default async function NumberConverterPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const webAppSchema = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -104,12 +108,10 @@ export default function NumberConverterPage() {
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }} />
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors'>
-                <div className='container mx-auto px-4 py-8'>
-                    <NumberConverterContent />
-                    <RelatedTools tools={relatedTools} currentPath='/tools/number-converter' />
-                </div>
-            </div>
+            <ToolPageLayout title='Number System Converter & Bitwise Calculator' description='Convert between binary, decimal, hexadecimal, octal. Perform bitwise operations: AND, OR, XOR, shifts.'>
+                <NumberConverterContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/number-converter' />
+            </ToolPageLayout>
         </>
     );
 }

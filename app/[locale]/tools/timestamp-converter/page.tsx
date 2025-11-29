@@ -1,45 +1,42 @@
 import type { Metadata } from "next";
+import { ToolPageLayout } from "@/components/layout";
 import TimestampConverterContent from "./TimestampConverterContent";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+    params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { locale } = await params;
+    const isVi = locale === "vi";
+    const title = isVi ? "Chuyển Đổi Timestamp - Công Cụ Convert Unix Timestamp Miễn Phí 2025" : "Timestamp Converter - Unix Timestamp to Date Converter Online 2025";
+    const description = isVi ? "Chuyển đổi Unix timestamp sang ngày tháng và ngược lại. Công cụ chuyển đổi epoch time miễn phí cho lập trình viên." : "Convert Unix timestamps to human-readable dates and vice versa. Free online timestamp converter tool for developers.";
+
     return {
-        title: "Timestamp Converter - Unix Timestamp to Date Converter Online 2025",
-        description: "Convert Unix timestamps to human-readable dates and vice versa. Free online timestamp converter tool for developers. Support epoch time conversion, milliseconds, and timezone handling. 100% client-side and secure.",
-        keywords: ["timestamp converter", "unix timestamp", "epoch converter", "timestamp to date", "date to timestamp", "unix time converter", "epoch time", "timestamp online", "unix epoch", "timestamp generator", "current timestamp", "milliseconds converter", "utc timestamp", "datetime converter", "chuyển đổi timestamp", "unix timestamp trực tuyến", "epoch time converter"],
-        authors: [{ name: "AnyTools" }],
-        creator: "AnyTools",
-        publisher: "AnyTools",
-        applicationName: "AnyTools Timestamp Converter",
+        title,
+        description,
+        keywords: ["timestamp converter", "unix timestamp", "epoch converter", "timestamp to date", "date to timestamp", "chuyển đổi timestamp", "unix timestamp trực tuyến", "epoch time converter"],
         openGraph: {
-            title: "Timestamp Converter Online - Unix Timestamp to Date Converter 2025",
-            description: "Convert Unix timestamps to dates and vice versa. Free online tool for epoch time conversion. 100% client-side.",
+            title,
+            description,
             type: "website",
             siteName: "AnyTools",
-            url: "https://www.anytools.online/tools/timestamp-converter",
-            locale: "en_US",
-            images: [
-                {
-                    url: "https://www.anytools.online/og-image.png",
-                    width: 1200,
-                    height: 630,
-                    alt: "Timestamp Converter Online Tool",
-                },
-            ],
+            url: `https://www.anytools.online/${locale}/tools/timestamp-converter`,
+            locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: "Timestamp Converter - Free Online Tool",
-            description: "Convert Unix timestamps to dates instantly. Free and secure.",
-            creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            title,
+            description,
         },
         alternates: {
-            canonical: "https://www.anytools.online/tools/timestamp-converter",
+            canonical: `https://www.anytools.online/${locale}/tools/timestamp-converter`,
             languages: {
-                "en-US": "https://www.anytools.online/tools/timestamp-converter",
-                "vi-VN": "https://www.anytools.online/tools/timestamp-converter",
+                en: "https://www.anytools.online/en/tools/timestamp-converter",
+                vi: "https://www.anytools.online/vi/tools/timestamp-converter",
+                "x-default": "https://www.anytools.online/en/tools/timestamp-converter",
             },
         },
         robots: {
@@ -48,17 +45,14 @@ export async function generateMetadata(): Promise<Metadata> {
             googleBot: {
                 index: true,
                 follow: true,
-                "max-video-preview": -1,
-                "max-image-preview": "large",
-                "max-snippet": -1,
             },
         },
-        category: "Web Tools",
-        classification: "Developer Tools",
     };
 }
 
-export default function TimestampConverterPage() {
+export default async function TimestampConverterPage({ params }: Props) {
+    const { locale } = await params;
+    const isVi = locale === "vi";
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -81,14 +75,10 @@ export default function TimestampConverterPage() {
     return (
         <>
             <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-x-hidden'>
-                <div className='w-full px-4 py-8'>
-                    <TimestampConverterContent />
-                    <div className='max-w-4xl mx-auto mt-8'>
-                        <RelatedTools tools={relatedTools} currentPath='/tools/timestamp-converter' />
-                    </div>
-                </div>
-            </div>
+            <ToolPageLayout title='Timestamp Converter' description='Convert Unix timestamps to human-readable dates and vice versa. Free online tool for epoch time conversion.'>
+                <TimestampConverterContent />
+                <RelatedTools tools={relatedTools} currentPath='/tools/timestamp-converter' />
+            </ToolPageLayout>
         </>
     );
 }

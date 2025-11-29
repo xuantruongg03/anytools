@@ -260,10 +260,6 @@ export default function MicrophoneTestClient() {
 
     return (
         <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8'>
-            <div className='text-center mb-6'>
-                <h1 className='text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{t.title}</h1>
-                <p className='text-lg text-gray-600 dark:text-gray-400'>{t.subtitle}</p>
-            </div>
 
             {/* Control Buttons */}
             <div className='flex flex-wrap gap-3 justify-center mb-6'>
