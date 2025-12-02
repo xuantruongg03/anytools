@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useRef } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n/translations";
 import { useWeatherData, useGeolocation, useLocationSearch, type LocationAddress } from "@/lib/hooks";
@@ -108,10 +108,17 @@ export default function WeatherClient() {
         [setProvider]
     );
 
-    // Tự động lấy vị trí khi component mount
+    // Ref to track if initial load has happened
+    const hasInitialized = useRef(false);
+
+    // Tự động lấy vị trí khi component mount - chỉ chạy 1 lần
     useEffect(() => {
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+
         getCurrentLocationWeather();
-    }, [getCurrentLocationWeather]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className='space-y-6'>

@@ -70,6 +70,7 @@ export const toolsConfig: ToolCategory[] = [
         icon: "⚡",
         tools: [
             { href: "/tools/countdown", icon: "⏱️", key: "countdown" },
+            { href: "/tools/event-reminder", icon: "📅", key: "eventReminder" },
             { href: "/tools/qr-code-generator", icon: "📱", key: "qrCodeGenerator" },
             { href: "/tools/stopwatch", icon: "⏲️", key: "stopwatch" },
             { href: "/tools/url-shortener", icon: "🔗", key: "urlShortener" },

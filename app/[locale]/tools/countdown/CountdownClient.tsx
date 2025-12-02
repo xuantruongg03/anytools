@@ -224,7 +224,7 @@ export default function CountdownClient() {
     }, [locale]);
 
     return (
-        <div className='max-w-4xl mx-auto'>
+        <div className='space-y-4'>
 
             {/* Quick Countdowns */}
             <div className='bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg shadow-lg p-6 mb-6 border border-blue-200 dark:border-blue-800'>
