@@ -11,6 +11,7 @@ import { repoTreeTranslations } from "./repo-tree";
 import { newToolsTranslations } from "./new-tools";
 import { worldClockTranslations } from "./world-clock";
 import { countdownTranslations } from "./countdown";
+import { eventReminderTranslations } from "./event-reminder";
 import { stopwatchTranslations } from "./stopwatch";
 import { apiTesterTranslations } from "./api-tester";
 import { microphoneTestTranslations } from "./microphone-test";
@@ -37,6 +38,7 @@ export const toolsTranslations = {
         repoTree: repoTreeTranslations.en.repoTree,
         worldClock: worldClockTranslations.en.worldClock,
         countdown: countdownTranslations.en.countdown,
+        eventReminder: eventReminderTranslations.en.eventReminder,
         stopwatch: stopwatchTranslations.en.stopwatch,
         apiTester: apiTesterTranslations.en.apiTester,
         microphoneTest: microphoneTestTranslations.en.microphoneTest,
@@ -61,6 +63,7 @@ export const toolsTranslations = {
         repoTree: repoTreeTranslations.vi.repoTree,
         worldClock: worldClockTranslations.vi.worldClock,
         countdown: countdownTranslations.vi.countdown,
+        eventReminder: eventReminderTranslations.vi.eventReminder,
         stopwatch: stopwatchTranslations.vi.stopwatch,
         apiTester: apiTesterTranslations.vi.apiTester,
         microphoneTest: microphoneTestTranslations.vi.microphoneTest,

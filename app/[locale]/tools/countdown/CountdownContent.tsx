@@ -10,7 +10,7 @@ export default function CountdownContent() {
     const page = t.tools.countdown.page;
 
     return (
-        <div className='max-w-6xl mx-auto'>
+        <div className='space-y-4'>
             <div className='mt-12 prose prose-lg max-w-none dark:prose-invert'>
                 <section className='mb-12'>
                     <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>{page.whatIs}</h2>
