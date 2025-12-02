@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    // Redirect non-www to www for SEO consistency
+    // Redirect www to non-www for SEO consistency
     async redirects() {
         return [
             {
@@ -9,10 +9,10 @@ const nextConfig: NextConfig = {
                 has: [
                     {
                         type: "host",
-                        value: "anytools.online",
+                        value: "www.anytools.online",
                     },
                 ],
-                destination: "https://www.anytools.online/:path*",
+                destination: "https://anytools.online/:path*",
                 permanent: true,
             },
         ];
