@@ -105,11 +105,20 @@ export default function EventReminderClient() {
 
     const [emailStatus, setEmailStatus] = useState<{ [key: string]: "sending" | "sent" | "error" | null }>({});
 
-    // Check notification permission on mount
+    // Check notification permission on mount and update periodically
     useEffect(() => {
-        if (typeof window !== "undefined" && "Notification" in window) {
-            setNotificationPermission(Notification.permission);
-        }
+        const checkPermission = () => {
+            if (typeof window !== "undefined" && "Notification" in window) {
+                const currentPermission = Notification.permission;
+                setNotificationPermission(currentPermission);
+            }
+        };
+
+        checkPermission();
+
+        // Re-check permission periodically in case user changes it in browser settings
+        const interval = setInterval(checkPermission, 1000);
+        return () => clearInterval(interval);
     }, []);
 
     // Load events from localStorage
@@ -431,7 +440,7 @@ export default function EventReminderClient() {
                     </div>
                     <div>
                         <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{page.targetDateTime} *</label>
-                        <input type='datetime-local' value={formData.targetDate} onChange={(e) => setFormData((prev) => ({ ...prev, targetDate: e.target.value }))} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white' />
+                        <input type='datetime-local' value={formData.targetDate} onChange={(e) => setFormData((prev) => ({ ...prev, targetDate: e.target.value }))} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:scheme-dark' />
                     </div>
                 </div>
 
@@ -447,12 +456,19 @@ export default function EventReminderClient() {
                     </div>
                     <div>
                         <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{page.reminderFrequency}</label>
-                        <select value={formData.reminderFrequency} onChange={(e) => setFormData((prev) => ({ ...prev, reminderFrequency: e.target.value as ReminderFrequency }))} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'>
-                            <option value='once'>{page.frequencyOptions.once}</option>
-                            <option value='hourly'>{page.frequencyOptions.hourly}</option>
-                            <option value='daily'>{page.frequencyOptions.daily}</option>
-                            <option value='custom'>{page.frequencyOptions.custom}</option>
-                        </select>
+                        <div className='relative'>
+                            <select value={formData.reminderFrequency} onChange={(e) => setFormData((prev) => ({ ...prev, reminderFrequency: e.target.value as ReminderFrequency }))} className='w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white appearance-none cursor-pointer'>
+                                <option value='once'>{page.frequencyOptions.once}</option>
+                                <option value='hourly'>{page.frequencyOptions.hourly}</option>
+                                <option value='daily'>{page.frequencyOptions.daily}</option>
+                                <option value='custom'>{page.frequencyOptions.custom}</option>
+                            </select>
+                            <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3'>
+                                <svg className='h-5 w-5 text-gray-400 dark:text-gray-500' viewBox='0 0 20 20' fill='currentColor'>
+                                    <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
