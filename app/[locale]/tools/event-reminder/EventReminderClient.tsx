@@ -104,6 +104,76 @@ export default function EventReminderClient() {
     });
 
     const [emailStatus, setEmailStatus] = useState<{ [key: string]: "sending" | "sent" | "error" | null }>({});
+    const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "synced" | "error">("idle");
+
+    // Sync event to server (for email reminders to work even when browser is closed)
+    const syncEventToServer = useCallback(async (event: EventReminder) => {
+        if (!event.email) return; // Only sync events with email
+
+        try {
+            setSyncStatus("syncing");
+            const response = await fetch("/api/events", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    event: {
+                        id: event.id,
+                        name: event.name,
+                        description: event.description,
+                        targetDate: event.targetDate,
+                        email: event.email,
+                        remindersBefore: event.remindersBefore,
+                        createdAt: event.createdAt,
+                        sentReminders: [],
+                        isCompleted: event.isCompleted,
+                    },
+                }),
+            });
+
+            if (response.ok) {
+                setSyncStatus("synced");
+                console.log(`Event "${event.name}" synced to server for email reminders`);
+            } else {
+                setSyncStatus("error");
+                console.error("Failed to sync event to server");
+            }
+        } catch (error) {
+            setSyncStatus("error");
+            console.error("Failed to sync event:", error);
+        }
+
+        // Auto-hide sync status after 3 seconds
+        setTimeout(() => setSyncStatus("idle"), 3000);
+    }, []);
+
+    // Delete event from server
+    const deleteEventFromServer = useCallback(async (email: string, eventId: string) => {
+        if (!email) return;
+
+        try {
+            await fetch(`/api/events?email=${encodeURIComponent(email)}&id=${eventId}`, {
+                method: "DELETE",
+            });
+            console.log(`Event deleted from server`);
+        } catch (error) {
+            console.error("Failed to delete event from server:", error);
+        }
+    }, []);
+
+    // Update event on server
+    const updateEventOnServer = useCallback(async (email: string, eventId: string, updates: Partial<EventReminder>) => {
+        if (!email) return;
+
+        try {
+            await fetch("/api/events", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, eventId, updates }),
+            });
+        } catch (error) {
+            console.error("Failed to update event on server:", error);
+        }
+    }, []);
 
     // Check notification permission on mount and update periodically
     useEffect(() => {
@@ -310,6 +380,11 @@ export default function EventReminderClient() {
 
         setEvents((prev) => [...prev, newEvent]);
 
+        // Sync to server if email is provided (for server-side email reminders)
+        if (newEvent.email) {
+            syncEventToServer(newEvent);
+        }
+
         // Reset form
         setFormData({
             name: "",
@@ -320,15 +395,40 @@ export default function EventReminderClient() {
             customRemindersPerDay: 3,
             remindersBefore: [60, 1440],
         });
-    }, [formData, page.errors]);
+    }, [formData, page.errors, syncEventToServer]);
 
-    const removeEvent = useCallback((id: string) => {
-        setEvents((prev) => prev.filter((e) => e.id !== id));
-    }, []);
+    const removeEvent = useCallback(
+        (id: string) => {
+            // Find event to get email before removing
+            setEvents((prev) => {
+                const eventToRemove = prev.find((e) => e.id === id);
+                if (eventToRemove?.email) {
+                    deleteEventFromServer(eventToRemove.email, id);
+                }
+                return prev.filter((e) => e.id !== id);
+            });
+        },
+        [deleteEventFromServer]
+    );
 
-    const toggleComplete = useCallback((id: string) => {
-        setEvents((prev) => prev.map((event) => (event.id === id ? { ...event, isCompleted: !event.isCompleted } : event)));
-    }, []);
+    const toggleComplete = useCallback(
+        (id: string) => {
+            setEvents((prev) =>
+                prev.map((event) => {
+                    if (event.id === id) {
+                        const updated = { ...event, isCompleted: !event.isCompleted };
+                        // Sync to server if has email
+                        if (event.email) {
+                            updateEventOnServer(event.email, id, { isCompleted: updated.isCompleted });
+                        }
+                        return updated;
+                    }
+                    return event;
+                })
+            );
+        },
+        [updateEventOnServer]
+    );
 
     const toggleReminderBefore = (minutes: number) => {
         setFormData((prev) => {
@@ -389,6 +489,30 @@ export default function EventReminderClient() {
 
     return (
         <div className='space-y-4'>
+            {/* Sync Status Indicator */}
+            {syncStatus !== "idle" && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium transition-all ${syncStatus === "syncing" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300" : syncStatus === "synced" ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"}`}>
+                    {syncStatus === "syncing" && (
+                        <>
+                            <div className='animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full'></div>
+                            {locale === "vi" ? "Đang đồng bộ..." : "Syncing..."}
+                        </>
+                    )}
+                    {syncStatus === "synced" && (
+                        <>
+                            <span>✓</span>
+                            {locale === "vi" ? "Đã lưu! Email sẽ được gửi tự động" : "Saved! Emails will be sent automatically"}
+                        </>
+                    )}
+                    {syncStatus === "error" && (
+                        <>
+                            <span>✗</span>
+                            {locale === "vi" ? "Lỗi đồng bộ" : "Sync error"}
+                        </>
+                    )}
+                </div>
+            )}
+
             {/* Notification Permission */}
             <div className='bg-linear-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg shadow-lg p-4 mb-6 border border-indigo-200 dark:border-indigo-800'>
                 <div className='flex items-center justify-between flex-wrap gap-4'>
