@@ -488,7 +488,7 @@ export default function EventReminderClient() {
     };
 
     return (
-        <div className='space-y-4'>
+        <div className='space-y-4 max-w-6xl mx-auto'>
             {/* Sync Status Indicator */}
             {syncStatus !== "idle" && (
                 <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium transition-all ${syncStatus === "syncing" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300" : syncStatus === "synced" ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"}`}>

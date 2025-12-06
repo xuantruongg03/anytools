@@ -263,157 +263,154 @@ export default function PasswordGeneratorClient() {
     );
 
     return (
-        <div className='max-w-4xl mx-auto'>
+        <div className='max-w-6xl mx-auto'>
+            {/* Password Strengthener */}
+            <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4'>
+                <h2 className='text-xl font-bold text-gray-900 dark:text-gray-100 mb-4'>{t.strengthen}</h2>
 
-            <div className='space-y-8'>
-                {/* Password Strengthener */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4'>
-                    <h2 className='text-xl font-bold text-gray-900 dark:text-gray-100 mb-4'>{t.strengthen}</h2>
+                {renderStatsDisplay(strengthenedPassword, strengthenedEntropy, strengthenedStrength, strengthenedTimeToCrack, strengthenedCopied, setStrengthenedCopied)}
 
-                    {renderStatsDisplay(strengthenedPassword, strengthenedEntropy, strengthenedStrength, strengthenedTimeToCrack, strengthenedCopied, setStrengthenedCopied)}
-
-                    <div>
-                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{t.yourPasswordLabel}</label>
-                        <input type='text' value={inputPassword} onChange={(e) => setInputPassword(e.target.value)} placeholder={t.enterPassword} className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100' />
-                    </div>
-
-                    <div className='space-y-2'>
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={capitalizeFirst} onChange={(e) => setCapitalizeFirst(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.capitalizeFirst}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={capitalizeEachWord} onChange={(e) => setCapitalizeEachWord(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.capitalizeWords}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={replaceLetters} onChange={(e) => setReplaceLetters(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.replaceLetters}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={doubleVowels} onChange={(e) => setDoubleVowels(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.doubleVowels}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={insertSymbols} onChange={(e) => setInsertSymbols(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.insertSymbols}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={reverseWords} onChange={(e) => setReverseWords(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.reverseWords}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={addNumberEnd} onChange={(e) => setAddNumberEnd(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.addNumberEnd}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={addSymbolEnd} onChange={(e) => setAddSymbolEnd(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.addSymbolEnd}</span>
-                        </label>
-                    </div>
-
-                    <Button onClick={strengthenPassword} variant='purple' size='lg' fullWidth>
-                        {t.strengthen}
-                    </Button>
+                <div>
+                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{t.yourPasswordLabel}</label>
+                    <input type='text' value={inputPassword} onChange={(e) => setInputPassword(e.target.value)} placeholder={t.enterPassword} className='w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100' />
                 </div>
 
-                {/* Random Password Generator */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4'>
-                    <h2 className='text-xl font-bold text-gray-900 dark:text-gray-100 mb-4'>{t.generate}</h2>
+                <div className='space-y-2'>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={capitalizeFirst} onChange={(e) => setCapitalizeFirst(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.capitalizeFirst}</span>
+                    </label>
 
-                    {renderStatsDisplay(password, randomEntropy, randomStrength, randomTimeToCrack, randomCopied, setRandomCopied)}
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={capitalizeEachWord} onChange={(e) => setCapitalizeEachWord(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.capitalizeWords}</span>
+                    </label>
 
-                    <div>
-                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                            {t.length}: {length}
-                        </label>
-                        <input type='range' min='8' max='64' value={length} onChange={(e) => setLength(Number(e.target.value))} className='w-full' />
-                    </div>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={replaceLetters} onChange={(e) => setReplaceLetters(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.replaceLetters}</span>
+                    </label>
 
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={includeUppercase} onChange={(e) => setIncludeUppercase(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.uppercase}</span>
-                        </label>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={doubleVowels} onChange={(e) => setDoubleVowels(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.doubleVowels}</span>
+                    </label>
 
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={includeLowercase} onChange={(e) => setIncludeLowercase(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.lowercase}</span>
-                        </label>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={insertSymbols} onChange={(e) => setInsertSymbols(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.insertSymbols}</span>
+                    </label>
 
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={includeNumbers} onChange={(e) => setIncludeNumbers(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.numbers}</span>
-                        </label>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={reverseWords} onChange={(e) => setReverseWords(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.reverseWords}</span>
+                    </label>
 
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={includeSymbols} onChange={(e) => setIncludeSymbols(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.symbols}</span>
-                        </label>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={addNumberEnd} onChange={(e) => setAddNumberEnd(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.addNumberEnd}</span>
+                    </label>
 
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={excludeSimilar} onChange={(e) => setExcludeSimilar(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.excludeSimilar}</span>
-                        </label>
-                    </div>
-
-                    <Button onClick={generatePassword} variant='primary' size='lg' fullWidth>
-                        {t.generate}
-                    </Button>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={addSymbolEnd} onChange={(e) => setAddSymbolEnd(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.addSymbolEnd}</span>
+                    </label>
                 </div>
 
-                {/* Memorable Password Generator */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4'>
-                    <h2 className='text-xl font-bold text-gray-900 dark:text-gray-100 mb-4'>{t.memorablePassword}</h2>
+                <Button onClick={strengthenPassword} variant='purple' size='lg' fullWidth>
+                    {t.strengthen}
+                </Button>
+            </div>
 
-                    {renderStatsDisplay(memorablePassword, memorableEntropy, memorableStrength, memorableTimeToCrack, memorableCopied, setMemorableCopied)}
+            {/* Random Password Generator */}
+            <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4'>
+                <h2 className='text-xl font-bold text-gray-900 dark:text-gray-100 mb-4'>{t.generate}</h2>
 
-                    <div>
-                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                            {t.wordCount}: {wordCount}
-                        </label>
-                        <input type='range' min='2' max='6' value={wordCount} onChange={(e) => setWordCount(Number(e.target.value))} className='w-full' />
-                    </div>
+                {renderStatsDisplay(password, randomEntropy, randomStrength, randomTimeToCrack, randomCopied, setRandomCopied)}
 
-                    <div>
-                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{t.separator}</label>
-                        <Select value={separator} onChange={(e) => setSeparator(e.target.value)} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100'>
-                            <option value=''>{t.separatorNone}</option>
-                            <option value='-'>{t.separatorHyphen}</option>
-                            <option value='_'>{t.separatorUnderscore}</option>
-                            <option value='.'>{t.separatorDot}</option>
-                            <option value=' '>{t.separatorSpace}</option>
-                        </Select>
-                    </div>
-
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={capitalizeWords} onChange={(e) => setCapitalizeWords(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.capitalizeWords}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={addNumbers} onChange={(e) => setAddNumbers(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.addNumbers}</span>
-                        </label>
-
-                        <label className='flex items-center gap-2 cursor-pointer'>
-                            <input type='checkbox' checked={addSymbolsEnd} onChange={(e) => setAddSymbolsEnd(e.target.checked)} className='w-4 h-4' />
-                            <span className='text-gray-700 dark:text-gray-300'>{t.addSymbols}</span>
-                        </label>
-                    </div>
-
-                    <Button onClick={generateMemorable} variant='success' size='lg' fullWidth>
-                        {t.generateMemor}
-                    </Button>
+                <div>
+                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                        {t.length}: {length}
+                    </label>
+                    <input type='range' min='8' max='64' value={length} onChange={(e) => setLength(Number(e.target.value))} className='w-full' />
                 </div>
+
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={includeUppercase} onChange={(e) => setIncludeUppercase(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.uppercase}</span>
+                    </label>
+
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={includeLowercase} onChange={(e) => setIncludeLowercase(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.lowercase}</span>
+                    </label>
+
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={includeNumbers} onChange={(e) => setIncludeNumbers(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.numbers}</span>
+                    </label>
+
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={includeSymbols} onChange={(e) => setIncludeSymbols(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.symbols}</span>
+                    </label>
+
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={excludeSimilar} onChange={(e) => setExcludeSimilar(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.excludeSimilar}</span>
+                    </label>
+                </div>
+
+                <Button onClick={generatePassword} variant='primary' size='lg' fullWidth>
+                    {t.generate}
+                </Button>
+            </div>
+
+            {/* Memorable Password Generator */}
+            <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4'>
+                <h2 className='text-xl font-bold text-gray-900 dark:text-gray-100 mb-4'>{t.memorablePassword}</h2>
+
+                {renderStatsDisplay(memorablePassword, memorableEntropy, memorableStrength, memorableTimeToCrack, memorableCopied, setMemorableCopied)}
+
+                <div>
+                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                        {t.wordCount}: {wordCount}
+                    </label>
+                    <input type='range' min='2' max='6' value={wordCount} onChange={(e) => setWordCount(Number(e.target.value))} className='w-full' />
+                </div>
+
+                <div>
+                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{t.separator}</label>
+                    <Select value={separator} onChange={(e) => setSeparator(e.target.value)} className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100'>
+                        <option value=''>{t.separatorNone}</option>
+                        <option value='-'>{t.separatorHyphen}</option>
+                        <option value='_'>{t.separatorUnderscore}</option>
+                        <option value='.'>{t.separatorDot}</option>
+                        <option value=' '>{t.separatorSpace}</option>
+                    </Select>
+                </div>
+
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={capitalizeWords} onChange={(e) => setCapitalizeWords(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.capitalizeWords}</span>
+                    </label>
+
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={addNumbers} onChange={(e) => setAddNumbers(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.addNumbers}</span>
+                    </label>
+
+                    <label className='flex items-center gap-2 cursor-pointer'>
+                        <input type='checkbox' checked={addSymbolsEnd} onChange={(e) => setAddSymbolsEnd(e.target.checked)} className='w-4 h-4' />
+                        <span className='text-gray-700 dark:text-gray-300'>{t.addSymbols}</span>
+                    </label>
+                </div>
+
+                <Button onClick={generateMemorable} variant='success' size='lg' fullWidth>
+                    {t.generateMemor}
+                </Button>
             </div>
         </div>
     );

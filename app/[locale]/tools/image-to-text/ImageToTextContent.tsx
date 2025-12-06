@@ -12,7 +12,7 @@ export default function ImageToTextContent({ locale }: ImageToTextContentProps) 
     const page = tool_t.page;
 
     return (
-        <div className='space-y-6'>
+        <div className='space-y-6 max-w-6xl mx-auto'>
             {/* Tool Component */}
             <ImageToTextClient />
 
@@ -164,7 +164,7 @@ export default function ImageToTextContent({ locale }: ImageToTextContentProps) 
             </div>
 
             {/* FAQ */}
-            <div className='rounded-xl shadow-lg p-6'>
+            <div className='rounded-xl shadow-lg'>
                 <FAQSection
                     title={`❓ ${page.faq}`}
                     faqs={[

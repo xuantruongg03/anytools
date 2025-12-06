@@ -326,7 +326,7 @@ export default function GpaCalculatorClient() {
     const handleImportSuccess = useCallback(() => setImportSuccess(""), []);
 
     return (
-        <div className='space-y-8'>
+        <div className='space-y-8 max-w-6xl mx-auto'>
             {/* Import Messages */}
             {importError && (
                 <div className='bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-lg flex items-start gap-3'>

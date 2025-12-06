@@ -204,7 +204,7 @@ export default function RepoTreeClient() {
     };
 
     return (
-        <div className='space-y-6'>
+        <div className='max-w-6xl mx-auto'>
 
             {/* Input Section */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-4'>

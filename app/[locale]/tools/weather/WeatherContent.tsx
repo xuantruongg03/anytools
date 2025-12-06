@@ -10,7 +10,7 @@ export default function WeatherContent() {
     const page = weather_t.page;
 
     return (
-        <div className='mt-8 space-y-8'>
+        <div className='mt-8 space-y-8 max-w-6xl mx-auto'>
             {/* What is Weather Tool */}
             <section className='bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6'>
                 <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>{page.whatIs}</h2>

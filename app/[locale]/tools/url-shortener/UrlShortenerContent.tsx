@@ -61,11 +61,11 @@ export default function UrlShortenerContent({ locale }: UrlShortenerContentProps
     };
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+        <div className='min-h-screen bg-gray-50 dark:bg-gray-900 max-w-6xl mx-auto'>
             <div className='container mx-auto px-4 py-8'>
 
                 {/* Tool Section */}
-                <div className='max-w-3xl mx-auto mb-12'>
+                <div className=' mx-auto mb-12'>
                     <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
                         {!result ? (
                             <>

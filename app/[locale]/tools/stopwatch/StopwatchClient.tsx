@@ -69,7 +69,7 @@ export default function StopwatchClient() {
     };
 
     return (
-        <div className='space-y-4'>
+        <div className='space-y-4 max-w-6xl mx-auto'>
 
             {/* Stopwatch Display */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-6'>

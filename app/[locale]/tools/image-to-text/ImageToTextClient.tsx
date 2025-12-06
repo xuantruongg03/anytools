@@ -90,7 +90,7 @@ export default function ImageToTextClient() {
     const currentError = uploadError || processError;
 
     return (
-        <div className='space-y-4'>
+        <div className='space-y-4 max-w-6xl mx-auto'>
             <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700'>
                     {/* Image Upload / Preview */}
                     <div className='mb-4'>

@@ -259,7 +259,7 @@ export default function MicrophoneTestClient() {
     };
 
     return (
-        <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8'>
+        <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 max-w-6xl mx-auto'>
 
             {/* Control Buttons */}
             <div className='flex flex-wrap gap-3 justify-center mb-6'>

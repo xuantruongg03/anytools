@@ -12,7 +12,7 @@ export default function SlideShareDownloaderContent({ locale }: SlideShareDownlo
     const page = tool_t.page;
 
     return (
-        <div className='space-y-6'>
+        <div className='space-y-6 max-w-6xl mx-auto'>
             {/* Tool Component */}
             <SlideShareDownloaderClient />
 

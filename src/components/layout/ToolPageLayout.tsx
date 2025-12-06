@@ -38,7 +38,7 @@ export default function ToolPageLayout({ title, description, children }: ToolPag
                     </button>
                 </div>
 
-                <div className='container mx-auto px-4 py-8 pt-20 lg:pt-8'>
+                <div className='container max-w-6xl mx-auto px-4 py-8 pt-20 lg:pt-8'>
                     {/* Centered Heading Section */}
                     <div className='text-center mb-8'>
                         <h1 className='text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100'>{title}</h1>

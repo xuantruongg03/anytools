@@ -135,7 +135,7 @@ export default function SlideShareDownloaderClient() {
     }, []);
 
     return (
-        <div className='space-y-6'>
+        <div className='space-y-6 max-w-6xl mx-auto'>
             {/* Header */}
             <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
                 <div className='mb-4'>

@@ -23,7 +23,7 @@ export default function HtmlEntityContent() {
     ];
 
     return (
-        <div className='w-full max-w-4xl mx-auto overflow-x-hidden'>
+        <div className='w-full max-w-6xl mx-auto overflow-x-hidden'>
 
             <HtmlEntityClient />
 

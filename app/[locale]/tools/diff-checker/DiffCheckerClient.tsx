@@ -33,7 +33,7 @@ export default function DiffCheckerClient() {
     };
 
     return (
-        <div className='space-y-6'>
+        <div className='max-w-6xl mx-auto'>
             <div className='grid md:grid-cols-2 gap-4'>
                 <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
                     <h3 className='text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100'>Original Text</h3>

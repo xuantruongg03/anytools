@@ -121,7 +121,7 @@ export default function WeatherClient() {
     }, []);
 
     return (
-        <div className='space-y-6'>
+        <div className='space-y-6 max-w-6xl mx-auto'>
             {/* Header & Search */}
             <div className='bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6'>
                 <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
