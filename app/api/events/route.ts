@@ -59,8 +59,7 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
         // Only schedule if reminder time is in the future (at least 60 seconds from now)
         if (reminderTime > now + 60000) {
             try {
-                const destinationUrl = encodeURIComponent(`${BASE_URL}/api/send-reminder`);
-                const response = await fetch(`${QSTASH_URL}/v2/publish/${destinationUrl}`, {
+                const response = await fetch(`${QSTASH_URL}/v2/publish/${BASE_URL}/api/send-reminder`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${QSTASH_TOKEN}`,
@@ -85,7 +84,8 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
                         console.log(`📧 Scheduled QStash reminder for "${event.name}" at ${new Date(reminderTime).toISOString()} (${formatMinutes(minutesBefore)} before)`);
                     }
                 } else {
-                    console.error(`Failed to schedule QStash message: ${response.status} ${response.statusText}`);
+                    const errorBody = await response.text();
+                    console.error(`Failed to schedule QStash message: ${response.status} ${response.statusText}`, errorBody);
                 }
             } catch (error) {
                 console.error(`Failed to schedule QStash message for ${minutesBefore} minutes before:`, error);
@@ -99,8 +99,7 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
 
         if (targetTime > now + 60000) {
             try {
-                const destinationUrl = encodeURIComponent(`${BASE_URL}/api/send-reminder`);
-                const response = await fetch(`${QSTASH_URL}/v2/publish/${destinationUrl}`, {
+                const response = await fetch(`${QSTASH_URL}/v2/publish/${BASE_URL}/api/send-reminder`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${QSTASH_TOKEN}`,
@@ -125,7 +124,8 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
                         console.log(`Scheduled QStash final reminder for "${event.name}" at event time`);
                     }
                 } else {
-                    console.error(`Failed to schedule final QStash message: ${response.status} ${response.statusText}`);
+                    const errorBody = await response.text();
+                    console.error(`Failed to schedule final QStash message: ${response.status} ${response.statusText}`, errorBody);
                 }
             } catch (error) {
                 console.error(`Failed to schedule final QStash message:`, error);
