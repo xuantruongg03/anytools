@@ -72,7 +72,9 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
                         minutesBefore: minutesBefore,
                         eventId: event.id,
                     },
-                    delay: delaySeconds,
+                    headers: {
+                        "Upstash-Delay": `${delaySeconds}s`,
+                    },
                     retries: 3,
                 })) as { messageId: string };
 
@@ -102,7 +104,9 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
                         minutesBefore: 0,
                         eventId: event.id,
                     },
-                    delay: delaySeconds,
+                    headers: {
+                        "Upstash-Delay": `${delaySeconds}s`,
+                    },
                     retries: 3,
                 })) as { messageId: string };
 
