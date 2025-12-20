@@ -1,0 +1,108 @@
+export const browserExtensionsTranslations = {
+    en: {
+        browserExtensions: {
+            meta: {
+                title: "Browser Extensions Collection - Useful Chrome, Firefox & Edge Extensions",
+                description: "A curated collection of useful browser extensions for Chrome, Firefox, and Edge. Find productivity tools, developer utilities, and more.",
+                keywords: ["browser extensions", "chrome extensions", "firefox addons", "edge extensions", "productivity extensions", "developer tools", "useful extensions", "free extensions"],
+            },
+            page: {
+                title: "Browser Extensions Collection",
+                subtitle: "A curated collection of useful browser extensions I've created or discovered",
+                allCategories: "All Categories",
+                noExtensions: "No extensions found in this category.",
+                searchPlaceholder: "Search extensions...",
+                viewOn: "View on",
+                chrome: "Chrome Web Store",
+                firefox: "Firefox Add-ons",
+                edge: "Edge Add-ons",
+                github: "GitHub",
+                sourceCode: "Source Code",
+                by: "by",
+                tags: "Tags",
+                categories: {
+                    productivity: "Productivity",
+                    developer: "Developer Tools",
+                    privacy: "Privacy & Security",
+                    social: "Social & Communication",
+                    utility: "Utility",
+                    entertainment: "Entertainment",
+                },
+                features: {
+                    title: "Why These Extensions?",
+                    curated: {
+                        title: "Carefully Curated",
+                        description: "Each extension is personally tested and verified for quality and usefulness.",
+                    },
+                    free: {
+                        title: "Free to Use",
+                        description: "All extensions in this collection are free to install and use.",
+                    },
+                    safe: {
+                        title: "Safe & Trusted",
+                        description: "Extensions are from official stores or open-source repositories.",
+                    },
+                },
+                cta: {
+                    title: "Have a suggestion?",
+                    description: "Know a great extension that should be in this collection? Let me know!",
+                    button: "Suggest Extension",
+                },
+            },
+        },
+    },
+    vi: {
+        browserExtensions: {
+            meta: {
+                title: "Bộ Sưu Tập Extension Trình Duyệt - Chrome, Firefox & Edge Extensions Hữu Ích",
+                description: "Bộ sưu tập các extension trình duyệt hữu ích cho Chrome, Firefox và Edge. Tìm công cụ năng suất, tiện ích developer và nhiều hơn nữa.",
+                keywords: ["extension trình duyệt", "chrome extensions", "firefox addons", "edge extensions", "extension năng suất", "công cụ developer", "extension hữu ích", "extension miễn phí"],
+            },
+            page: {
+                title: "Bộ Sưu Tập Extension Trình Duyệt",
+                subtitle: "Tổng hợp các extension trình duyệt hữu ích mà tôi đã tạo hoặc sưu tầm",
+                allCategories: "Tất cả",
+                noExtensions: "Không có extension nào trong danh mục này.",
+                searchPlaceholder: "Tìm kiếm extension...",
+                viewOn: "Xem trên",
+                chrome: "Chrome Web Store",
+                firefox: "Firefox Add-ons",
+                edge: "Edge Add-ons",
+                github: "GitHub",
+                sourceCode: "Mã nguồn",
+                by: "bởi",
+                tags: "Thẻ",
+                categories: {
+                    productivity: "Năng suất",
+                    developer: "Công cụ Dev",
+                    privacy: "Bảo mật & Riêng tư",
+                    social: "Mạng xã hội",
+                    utility: "Tiện ích",
+                    entertainment: "Giải trí",
+                },
+                features: {
+                    title: "Tại sao chọn các Extension này?",
+                    curated: {
+                        title: "Được Chọn Lọc Kỹ",
+                        description: "Mỗi extension đều được kiểm tra và xác minh về chất lượng và tính hữu ích.",
+                    },
+                    free: {
+                        title: "Miễn Phí Sử Dụng",
+                        description: "Tất cả extension trong bộ sưu tập này đều miễn phí cài đặt và sử dụng.",
+                    },
+                    safe: {
+                        title: "An Toàn & Đáng Tin",
+                        description: "Các extension đều từ cửa hàng chính thức hoặc mã nguồn mở.",
+                    },
+                },
+                cta: {
+                    title: "Có gợi ý?",
+                    description: "Biết extension nào hay mà nên có trong bộ sưu tập này? Hãy cho tôi biết!",
+                    button: "Đề Xuất Extension",
+                },
+            },
+        },
+    },
+};
+
+export type BrowserExtensionsTranslations = typeof browserExtensionsTranslations;

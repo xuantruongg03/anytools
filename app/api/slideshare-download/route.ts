@@ -94,9 +94,40 @@ async function downloadWithSlideSaver(url: string, format: string) {
     return { url: slideResult.download_url, filename };
 }
 
+// Fetch fresh nonce from SlideSilo homepage
+async function getSlideSiloNonce(): Promise<string> {
+    const response = await fetch("https://slidesilo.com/", {
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch SlideSilo homepage: ${response.status}`);
+    }
+
+    const html = await response.text();
+
+    // Look for nonce in various patterns
+    const noncePatterns = [/nonce["'\s:]+["']?([a-f0-9]{10})["']?/i, /ajax_nonce["'\s:]+["']?([a-f0-9]{10})["']?/i, /"nonce":"([a-f0-9]{10})"/i];
+
+    for (const pattern of noncePatterns) {
+        const match = html.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+
+    // Fallback to hardcoded nonce if extraction fails
+    console.warn("Could not extract SlideSilo nonce, using fallback");
+    return "ef601f88b6";
+}
+
 async function downloadWithSlideSilo(url: string, format: string) {
     const SLIDESILO_BASE = "https://slidesilo.com/wp-admin/admin-ajax.php";
-    const NONCE = "938308dd1f";
+
+    // Fetch fresh nonce
+    const NONCE = await getSlideSiloNonce();
 
     // Step 1: Cancel any previous generation
     const cancelResponse = await fetch(SLIDESILO_BASE, {
@@ -221,9 +252,9 @@ async function handleSlideshareDownload(request: NextRequest) {
         const services = [];
 
         // Add RapidAPI if key is available
-        if (RAPIDAPI_KEY) {
-            services.push({ name: "RapidAPI", handler: () => downloadWithRapidAPI(url, format) });
-        }
+        // if (RAPIDAPI_KEY) {
+        //     services.push({ name: "RapidAPI", handler: () => downloadWithRapidAPI(url, format) });
+        // }
 
         services.push({ name: "SlideSilo", handler: () => downloadWithSlideSilo(url, format) }, { name: "SlideSaver", handler: () => downloadWithSlideSaver(url, format) });
 

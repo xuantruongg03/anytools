@@ -71,7 +71,7 @@ export default async function WeatherPage({ params }: Props) {
         "@type": "WebApplication",
         name: weather_t.name,
         description: weather_t.page.subtitle,
-        url: `https://anytools.dev/${locale}/tools/weather`,
+        url: `https://anytools.online/${locale}/tools/weather`,
         applicationCategory: "UtilityApplication",
         operatingSystem: "Web Browser",
         offers: {

@@ -5,6 +5,7 @@
 export const APP_NAME = "AnyTools";
 
 export * from "./categories";
+export * from "./extensions";
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 

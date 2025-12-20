@@ -459,13 +459,16 @@ export default function GpaCalculatorClient() {
                             </svg>
                             {locale === "vi" ? "Thêm môn học" : "Add Course"}
                         </button>
-                        <button onClick={() => fileInputRef.current?.click()} className='py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2'>
-                            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
-                            </svg>
-                            {locale === "vi" ? "Import Excel" : "Import Excel"}
-                        </button>
-                        <input ref={fileInputRef} type='file' accept='.csv,.xlsx,.xls' onChange={(e) => handleFileImport(e, false)} className='hidden' />
+                        <div className='flex flex-col items-end gap-1'>
+                            <button onClick={() => fileInputRef.current?.click()} className='py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2'>
+                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
+                                </svg>
+                                {locale === "vi" ? "Import CSV" : "Import CSV"}
+                            </button>
+                            <span className='text-xs text-gray-500 dark:text-gray-400'>{locale === "vi" ? "Format: Tên môn, Điểm, Tín chỉ" : "Format: Course, Grade, Credits"}</span>
+                        </div>
+                        <input ref={fileInputRef} type='file' accept='.csv,.txt' onChange={(e) => handleFileImport(e, false)} className='hidden' />
                     </div>
 
                     {/* Results */}
@@ -590,13 +593,16 @@ export default function GpaCalculatorClient() {
                             </svg>
                             {locale === "vi" ? "Thêm môn" : "Add Course"}
                         </button>
-                        <button onClick={() => simFileInputRef.current?.click()} className='py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2'>
-                            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
-                            </svg>
-                            {locale === "vi" ? "Import Excel" : "Import Excel"}
-                        </button>
-                        <input ref={simFileInputRef} type='file' accept='.csv,.xlsx,.xls' onChange={(e) => handleFileImport(e, true)} className='hidden' />
+                        <div className='flex flex-col items-end gap-1'>
+                            <button onClick={() => simFileInputRef.current?.click()} className='py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2'>
+                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
+                                </svg>
+                                {locale === "vi" ? "Import CSV" : "Import CSV"}
+                            </button>
+                            <span className='text-xs text-gray-500 dark:text-gray-400'>{locale === "vi" ? "Format: Tên môn, Điểm, Tín chỉ" : "Format: Course, Grade, Credits"}</span>
+                        </div>
+                        <input ref={simFileInputRef} type='file' accept='.csv,.txt' onChange={(e) => handleFileImport(e, true)} className='hidden' />
                     </div>
 
                     {simCurrentGPA > 0 && simCurrentCredits > 0 && (

@@ -43,7 +43,7 @@ export async function sendErrorEmail(data: EmailData) {
 
     try {
         await resendClient.emails.send({
-            from: process.env.ERROR_EMAIL_FROM || "errors@anytools.dev",
+            from: process.env.ERROR_EMAIL_FROM || "errors@anytools.online",
             to: adminEmail,
             subject: `[${environment.toUpperCase()}] Error: ${error.message.substring(0, 50)}`,
             html: `

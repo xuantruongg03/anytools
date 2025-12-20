@@ -61,6 +61,8 @@ export const translations = {
             viewAllTools: "View All Tools",
             home: "Home",
             about: "About",
+            extensions: "Extensions",
+            contact: "Contact",
         },
 
         // Tools
@@ -912,6 +914,8 @@ export const translations = {
             viewAllTools: "Xem Tất Cả Công Cụ",
             home: "Trang Chủ",
             about: "Về Chúng Tôi",
+            extensions: "Tiện ích",
+            contact: "Liên Hệ",
         },
 
         // Tools
