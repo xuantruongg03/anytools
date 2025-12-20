@@ -94,12 +94,23 @@ function generateEmailHtml(eventName: string, eventDescription: string | undefin
 
 // Main handler - will be called by QStash
 async function handler(request: NextRequest) {
+    console.log("📧 send-reminder handler called");
+    
     try {
         const payload: ReminderPayload = await request.json();
+        console.log("📧 Payload received:", JSON.stringify(payload));
+        
         const { email, eventName, eventDescription, targetDate, minutesBefore, isTest } = payload;
 
         if (!email || !eventName || !targetDate) {
+            console.log("📧 Missing required fields");
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        // Check if Resend API key is configured
+        if (!process.env.RESEND_API_KEY) {
+            console.error("📧 RESEND_API_KEY is not configured!");
+            return NextResponse.json({ error: "Email service not configured" }, { status: 500 });
         }
 
         const timeLeft = formatMinutes(minutesBefore);
@@ -108,6 +119,8 @@ async function handler(request: NextRequest) {
 
         const htmlContent = generateEmailHtml(eventName, eventDescription, targetDate, timeLeft, isNow);
 
+        console.log("📧 Sending email to:", email, "from:", fromEmail);
+        
         // Send email via Resend
         const result = await resend.emails.send({
             from: fromEmail,
@@ -136,9 +149,7 @@ async function handler(request: NextRequest) {
 
 // Wrap handler with QStash signature verification for security
 // This ensures only QStash can call this endpoint
-// TEMPORARILY DISABLED FOR DEBUGGING - uncomment after fixing
-// export const POST = verifySignatureAppRouter(handler);
-export const POST = handler;
+export const POST = verifySignatureAppRouter(handler);
 
 // Also allow direct calls for testing (without verification)
 // Remove this in production if you only want QStash to call this endpoint
