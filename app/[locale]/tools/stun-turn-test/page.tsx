@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/stun-turn-test`,
+            url: `https://anytools.online/${locale}/tools/stun-turn-test`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/stun-turn-test`,
+            canonical: `https://anytools.online/${locale}/tools/stun-turn-test`,
             languages: {
-                en: "https://www.anytools.online/en/tools/stun-turn-test",
-                vi: "https://www.anytools.online/vi/tools/stun-turn-test",
-                "x-default": "https://www.anytools.online/en/tools/stun-turn-test",
+                en: "https://anytools.online/en/tools/stun-turn-test",
+                vi: "https://anytools.online/vi/tools/stun-turn-test",
+                "x-default": "https://anytools.online/en/tools/stun-turn-test",
             },
         },
         robots: {

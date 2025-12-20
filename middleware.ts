@@ -26,7 +26,14 @@ function getLocale(request: NextRequest): string {
 }
 
 export function middleware(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+    const { pathname, hostname } = request.nextUrl;
+
+    // Redirect www to non-www for SEO consistency
+    if (hostname === "www.anytools.online") {
+        const url = request.nextUrl.clone();
+        url.hostname = "anytools.online";
+        return NextResponse.redirect(url, 301);
+    }
 
     // Check if pathname already has a locale
     const pathnameHasLocale = locales.some((locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`);

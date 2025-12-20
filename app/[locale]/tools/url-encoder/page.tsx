@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/url-encoder`,
+            url: `https://anytools.online/${locale}/tools/url-encoder`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/url-encoder`,
+            canonical: `https://anytools.online/${locale}/tools/url-encoder`,
             languages: {
-                en: "https://www.anytools.online/en/tools/url-encoder",
-                vi: "https://www.anytools.online/vi/tools/url-encoder",
-                "x-default": "https://www.anytools.online/en/tools/url-encoder",
+                en: "https://anytools.online/en/tools/url-encoder",
+                vi: "https://anytools.online/vi/tools/url-encoder",
+                "x-default": "https://anytools.online/en/tools/url-encoder",
             },
         },
         robots: {

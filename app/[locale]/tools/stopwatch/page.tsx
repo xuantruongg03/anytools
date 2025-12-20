@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/stopwatch`,
+            url: `https://anytools.online/${locale}/tools/stopwatch`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/stopwatch`,
+            canonical: `https://anytools.online/${locale}/tools/stopwatch`,
             languages: {
-                en: "https://www.anytools.online/en/tools/stopwatch",
-                vi: "https://www.anytools.online/vi/tools/stopwatch",
-                "x-default": "https://www.anytools.online/en/tools/stopwatch",
+                en: "https://anytools.online/en/tools/stopwatch",
+                vi: "https://anytools.online/vi/tools/stopwatch",
+                "x-default": "https://anytools.online/en/tools/stopwatch",
             },
         },
         robots: {

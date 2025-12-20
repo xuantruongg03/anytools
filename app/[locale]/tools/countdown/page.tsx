@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/countdown`,
+            url: `https://anytools.online/${locale}/tools/countdown`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/countdown`,
+            canonical: `https://anytools.online/${locale}/tools/countdown`,
             languages: {
-                en: "https://www.anytools.online/en/tools/countdown",
-                vi: "https://www.anytools.online/vi/tools/countdown",
-                "x-default": "https://www.anytools.online/en/tools/countdown",
+                en: "https://anytools.online/en/tools/countdown",
+                vi: "https://anytools.online/vi/tools/countdown",
+                "x-default": "https://anytools.online/en/tools/countdown",
             },
         },
         robots: {

@@ -19,17 +19,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         keywords: ["html entity encoder", "html entity decoder", "html entities", "encode html", "decode html", "xss prevention", "html special characters", "html escape", "mã hóa html", "giải mã html", "ký tự đặc biệt html", "bảo mật html", "ngăn chặn xss"],
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/html-entity-encoder`,
+            canonical: `https://anytools.online/${locale}/tools/html-entity-encoder`,
             languages: {
-                en: "https://www.anytools.online/en/tools/html-entity-encoder",
-                vi: "https://www.anytools.online/vi/tools/html-entity-encoder",
-                "x-default": "https://www.anytools.online/en/tools/html-entity-encoder",
+                en: "https://anytools.online/en/tools/html-entity-encoder",
+                vi: "https://anytools.online/vi/tools/html-entity-encoder",
+                "x-default": "https://anytools.online/en/tools/html-entity-encoder",
             },
         },
         openGraph: {
             title,
             description,
-            url: `https://www.anytools.online/${locale}/tools/html-entity-encoder`,
+            url: `https://anytools.online/${locale}/tools/html-entity-encoder`,
             siteName: "AnyTools",
             locale: locale === "vi" ? "vi_VN" : "en_US",
             type: "website",
@@ -51,7 +51,7 @@ export default async function HtmlEntityPage({ params }: Props) {
         "@type": "WebApplication",
         name: "HTML Entity Encoder/Decoder",
         description: "Free online tool to encode and decode HTML entities. Convert special characters to HTML entities for security and prevent XSS attacks.",
-        url: "https://www.anytools.online/tools/html-entity-encoder",
+        url: "https://anytools.online/tools/html-entity-encoder",
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Any",
         offers: {

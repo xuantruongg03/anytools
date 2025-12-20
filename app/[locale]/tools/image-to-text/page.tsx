@@ -27,11 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/image-to-text`,
+            url: `https://anytools.online/${locale}/tools/image-to-text`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://www.anytools.online/og-image.png",
+                    url: "https://anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Image to Text OCR Online Tool",
@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: isVi ? "Chuyển Ảnh Thành Văn Bản - OCR Miễn Phí" : "Image to Text - Free Online OCR",
             description: isVi ? "Chuyển đổi ảnh thành văn bản bằng OCR. Miễn phí và bảo mật." : "Convert images to text using OCR. Free and secure.",
             creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/image-to-text`,
+            canonical: `https://anytools.online/${locale}/tools/image-to-text`,
             languages: {
-                en: "https://www.anytools.online/en/tools/image-to-text",
-                vi: "https://www.anytools.online/vi/tools/image-to-text",
-                "x-default": "https://www.anytools.online/en/tools/image-to-text",
+                en: "https://anytools.online/en/tools/image-to-text",
+                vi: "https://anytools.online/vi/tools/image-to-text",
+                "x-default": "https://anytools.online/en/tools/image-to-text",
             },
         },
         robots: {
@@ -79,7 +79,7 @@ export default async function ImageToTextPage({ params }: Props) {
         name: isVi ? "Công Cụ Chuyển Ảnh Thành Văn Bản" : "Image to Text OCR Online",
         applicationCategory: "MultimediaApplication",
         description: isVi ? "Công cụ chuyển đổi ảnh thành văn bản miễn phí sử dụng công nghệ OCR. Hỗ trợ nhiều ngôn ngữ, nhận dạng chữ in và chữ viết tay. Không cần đăng ký, hoàn toàn miễn phí và bảo mật." : "Free image to text conversion tool using OCR technology. Support multiple languages, recognize printed and handwritten text. No registration required, completely free and secure.",
-        url: `https://www.anytools.online/${locale}/tools/image-to-text`,
+        url: `https://anytools.online/${locale}/tools/image-to-text`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

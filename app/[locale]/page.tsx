@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}`,
+            url: `https://anytools.online/${locale}`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}`,
+            canonical: `https://anytools.online/${locale}`,
             languages: {
-                en: "https://www.anytools.online/en",
-                vi: "https://www.anytools.online/vi",
-                "x-default": "https://www.anytools.online/en",
+                en: "https://anytools.online/en",
+                vi: "https://anytools.online/vi",
+                "x-default": "https://anytools.online/en",
             },
         },
         robots: {
@@ -59,7 +59,7 @@ export default async function Home({ params }: Props) {
 
     return (
         <div className='bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black'>
-            <StructuredData type='WebApplication' name='AnyTools - Free Online Tools' description='Free online tools for developers, designers, and content creators. Text formatters, JSON validators, color pickers, and more.' url='https://www.anytools.online' keywords={["online tools", "developer tools", "free tools", "text formatter", "JSON validator", "color picker", "công cụ trực tuyến", "công cụ lập trình viên"]} inLanguage={["en", "vi"]} />
+            <StructuredData type='WebApplication' name='AnyTools - Free Online Tools' description='Free online tools for developers, designers, and content creators. Text formatters, JSON validators, color pickers, and more.' url='https://anytools.online' keywords={["online tools", "developer tools", "free tools", "text formatter", "JSON validator", "color picker", "công cụ trực tuyến", "công cụ lập trình viên"]} inLanguage={["en", "vi"]} />
             <HomeContent locale={locale} />
         </div>
     );

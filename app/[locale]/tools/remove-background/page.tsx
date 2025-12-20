@@ -27,11 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/remove-background`,
+            url: `https://anytools.online/${locale}/tools/remove-background`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://www.anytools.online/og-image.png",
+                    url: "https://anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Remove Image Background Online Tool",
@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: isVi ? "Xóa Phông Nền Ảnh - Miễn Phí" : "Remove Image Background - Free Online Tool",
             description: isVi ? "Xóa phông nền ảnh tự động bằng AI. Miễn phí và bảo mật." : "Remove image backgrounds automatically with AI. Free and secure.",
             creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/remove-background`,
+            canonical: `https://anytools.online/${locale}/tools/remove-background`,
             languages: {
-                en: "https://www.anytools.online/en/tools/remove-background",
-                vi: "https://www.anytools.online/vi/tools/remove-background",
-                "x-default": "https://www.anytools.online/en/tools/remove-background",
+                en: "https://anytools.online/en/tools/remove-background",
+                vi: "https://anytools.online/vi/tools/remove-background",
+                "x-default": "https://anytools.online/en/tools/remove-background",
             },
         },
         robots: {
@@ -79,7 +79,7 @@ export default async function RemoveBackgroundPage({ params }: Props) {
         name: isVi ? "Công Cụ Xóa Phông Nền Ảnh" : "Remove Image Background Online",
         applicationCategory: "MultimediaApplication",
         description: isVi ? "Công cụ xóa phông nền ảnh miễn phí sử dụng AI. Hỗ trợ nhiều nhà cung cấp dịch vụ (Remove.bg, Photoroom, Clipdrop). Xử lý nhanh chóng và chính xác. Không cần đăng ký, hoàn toàn miễn phí và bảo mật." : "Free AI-powered background removal tool. Multiple service providers supported (Remove.bg, Photoroom, Clipdrop). Fast and accurate processing. No registration required, completely free and secure.",
-        url: `https://www.anytools.online/${locale}/tools/remove-background`,
+        url: `https://anytools.online/${locale}/tools/remove-background`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

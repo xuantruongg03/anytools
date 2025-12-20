@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
-import { Resend } from "resend";
+import { Client } from "@upstash/qstash";
 
 // Initialize Upstash Redis client
 const redis = new Redis({
@@ -8,9 +8,13 @@ const redis = new Redis({
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
-const fromEmail = process.env.ADMIN_EMAIL || "AnyTools <onboarding@resend.dev>";
+// Initialize QStash client
+const qstash = new Client({
+    token: process.env.QSTASH_TOKEN!,
+});
+
+// Base URL for the app (needed for QStash to call our endpoints)
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://anytools.online";
 
 // Type for event reminder
 export interface ServerEventReminder {
@@ -22,7 +26,7 @@ export interface ServerEventReminder {
     remindersBefore: number[];
     createdAt: number;
     sentReminders: number[]; // Track which reminder times have been sent
-    scheduledEmailIds: string[]; // Store Resend scheduled email IDs for cancellation
+    qstashMessageIds: string[]; // Store QStash message IDs for cancellation
     isCompleted: boolean;
     userId?: string; // Optional: for future user authentication
 }
@@ -43,135 +47,86 @@ function formatMinutes(minutes: number): string {
     return `${weeks} tuần`;
 }
 
-// Generate email HTML content
-function generateEmailHtml(event: ServerEventReminder, timeLeft: string, formattedDate: string, isNow: boolean): string {
-    return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
-            <div style="background: linear-gradient(135deg, ${isNow ? "#10b981" : "#667eea"} 0%, ${isNow ? "#059669" : "#764ba2"} 100%); padding: 40px 30px; border-radius: 16px 16px 0 0; text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 16px;">${isNow ? "🎉" : "⏰"}</div>
-                <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">
-                    ${isNow ? "Đến giờ rồi!" : `Còn ${timeLeft}`}
-                </h1>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <h2 style="color: #1f2937; margin-top: 0; font-size: 24px; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px;">
-                    📌 ${event.name}
-                </h2>
-                ${event.description ? `<p style="color: #6b7280; font-size: 16px; margin: 16px 0;">${event.description}</p>` : ""}
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 12px; margin: 24px 0; border-left: 4px solid #0ea5e9;">
-                    <p style="margin: 0; color: #0369a1; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                        📅 Thời gian sự kiện
-                    </p>
-                    <p style="margin: 8px 0 0 0; color: #1e40af; font-size: 18px; font-weight: 500;">
-                        ${formattedDate}
-                    </p>
-                </div>
-                ${
-                    isNow
-                        ? `
-                    <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); padding: 16px; border-radius: 12px; text-align: center; margin: 24px 0;">
-                        <p style="margin: 0; color: #059669; font-size: 18px; font-weight: 600;">
-                            ✨ Chúc bạn có một sự kiện thành công!
-                        </p>
-                    </div>
-                `
-                        : ""
-                }
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-                <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-                    Nhắc nhở này được gửi từ <a href="https://anytools.online/tools/event-reminder" style="color: #667eea; text-decoration: none;">AnyTools Event Reminder</a>
-                </p>
-            </div>
-        </body>
-        </html>
-    `;
-}
-
-// Schedule emails with Resend for an event
-async function scheduleEventEmails(event: ServerEventReminder): Promise<string[]> {
-    const scheduledEmailIds: string[] = [];
+// Schedule emails with QStash for an event
+async function scheduleEventReminders(event: ServerEventReminder): Promise<string[]> {
+    const qstashMessageIds: string[] = [];
     const targetTime = new Date(event.targetDate).getTime();
     const now = Date.now();
-
-    const formattedDate = new Date(event.targetDate).toLocaleString("vi-VN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
 
     // Schedule reminder emails for each reminder time
     for (const minutesBefore of event.remindersBefore) {
         const reminderTime = targetTime - minutesBefore * 60 * 1000;
+        const delaySeconds = Math.floor((reminderTime - now) / 1000);
 
-        // Only schedule if reminder time is in the future (at least 1 minute from now)
-        if (reminderTime > now + 60 * 1000) {
+        // Only schedule if reminder time is in the future (at least 60 seconds from now)
+        if (delaySeconds > 60) {
             try {
-                const timeLeft = formatMinutes(minutesBefore);
-                const isNow = minutesBefore === 0;
-                const subject = isNow ? `🎉 ${event.name} - Đến giờ rồi!` : `⏰ Nhắc nhở: ${event.name} - Còn ${timeLeft}`;
-
-                const htmlContent = generateEmailHtml(event, timeLeft, formattedDate, isNow);
-
-                const result = await resend.emails.send({
-                    from: fromEmail,
-                    to: event.email,
-                    subject: subject,
-                    html: htmlContent,
-                    scheduledAt: new Date(reminderTime).toISOString(),
+                const result = await qstash.publishJSON({
+                    url: `${BASE_URL}/api/send-reminder`,
+                    body: {
+                        email: event.email,
+                        eventName: event.name,
+                        eventDescription: event.description,
+                        targetDate: event.targetDate,
+                        minutesBefore: minutesBefore,
+                        eventId: event.id,
+                    },
+                    delay: delaySeconds,
+                    retries: 3,
                 });
 
-                if (result.data?.id) {
-                    scheduledEmailIds.push(result.data.id);
-                    console.log(`📧 Scheduled email for "${event.name}" at ${new Date(reminderTime).toISOString()} (${timeLeft} before)`);
+                if (result.messageId) {
+                    qstashMessageIds.push(result.messageId);
+                    console.log(`📧 Scheduled QStash reminder for "${event.name}" in ${delaySeconds}s (${formatMinutes(minutesBefore)} before)`);
                 }
             } catch (error) {
-                console.error(`Failed to schedule email for ${minutesBefore} minutes before:`, error);
+                console.error(`Failed to schedule QStash message for ${minutesBefore} minutes before:`, error);
             }
         }
     }
 
-    // Schedule the "event time" email (0 minutes before)
-    if (!event.remindersBefore.includes(0) && targetTime > now + 60 * 1000) {
-        try {
-            const htmlContent = generateEmailHtml(event, "Bây giờ", formattedDate, true);
+    // Schedule the "event time" email (0 minutes before) if not already included
+    if (!event.remindersBefore.includes(0)) {
+        const delaySeconds = Math.floor((targetTime - now) / 1000);
 
-            const result = await resend.emails.send({
-                from: fromEmail,
-                to: event.email,
-                subject: `🎉 ${event.name} - Đến giờ rồi!`,
-                html: htmlContent,
-                scheduledAt: new Date(targetTime).toISOString(),
-            });
+        if (delaySeconds > 60) {
+            try {
+                const result = await qstash.publishJSON({
+                    url: `${BASE_URL}/api/send-reminder`,
+                    body: {
+                        email: event.email,
+                        eventName: event.name,
+                        eventDescription: event.description,
+                        targetDate: event.targetDate,
+                        minutesBefore: 0,
+                        eventId: event.id,
+                    },
+                    delay: delaySeconds,
+                    retries: 3,
+                });
 
-            if (result.data?.id) {
-                scheduledEmailIds.push(result.data.id);
-                console.log(`📧 Scheduled final email for "${event.name}" at ${new Date(targetTime).toISOString()}`);
+                if (result.messageId) {
+                    qstashMessageIds.push(result.messageId);
+                    console.log(`📧 Scheduled QStash final reminder for "${event.name}" at event time`);
+                }
+            } catch (error) {
+                console.error(`Failed to schedule final QStash message:`, error);
             }
-        } catch (error) {
-            console.error(`Failed to schedule final email:`, error);
         }
     }
 
-    return scheduledEmailIds;
+    return qstashMessageIds;
 }
 
-// Cancel scheduled emails when event is deleted
-async function cancelScheduledEmails(emailIds: string[]): Promise<void> {
-    for (const emailId of emailIds) {
+// Cancel scheduled QStash messages when event is deleted
+async function cancelScheduledMessages(messageIds: string[]): Promise<void> {
+    for (const messageId of messageIds) {
         try {
-            await resend.emails.cancel(emailId);
-            console.log(`❌ Cancelled scheduled email: ${emailId}`);
+            await qstash.messages.delete(messageId);
+            console.log(`❌ Cancelled QStash message: ${messageId}`);
         } catch (error) {
-            console.error(`Failed to cancel email ${emailId}:`, error);
+            // Message might have already been delivered or expired
+            console.error(`Failed to cancel QStash message ${messageId}:`, error);
         }
     }
 }
@@ -219,16 +174,16 @@ export async function POST(request: NextRequest) {
         const eventIndex = existingEvents.findIndex((e: ServerEventReminder) => e.id === event.id);
         const isUpdate = eventIndex >= 0;
 
-        // If updating, cancel old scheduled emails first
-        if (isUpdate && existingEvents[eventIndex].scheduledEmailIds?.length) {
-            await cancelScheduledEmails(existingEvents[eventIndex].scheduledEmailIds);
+        // If updating, cancel old scheduled messages first
+        if (isUpdate && existingEvents[eventIndex].qstashMessageIds?.length) {
+            await cancelScheduledMessages(existingEvents[eventIndex].qstashMessageIds);
         }
 
-        // Schedule emails with Resend
-        const scheduledEmailIds = await scheduleEventEmails({
+        // Schedule reminders with QStash
+        const qstashMessageIds = await scheduleEventReminders({
             ...event,
             sentReminders: event.sentReminders || [],
-            scheduledEmailIds: [],
+            qstashMessageIds: [],
             createdAt: event.createdAt || Date.now(),
         });
 
@@ -236,7 +191,7 @@ export async function POST(request: NextRequest) {
         const newEvent: ServerEventReminder = {
             ...event,
             sentReminders: event.sentReminders || [],
-            scheduledEmailIds: scheduledEmailIds,
+            qstashMessageIds: qstashMessageIds,
             createdAt: event.createdAt || Date.now(),
         };
 
@@ -259,7 +214,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             event: newEvent,
-            scheduledEmails: scheduledEmailIds.length,
+            scheduledReminders: qstashMessageIds.length,
         });
     } catch (error) {
         console.error("Failed to save event:", error);
@@ -281,10 +236,10 @@ export async function DELETE(request: NextRequest) {
         // Get existing events
         const existingEvents = (await redis.get<ServerEventReminder[]>(`events:${email}`)) || [];
 
-        // Find the event to delete and cancel its scheduled emails
+        // Find the event to delete and cancel its scheduled QStash messages
         const eventToDelete = existingEvents.find((e: ServerEventReminder) => e.id === eventId);
-        if (eventToDelete?.scheduledEmailIds?.length) {
-            await cancelScheduledEmails(eventToDelete.scheduledEmailIds);
+        if (eventToDelete?.qstashMessageIds?.length) {
+            await cancelScheduledMessages(eventToDelete.qstashMessageIds);
         }
 
         // Filter out the event to delete

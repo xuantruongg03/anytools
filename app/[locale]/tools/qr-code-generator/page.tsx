@@ -34,18 +34,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: descriptions[currentLocale],
         keywords: keywords[currentLocale],
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/qr-code-generator`,
+            canonical: `https://anytools.online/${locale}/tools/qr-code-generator`,
             languages: {
-                en: "https://www.anytools.online/en/tools/qr-code-generator",
-                vi: "https://www.anytools.online/vi/tools/qr-code-generator",
-                "x-default": "https://www.anytools.online/en/tools/qr-code-generator",
+                en: "https://anytools.online/en/tools/qr-code-generator",
+                vi: "https://anytools.online/vi/tools/qr-code-generator",
+                "x-default": "https://anytools.online/en/tools/qr-code-generator",
             },
         },
         robots: { index: true, follow: true },
         openGraph: {
             title: titles[currentLocale],
             description: descriptions[currentLocale],
-            url: `https://www.anytools.online/${locale}/tools/qr-code-generator`,
+            url: `https://anytools.online/${locale}/tools/qr-code-generator`,
             type: "website",
         },
     };

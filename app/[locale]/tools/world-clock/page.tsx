@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/world-clock`,
+            url: `https://anytools.online/${locale}/tools/world-clock`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/world-clock`,
+            canonical: `https://anytools.online/${locale}/tools/world-clock`,
             languages: {
-                en: "https://www.anytools.online/en/tools/world-clock",
-                vi: "https://www.anytools.online/vi/tools/world-clock",
-                "x-default": "https://www.anytools.online/en/tools/world-clock",
+                en: "https://anytools.online/en/tools/world-clock",
+                vi: "https://anytools.online/vi/tools/world-clock",
+                "x-default": "https://anytools.online/en/tools/world-clock",
             },
         },
         robots: {

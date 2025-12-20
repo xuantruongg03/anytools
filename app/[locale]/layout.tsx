@@ -15,11 +15,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     return {
         alternates: {
-            canonical: `https://www.anytools.online/${locale}`,
+            canonical: `https://anytools.online/${locale}`,
             languages: {
-                en: "https://www.anytools.online/en",
-                vi: "https://www.anytools.online/vi",
-                "x-default": "https://www.anytools.online/en",
+                en: "https://anytools.online/en",
+                vi: "https://anytools.online/vi",
+                "x-default": "https://anytools.online/en",
             },
         },
     };

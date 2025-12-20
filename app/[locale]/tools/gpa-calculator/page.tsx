@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: currentMetadata.description,
             type: "website",
             locale: locale === "vi" ? "vi_VN" : "en_US",
-            url: `https://www.anytools.online/${locale}/tools/gpa-calculator`,
+            url: `https://anytools.online/${locale}/tools/gpa-calculator`,
         },
         twitter: {
             card: "summary_large_image",
@@ -44,11 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: currentMetadata.description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/gpa-calculator`,
+            canonical: `https://anytools.online/${locale}/tools/gpa-calculator`,
             languages: {
-                en: "https://www.anytools.online/en/tools/gpa-calculator",
-                vi: "https://www.anytools.online/vi/tools/gpa-calculator",
-                "x-default": "https://www.anytools.online/en/tools/gpa-calculator",
+                en: "https://anytools.online/en/tools/gpa-calculator",
+                vi: "https://anytools.online/vi/tools/gpa-calculator",
+                "x-default": "https://anytools.online/en/tools/gpa-calculator",
             },
         },
         robots: {
@@ -162,19 +162,19 @@ function GpaCalculatorPage() {
                 "@type": "ListItem",
                 position: 1,
                 name: "Home",
-                item: "https://www.anytools.online",
+                item: "https://anytools.online",
             },
             {
                 "@type": "ListItem",
                 position: 2,
                 name: "Tools",
-                item: "https://www.anytools.online/#tools",
+                item: "https://anytools.online/#tools",
             },
             {
                 "@type": "ListItem",
                 position: 3,
                 name: "GPA Calculator",
-                item: "https://www.anytools.online/en/tools/gpa-calculator",
+                item: "https://anytools.online/en/tools/gpa-calculator",
             },
         ],
     };

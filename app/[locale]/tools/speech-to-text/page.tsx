@@ -27,11 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/speech-to-text`,
+            url: `https://anytools.online/${locale}/tools/speech-to-text`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://www.anytools.online/og-image.png",
+                    url: "https://anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Speech to Text Converter Online Tool",
@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: isVi ? "Chuyển Giọng Nói Thành Văn Bản - Miễn Phí" : "Speech to Text Converter - Free Online Tool",
             description: isVi ? "Chuyển đổi giọng nói và âm thanh thành văn bản ngay lập tức. Miễn phí và bảo mật." : "Convert speech and audio to text instantly. Free and secure.",
             creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/speech-to-text`,
+            canonical: `https://anytools.online/${locale}/tools/speech-to-text`,
             languages: {
-                en: "https://www.anytools.online/en/tools/speech-to-text",
-                vi: "https://www.anytools.online/vi/tools/speech-to-text",
-                "x-default": "https://www.anytools.online/en/tools/speech-to-text",
+                en: "https://anytools.online/en/tools/speech-to-text",
+                vi: "https://anytools.online/vi/tools/speech-to-text",
+                "x-default": "https://anytools.online/en/tools/speech-to-text",
             },
         },
         robots: {
@@ -79,7 +79,7 @@ export default async function SpeechToTextPage({ params }: Props) {
         name: isVi ? "Công Cụ Chuyển Giọng Nói Thành Văn Bản" : "Speech to Text Converter Online",
         applicationCategory: "MultimediaApplication",
         description: isVi ? "Công cụ chuyển đổi giọng nói thành văn bản miễn phí. Hỗ trợ tải file âm thanh (MP3, WAV, M4A, OGG) và ghi âm trực tiếp từ micro. Chuyển đổi chính xác, nhanh chóng và bảo mật. Không cần đăng ký, hoàn toàn miễn phí." : "Free online speech to text converter tool. Upload audio files (MP3, WAV, M4A, OGG) or record directly from microphone. Accurate, fast and secure transcription. No registration required, completely free.",
-        url: `https://www.anytools.online/${locale}/tools/speech-to-text`,
+        url: `https://anytools.online/${locale}/tools/speech-to-text`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

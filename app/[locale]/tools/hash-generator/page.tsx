@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/hash-generator`,
+            url: `https://anytools.online/${locale}/tools/hash-generator`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/hash-generator`,
+            canonical: `https://anytools.online/${locale}/tools/hash-generator`,
             languages: {
-                en: "https://www.anytools.online/en/tools/hash-generator",
-                vi: "https://www.anytools.online/vi/tools/hash-generator",
-                "x-default": "https://www.anytools.online/en/tools/hash-generator",
+                en: "https://anytools.online/en/tools/hash-generator",
+                vi: "https://anytools.online/vi/tools/hash-generator",
+                "x-default": "https://anytools.online/en/tools/hash-generator",
             },
         },
         robots: {

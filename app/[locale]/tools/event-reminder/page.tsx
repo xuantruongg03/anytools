@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/event-reminder`,
+            url: `https://anytools.online/${locale}/tools/event-reminder`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/event-reminder`,
+            canonical: `https://anytools.online/${locale}/tools/event-reminder`,
             languages: {
-                en: "https://www.anytools.online/en/tools/event-reminder",
-                vi: "https://www.anytools.online/vi/tools/event-reminder",
-                "x-default": "https://www.anytools.online/en/tools/event-reminder",
+                en: "https://anytools.online/en/tools/event-reminder",
+                vi: "https://anytools.online/vi/tools/event-reminder",
+                "x-default": "https://anytools.online/en/tools/event-reminder",
             },
         },
         robots: {

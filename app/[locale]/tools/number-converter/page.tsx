@@ -19,17 +19,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         keywords: ["number converter", "binary to decimal", "hex to decimal", "number system converter", "base converter", "bitwise calculator", "chuyển đổi hệ số", "nhị phân", "thập lục phân", "bitwise"],
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/number-converter`,
+            canonical: `https://anytools.online/${locale}/tools/number-converter`,
             languages: {
-                en: "https://www.anytools.online/en/tools/number-converter",
-                vi: "https://www.anytools.online/vi/tools/number-converter",
-                "x-default": "https://www.anytools.online/en/tools/number-converter",
+                en: "https://anytools.online/en/tools/number-converter",
+                vi: "https://anytools.online/vi/tools/number-converter",
+                "x-default": "https://anytools.online/en/tools/number-converter",
             },
         },
         openGraph: {
             title,
             description,
-            url: `https://www.anytools.online/${locale}/tools/number-converter`,
+            url: `https://anytools.online/${locale}/tools/number-converter`,
             siteName: "AnyTools",
             locale: locale === "vi" ? "vi_VN" : "en_US",
             type: "website",
@@ -51,7 +51,7 @@ export default async function NumberConverterPage({ params }: Props) {
         "@type": "WebApplication",
         name: "Number System Converter & Bitwise Calculator",
         description: "Free online tool to convert between number systems (binary, decimal, hexadecimal, octal) and perform bitwise operations (AND, OR, XOR, NOT, shifts).",
-        url: "https://www.anytools.online/tools/number-converter",
+        url: "https://anytools.online/tools/number-converter",
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Any",
         offers: {

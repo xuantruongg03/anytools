@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/color-picker`,
+            url: `https://anytools.online/${locale}/tools/color-picker`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/color-picker`,
+            canonical: `https://anytools.online/${locale}/tools/color-picker`,
             languages: {
-                en: "https://www.anytools.online/en/tools/color-picker",
-                vi: "https://www.anytools.online/vi/tools/color-picker",
-                "x-default": "https://www.anytools.online/en/tools/color-picker",
+                en: "https://anytools.online/en/tools/color-picker",
+                vi: "https://anytools.online/vi/tools/color-picker",
+                "x-default": "https://anytools.online/en/tools/color-picker",
             },
         },
         robots: {

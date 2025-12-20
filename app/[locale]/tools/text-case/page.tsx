@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/text-case`,
+            url: `https://anytools.online/${locale}/tools/text-case`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/text-case`,
+            canonical: `https://anytools.online/${locale}/tools/text-case`,
             languages: {
-                en: "https://www.anytools.online/en/tools/text-case",
-                vi: "https://www.anytools.online/vi/tools/text-case",
-                "x-default": "https://www.anytools.online/en/tools/text-case",
+                en: "https://anytools.online/en/tools/text-case",
+                vi: "https://anytools.online/vi/tools/text-case",
+                "x-default": "https://anytools.online/en/tools/text-case",
             },
         },
         robots: {

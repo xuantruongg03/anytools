@@ -27,11 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/regex-tester`,
+            url: `https://anytools.online/${locale}/tools/regex-tester`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://www.anytools.online/og-image.png",
+                    url: "https://anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "Regex Tester Online Tool",
@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "Regex Tester - Free Online Tool",
             description: "Test regular expressions instantly. Free and secure.",
             creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/regex-tester`,
+            canonical: `https://anytools.online/${locale}/tools/regex-tester`,
             languages: {
-                en: "https://www.anytools.online/en/tools/regex-tester",
-                vi: "https://www.anytools.online/vi/tools/regex-tester",
-                "x-default": "https://www.anytools.online/en/tools/regex-tester",
+                en: "https://anytools.online/en/tools/regex-tester",
+                vi: "https://anytools.online/vi/tools/regex-tester",
+                "x-default": "https://anytools.online/en/tools/regex-tester",
             },
         },
         robots: {
@@ -79,7 +79,7 @@ export default async function RegexTesterPage({ params }: Props) {
         name: isVi ? "Công Cụ Kiểm Tra Regex" : "Regex Tester Online",
         applicationCategory: "DeveloperApplication",
         description: isVi ? "Công cụ kiểm tra regex (biểu thức chính quy) miễn phí trực tuyến. Kiểm tra và xác thực mẫu regex với kết quả khớp tức thì. Hỗ trợ tất cả cờ regex. 100% xử lý phía client." : "Free online regex (regular expression) tester. Test and validate regex patterns with instant matching results. Support all regex flags. 100% client-side processing.",
-        url: `https://www.anytools.online/${locale}/tools/regex-tester`,
+        url: `https://anytools.online/${locale}/tools/regex-tester`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

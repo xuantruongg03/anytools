@@ -27,11 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/studocu-downloader`,
+            url: `https://anytools.online/${locale}/tools/studocu-downloader`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://www.anytools.online/og-image.png",
+                    url: "https://anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "StuDocu Downloader Online Tool",
@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "StuDocu Downloader - Free Online Tool",
             description: "Download StuDocu study documents instantly. Free and secure.",
             creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/studocu-downloader`,
+            canonical: `https://anytools.online/${locale}/tools/studocu-downloader`,
             languages: {
-                en: "https://www.anytools.online/en/tools/studocu-downloader",
-                vi: "https://www.anytools.online/vi/tools/studocu-downloader",
-                "x-default": "https://www.anytools.online/en/tools/studocu-downloader",
+                en: "https://anytools.online/en/tools/studocu-downloader",
+                vi: "https://anytools.online/vi/tools/studocu-downloader",
+                "x-default": "https://anytools.online/en/tools/studocu-downloader",
             },
         },
         robots: {
@@ -79,7 +79,7 @@ export default async function StudocuDownloaderPage({ params }: Props) {
         name: isVi ? "Công Cụ Tải StuDocu" : "StuDocu Downloader Online",
         applicationCategory: "UtilityApplication",
         description: isVi ? "Công cụ tải tài liệu học tập từ StuDocu miễn phí. Tải xuống chất lượng cao, nhanh chóng và bảo mật. Không cần đăng ký, hoàn toàn miễn phí. Hỗ trợ tất cả định dạng tài liệu." : "Free online StuDocu document downloader tool. Download study materials in high quality, fast and secure. No registration required, completely free. Supports all document formats.",
-        url: `https://www.anytools.online/${locale}/tools/studocu-downloader`,
+        url: `https://anytools.online/${locale}/tools/studocu-downloader`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/jwt-decoder`,
+            url: `https://anytools.online/${locale}/tools/jwt-decoder`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/jwt-decoder`,
+            canonical: `https://anytools.online/${locale}/tools/jwt-decoder`,
             languages: {
-                en: "https://www.anytools.online/en/tools/jwt-decoder",
-                vi: "https://www.anytools.online/vi/tools/jwt-decoder",
-                "x-default": "https://www.anytools.online/en/tools/jwt-decoder",
+                en: "https://anytools.online/en/tools/jwt-decoder",
+                vi: "https://anytools.online/vi/tools/jwt-decoder",
+                "x-default": "https://anytools.online/en/tools/jwt-decoder",
             },
         },
         robots: {
@@ -59,7 +59,7 @@ export default async function JwtDecoderPage({ params }: Props) {
         name: "JWT Decoder Online",
         applicationCategory: "DeveloperApplication",
         description: "Free online JWT (JSON Web Token) decoder. Decode and inspect JWT header, payload, and signature instantly. 100% client-side processing.",
-        url: "https://www.anytools.online/tools/jwt-decoder",
+        url: "https://anytools.online/tools/jwt-decoder",
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",

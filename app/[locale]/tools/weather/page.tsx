@@ -38,11 +38,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/weather`,
+            canonical: `https://anytools.online/${locale}/tools/weather`,
             languages: {
-                en: "https://www.anytools.online/en/tools/weather",
-                vi: "https://www.anytools.online/vi/tools/weather",
-                "x-default": "https://www.anytools.online/en/tools/weather",
+                en: "https://anytools.online/en/tools/weather",
+                vi: "https://anytools.online/vi/tools/weather",
+                "x-default": "https://anytools.online/en/tools/weather",
             },
         },
         robots: {

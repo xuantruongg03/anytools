@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/timestamp-converter`,
+            url: `https://anytools.online/${locale}/tools/timestamp-converter`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/timestamp-converter`,
+            canonical: `https://anytools.online/${locale}/tools/timestamp-converter`,
             languages: {
-                en: "https://www.anytools.online/en/tools/timestamp-converter",
-                vi: "https://www.anytools.online/vi/tools/timestamp-converter",
-                "x-default": "https://www.anytools.online/en/tools/timestamp-converter",
+                en: "https://anytools.online/en/tools/timestamp-converter",
+                vi: "https://anytools.online/vi/tools/timestamp-converter",
+                "x-default": "https://anytools.online/en/tools/timestamp-converter",
             },
         },
         robots: {
@@ -59,7 +59,7 @@ export default async function TimestampConverterPage({ params }: Props) {
         name: "Timestamp Converter Online",
         applicationCategory: "DeveloperApplication",
         description: "Free online Unix timestamp converter. Convert between Unix epoch timestamps and human-readable dates instantly. Support milliseconds and timezone handling. 100% client-side processing.",
-        url: "https://www.anytools.online/tools/timestamp-converter",
+        url: "https://anytools.online/tools/timestamp-converter",
         operatingSystem: "Any",
         offers: {
             "@type": "Offer",

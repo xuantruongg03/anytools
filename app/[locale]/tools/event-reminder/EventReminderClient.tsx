@@ -321,14 +321,17 @@ export default function EventReminderClient() {
         setEmailStatus((prev) => ({ ...prev, [eventId]: "sending" }));
 
         try {
+            // Use PUT method for direct test emails (POST is reserved for QStash)
             const response = await fetch("/api/send-reminder", {
-                method: "POST",
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     email: event.email,
                     eventName: event.name,
                     eventDescription: event.description,
                     targetDate: event.targetDate,
+                    minutesBefore: 0,
+                    eventId: event.id,
                     isTest: true,
                 }),
             });

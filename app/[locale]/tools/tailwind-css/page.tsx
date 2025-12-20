@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/tailwind-css`,
+            url: `https://anytools.online/${locale}/tools/tailwind-css`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/tailwind-css`,
+            canonical: `https://anytools.online/${locale}/tools/tailwind-css`,
             languages: {
-                en: "https://www.anytools.online/en/tools/tailwind-css",
-                vi: "https://www.anytools.online/vi/tools/tailwind-css",
-                "x-default": "https://www.anytools.online/en/tools/tailwind-css",
+                en: "https://anytools.online/en/tools/tailwind-css",
+                vi: "https://anytools.online/vi/tools/tailwind-css",
+                "x-default": "https://anytools.online/en/tools/tailwind-css",
             },
         },
         robots: {

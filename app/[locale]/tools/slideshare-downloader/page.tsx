@@ -27,11 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/slideshare-downloader`,
+            url: `https://anytools.online/${locale}/tools/slideshare-downloader`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
             images: [
                 {
-                    url: "https://www.anytools.online/og-image.png",
+                    url: "https://anytools.online/og-image.png",
                     width: 1200,
                     height: 630,
                     alt: "SlideShare Downloader Online Tool",
@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: "SlideShare Downloader - Free Online Tool",
             description: "Download SlideShare presentations instantly. Free and secure.",
             creator: "@anytools",
-            images: ["https://www.anytools.online/og-image.png"],
+            images: ["https://anytools.online/og-image.png"],
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/slideshare-downloader`,
+            canonical: `https://anytools.online/${locale}/tools/slideshare-downloader`,
             languages: {
-                en: "https://www.anytools.online/en/tools/slideshare-downloader",
-                vi: "https://www.anytools.online/vi/tools/slideshare-downloader",
-                "x-default": "https://www.anytools.online/en/tools/slideshare-downloader",
+                en: "https://anytools.online/en/tools/slideshare-downloader",
+                vi: "https://anytools.online/vi/tools/slideshare-downloader",
+                "x-default": "https://anytools.online/en/tools/slideshare-downloader",
             },
         },
         robots: {
@@ -79,7 +79,7 @@ export default async function SlideShareDownloaderPage({ params }: Props) {
         name: isVi ? "Công Cụ Tải SlideShare" : "SlideShare Downloader Online",
         applicationCategory: "UtilityApplication",
         description: isVi ? "Công cụ tải bài thuyết trình SlideShare thành PDF miễn phí. Tải xuống chất lượng cao, nhanh chóng và bảo mật. Không cần đăng ký, hoàn toàn miễn phí. Hỗ trợ SlideShare và LinkedIn." : "Free online SlideShare to PDF downloader tool. Download presentations in high quality, fast and secure. No registration required, completely free. Supports SlideShare and LinkedIn.",
-        url: `https://www.anytools.online/${locale}/tools/slideshare-downloader`,
+        url: `https://anytools.online/${locale}/tools/slideshare-downloader`,
         inLanguage: locale,
         operatingSystem: "Any",
         offers: {

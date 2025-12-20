@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
                 allow: "/",
             },
         ],
-        sitemap: ["https://www.anytools.online/sitemap.xml"],
+        sitemap: ["https://anytools.online/sitemap.xml"],
     };
 }

@@ -14,7 +14,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-    metadataBase: new URL("https://www.anytools.online"),
+    metadataBase: new URL("https://anytools.online"),
     title: {
         default: "AnyTools - Free Online Tools for Developers & Creators",
         template: "%s | AnyTools",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "en_US",
-        url: "https://www.anytools.online",
+        url: "https://anytools.online",
         title: "AnyTools - Free Online Tools",
         description: "Free online tools for developers, designers, and content creators",
         siteName: "AnyTools",

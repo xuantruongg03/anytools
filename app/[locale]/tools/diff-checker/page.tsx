@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             type: "website",
             siteName: "AnyTools",
-            url: `https://www.anytools.online/${locale}/tools/diff-checker`,
+            url: `https://anytools.online/${locale}/tools/diff-checker`,
             locale: locale === "vi" ? "vi_VN" : "en_US",
         },
         twitter: {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
         },
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/diff-checker`,
+            canonical: `https://anytools.online/${locale}/tools/diff-checker`,
             languages: {
-                en: "https://www.anytools.online/en/tools/diff-checker",
-                vi: "https://www.anytools.online/vi/tools/diff-checker",
-                "x-default": "https://www.anytools.online/en/tools/diff-checker",
+                en: "https://anytools.online/en/tools/diff-checker",
+                vi: "https://anytools.online/vi/tools/diff-checker",
+                "x-default": "https://anytools.online/en/tools/diff-checker",
             },
         },
         robots: {

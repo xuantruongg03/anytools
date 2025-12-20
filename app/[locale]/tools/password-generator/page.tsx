@@ -30,11 +30,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description: currentMetadata.description,
         keywords: ["password generator", "random password", "secure password", "strong password", "password creator", "generate password online", "password strengthener", "memorable password", "passphrase generator", "entropy calculator", "password security", "trình tạo mật khẩu", "mật khẩu mạnh", "tạo mật khẩu ngẫu nhiên"],
         alternates: {
-            canonical: `https://www.anytools.online/${locale}/tools/password-generator`,
+            canonical: `https://anytools.online/${locale}/tools/password-generator`,
             languages: {
-                en: "https://www.anytools.online/en/tools/password-generator",
-                vi: "https://www.anytools.online/vi/tools/password-generator",
-                "x-default": "https://www.anytools.online/en/tools/password-generator",
+                en: "https://anytools.online/en/tools/password-generator",
+                vi: "https://anytools.online/vi/tools/password-generator",
+                "x-default": "https://anytools.online/en/tools/password-generator",
             },
         },
         robots: { index: true, follow: true },
