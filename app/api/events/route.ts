@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
-import { Client } from "@upstash/qstash";
 
 // Initialize Upstash Redis client
 const redis = new Redis({
@@ -8,11 +7,9 @@ const redis = new Redis({
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
-// Initialize QStash client
-const qstash = new Client({
-    token: process.env.QSTASH_TOKEN!,
-    baseUrl: process.env.QSTASH_URL,
-});
+// QStash API configuration
+const QSTASH_TOKEN = process.env.QSTASH_TOKEN!;
+const QSTASH_URL = process.env.QSTASH_URL || "https://qstash.upstash.io";
 
 // Base URL for the app (needed for QStash to call our endpoints)
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://anytools.online";
@@ -62,25 +59,32 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
         // Only schedule if reminder time is in the future (at least 60 seconds from now)
         if (delaySeconds > 60) {
             try {
-                const result = (await qstash.publishJSON({
-                    url: `${BASE_URL}/api/send-reminder`,
-                    body: {
+                const response = await fetch(`${QSTASH_URL}/v2/publish/${BASE_URL}/api/send-reminder`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${QSTASH_TOKEN}`,
+                        "Content-Type": "application/json",
+                        "Upstash-Delay": `${delaySeconds}s`,
+                        "Upstash-Retries": "3",
+                    },
+                    body: JSON.stringify({
                         email: event.email,
                         eventName: event.name,
                         eventDescription: event.description,
                         targetDate: event.targetDate,
                         minutesBefore: minutesBefore,
                         eventId: event.id,
-                    },
-                    headers: {
-                        "Upstash-Delay": `${delaySeconds}s`,
-                    },
-                    retries: 3,
-                })) as { messageId: string };
+                    }),
+                });
 
-                if (result.messageId) {
-                    qstashMessageIds.push(result.messageId);
-                    console.log(`📧 Scheduled QStash reminder for "${event.name}" in ${delaySeconds}s (${formatMinutes(minutesBefore)} before)`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.messageId) {
+                        qstashMessageIds.push(result.messageId);
+                        console.log(`📧 Scheduled QStash reminder for "${event.name}" in ${delaySeconds}s (${formatMinutes(minutesBefore)} before)`);
+                    }
+                } else {
+                    console.error(`Failed to schedule QStash message: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
                 console.error(`Failed to schedule QStash message for ${minutesBefore} minutes before:`, error);
@@ -94,25 +98,32 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
 
         if (delaySeconds > 60) {
             try {
-                const result = (await qstash.publishJSON({
-                    url: `${BASE_URL}/api/send-reminder`,
-                    body: {
+                const response = await fetch(`${QSTASH_URL}/v2/publish/${BASE_URL}/api/send-reminder`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${QSTASH_TOKEN}`,
+                        "Content-Type": "application/json",
+                        "Upstash-Delay": `${delaySeconds}s`,
+                        "Upstash-Retries": "3",
+                    },
+                    body: JSON.stringify({
                         email: event.email,
                         eventName: event.name,
                         eventDescription: event.description,
                         targetDate: event.targetDate,
                         minutesBefore: 0,
                         eventId: event.id,
-                    },
-                    headers: {
-                        "Upstash-Delay": `${delaySeconds}s`,
-                    },
-                    retries: 3,
-                })) as { messageId: string };
+                    }),
+                });
 
-                if (result.messageId) {
-                    qstashMessageIds.push(result.messageId);
-                    console.log(`Scheduled QStash final reminder for "${event.name}" at event time`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.messageId) {
+                        qstashMessageIds.push(result.messageId);
+                        console.log(`Scheduled QStash final reminder for "${event.name}" at event time`);
+                    }
+                } else {
+                    console.error(`Failed to schedule final QStash message: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
                 console.error(`Failed to schedule final QStash message:`, error);
@@ -127,8 +138,18 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
 async function cancelScheduledMessages(messageIds: string[]): Promise<void> {
     for (const messageId of messageIds) {
         try {
-            await qstash.messages.delete(messageId);
-            console.log(`❌ Cancelled QStash message: ${messageId}`);
+            const response = await fetch(`${QSTASH_URL}/v2/messages/${messageId}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${QSTASH_TOKEN}`,
+                },
+            });
+
+            if (response.ok) {
+                console.log(`❌ Cancelled QStash message: ${messageId}`);
+            } else {
+                console.error(`Failed to cancel QStash message ${messageId}: ${response.status} ${response.statusText}`);
+            }
         } catch (error) {
             // Message might have already been delivered or expired
             console.error(`Failed to cancel QStash message ${messageId}:`, error);
