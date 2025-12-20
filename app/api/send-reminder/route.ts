@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import crypto from "crypto";
 
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
 const fromEmail = process.env.ERROR_EMAIL_FROM || "AnyTools <onboarding@resend.dev>";
+
+// QStash signing keys for verification
+const QSTASH_CURRENT_SIGNING_KEY = process.env.QSTASH_CURRENT_SIGNING_KEY;
+const QSTASH_NEXT_SIGNING_KEY = process.env.QSTASH_NEXT_SIGNING_KEY;
 
 // Type for reminder payload from QStash
 interface ReminderPayload {
@@ -104,7 +108,7 @@ async function handler(request: NextRequest) {
 
         const timeLeft = formatMinutes(minutesBefore);
         const isNow = minutesBefore === 0;
-        const subject = isTest ? `🧪 [TEST] ${eventName}` : isNow ? `🎉 ${eventName} - Đến giờ rồi!` : `⏰ Nhắc nhở: ${eventName} - Còn ${timeLeft}`;
+        const subject = isTest ? `[TEST] ${eventName}` : isNow ? `🎉 ${eventName} - Đến giờ rồi!` : `⏰ Nhắc nhở: ${eventName} - Còn ${timeLeft}`;
 
         const htmlContent = generateEmailHtml(eventName, eventDescription, targetDate, timeLeft, isNow);
 
@@ -134,9 +138,45 @@ async function handler(request: NextRequest) {
     }
 }
 
-// Wrap handler with QStash signature verification for security
-// This ensures only QStash can call this endpoint
-export const POST = verifySignatureAppRouter(handler);
+// Verify QStash signature
+function verifySignature(signature: string, body: string, signingKey: string): boolean {
+    const expectedSignature = crypto
+        .createHmac("sha256", signingKey)
+        .update(body)
+        .digest("base64");
+    return signature === expectedSignature;
+}
+
+// POST handler with manual signature verification
+export async function POST(request: NextRequest) {
+    try {
+        const signature = request.headers.get("upstash-signature");
+        const body = await request.text();
+
+        // Verify signature if signing keys are configured
+        if (QSTASH_CURRENT_SIGNING_KEY || QSTASH_NEXT_SIGNING_KEY) {
+            if (!signature) {
+                console.error("Missing QStash signature");
+                return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+            }
+
+            const isValidCurrent = QSTASH_CURRENT_SIGNING_KEY && verifySignature(signature, body, QSTASH_CURRENT_SIGNING_KEY);
+            const isValidNext = QSTASH_NEXT_SIGNING_KEY && verifySignature(signature, body, QSTASH_NEXT_SIGNING_KEY);
+
+            if (!isValidCurrent && !isValidNext) {
+                console.error("Invalid QStash signature");
+                return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+            }
+        }
+
+        // Parse body and call handler
+        const payload = JSON.parse(body);
+        return handler({ json: async () => payload } as NextRequest);
+    } catch (error) {
+        console.error("POST handler error:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+}
 
 // Also allow direct calls for testing (without verification)
 // Remove this in production if you only want QStash to call this endpoint

@@ -54,17 +54,18 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
     // Schedule reminder emails for each reminder time
     for (const minutesBefore of event.remindersBefore) {
         const reminderTime = targetTime - minutesBefore * 60 * 1000;
-        const delaySeconds = Math.floor((reminderTime - now) / 1000);
+        const notBeforeTimestamp = Math.floor(reminderTime / 1000); // Unix timestamp in seconds
 
         // Only schedule if reminder time is in the future (at least 60 seconds from now)
-        if (delaySeconds > 60) {
+        if (reminderTime > now + 60000) {
             try {
-                const response = await fetch(`${QSTASH_URL}/v2/publish/${BASE_URL}/api/send-reminder`, {
+                const destinationUrl = encodeURIComponent(`${BASE_URL}/api/send-reminder`);
+                const response = await fetch(`${QSTASH_URL}/v2/publish/${destinationUrl}`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${QSTASH_TOKEN}`,
                         "Content-Type": "application/json",
-                        "Upstash-Delay": `${delaySeconds}s`,
+                        "Upstash-Not-Before": `${notBeforeTimestamp}`,
                         "Upstash-Retries": "3",
                     },
                     body: JSON.stringify({
@@ -81,7 +82,7 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
                     const result = await response.json();
                     if (result.messageId) {
                         qstashMessageIds.push(result.messageId);
-                        console.log(`📧 Scheduled QStash reminder for "${event.name}" in ${delaySeconds}s (${formatMinutes(minutesBefore)} before)`);
+                        console.log(`📧 Scheduled QStash reminder for "${event.name}" at ${new Date(reminderTime).toISOString()} (${formatMinutes(minutesBefore)} before)`);
                     }
                 } else {
                     console.error(`Failed to schedule QStash message: ${response.status} ${response.statusText}`);
@@ -94,16 +95,17 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
 
     // Schedule the "event time" email (0 minutes before) if not already included
     if (!event.remindersBefore.includes(0)) {
-        const delaySeconds = Math.floor((targetTime - now) / 1000);
+        const notBeforeTimestamp = Math.floor(targetTime / 1000); // Unix timestamp in seconds
 
-        if (delaySeconds > 60) {
+        if (targetTime > now + 60000) {
             try {
-                const response = await fetch(`${QSTASH_URL}/v2/publish/${BASE_URL}/api/send-reminder`, {
+                const destinationUrl = encodeURIComponent(`${BASE_URL}/api/send-reminder`);
+                const response = await fetch(`${QSTASH_URL}/v2/publish/${destinationUrl}`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${QSTASH_TOKEN}`,
                         "Content-Type": "application/json",
-                        "Upstash-Delay": `${delaySeconds}s`,
+                        "Upstash-Not-Before": `${notBeforeTimestamp}`,
                         "Upstash-Retries": "3",
                     },
                     body: JSON.stringify({
