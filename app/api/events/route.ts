@@ -11,6 +11,7 @@ const redis = new Redis({
 // Initialize QStash client
 const qstash = new Client({
     token: process.env.QSTASH_TOKEN!,
+    baseUrl: process.env.QSTASH_URL,
 });
 
 // Base URL for the app (needed for QStash to call our endpoints)
