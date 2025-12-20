@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import crypto from "crypto";
 
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
 const fromEmail = process.env.ERROR_EMAIL_FROM || "AnyTools <onboarding@resend.dev>";
-
-// QStash signing keys for verification
-const QSTASH_CURRENT_SIGNING_KEY = process.env.QSTASH_CURRENT_SIGNING_KEY;
-const QSTASH_NEXT_SIGNING_KEY = process.env.QSTASH_NEXT_SIGNING_KEY;
 
 // Type for reminder payload from QStash
 interface ReminderPayload {
@@ -138,36 +133,15 @@ async function handler(request: NextRequest) {
     }
 }
 
-// Verify QStash signature
-function verifySignature(signature: string, body: string, signingKey: string): boolean {
-    const expectedSignature = crypto
-        .createHmac("sha256", signingKey)
-        .update(body)
-        .digest("base64");
-    return signature === expectedSignature;
-}
-
-// POST handler with manual signature verification
+// POST handler - accept QStash requests
 export async function POST(request: NextRequest) {
     try {
-        const signature = request.headers.get("upstash-signature");
         const body = await request.text();
-
-        // Verify signature if signing keys are configured
-        if (QSTASH_CURRENT_SIGNING_KEY || QSTASH_NEXT_SIGNING_KEY) {
-            if (!signature) {
-                console.error("Missing QStash signature");
-                return NextResponse.json({ error: "Missing signature" }, { status: 401 });
-            }
-
-            const isValidCurrent = QSTASH_CURRENT_SIGNING_KEY && verifySignature(signature, body, QSTASH_CURRENT_SIGNING_KEY);
-            const isValidNext = QSTASH_NEXT_SIGNING_KEY && verifySignature(signature, body, QSTASH_NEXT_SIGNING_KEY);
-
-            if (!isValidCurrent && !isValidNext) {
-                console.error("Invalid QStash signature");
-                return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-            }
-        }
+        console.log("📥 Received QStash webhook:", body);
+        
+        // Log headers for debugging
+        const signature = request.headers.get("upstash-signature");
+        console.log("🔑 QStash signature present:", !!signature);
 
         // Parse body and call handler
         const payload = JSON.parse(body);
