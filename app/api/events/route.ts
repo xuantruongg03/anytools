@@ -62,7 +62,7 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
         // Only schedule if reminder time is in the future (at least 60 seconds from now)
         if (delaySeconds > 60) {
             try {
-                const result = await qstash.publishJSON({
+                const result = (await qstash.publishJSON({
                     url: `${BASE_URL}/api/send-reminder`,
                     body: {
                         email: event.email,
@@ -74,7 +74,7 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
                     },
                     delay: delaySeconds,
                     retries: 3,
-                });
+                })) as { messageId: string };
 
                 if (result.messageId) {
                     qstashMessageIds.push(result.messageId);
@@ -92,7 +92,7 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
 
         if (delaySeconds > 60) {
             try {
-                const result = await qstash.publishJSON({
+                const result = (await qstash.publishJSON({
                     url: `${BASE_URL}/api/send-reminder`,
                     body: {
                         email: event.email,
@@ -104,11 +104,11 @@ async function scheduleEventReminders(event: ServerEventReminder): Promise<strin
                     },
                     delay: delaySeconds,
                     retries: 3,
-                });
+                })) as { messageId: string };
 
                 if (result.messageId) {
                     qstashMessageIds.push(result.messageId);
-                    console.log(`📧 Scheduled QStash final reminder for "${event.name}" at event time`);
+                    console.log(`Scheduled QStash final reminder for "${event.name}" at event time`);
                 }
             } catch (error) {
                 console.error(`Failed to schedule final QStash message:`, error);
