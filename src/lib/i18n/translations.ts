@@ -389,6 +389,11 @@ export const translations = {
                 description: "Preview, edit and optimize SVG files in real-time",
                 category: "Design",
             },
+            pngToSvg: {
+                name: "PNG to SVG",
+                description: "Convert PNG, JPG images to SVG vector format",
+                category: "Design",
+            },
             hashGenerator: {
                 name: "Hash Generator",
                 description: "Generate MD5, SHA-1, SHA-256 hashes from text",
@@ -1247,6 +1252,11 @@ export const translations = {
                 description: "Xem trước, chỉnh sửa và tối ưu hóa file SVG theo thời gian thực",
                 category: "Thiết kế",
             },
+            pngToSvg: {
+                name: "PNG sang SVG",
+                description: "Chuyển đổi hình ảnh PNG, JPG sang định dạng SVG vector",
+                category: "Thiết kế",
+            },
             tailwindCss: {
                 name: "Chuyển Đổi Tailwind ↔ CSS",
                 description: "Chuyển đổi giữa Tailwind CSS classes và vanilla CSS styles",
@@ -1666,7 +1676,7 @@ export const translations = {
                 toolsDesc: "Chúng tôi cung cấp bộ sưu tập công cụ ngày càng phong phú cho nhà phát triển, nhà thiết kế và người sáng tạo nội dung. Mỗi công cụ là một trang riêng biệt với đầy đủ chức năng:",
                 toolsList: {
                     developer: "Công Cụ Lập Trình: Định dạng JSON, mã hóa/giải mã Base64, mã hóa URL, tạo hash - mỗi công cụ có trang riêng",
-                    text: "Công Cụ Văn Bản: Chuyển đổi kiểu chữ, đếm ký tự, đếm từ - các công cụ độc lập để thao tác văn bản",
+                    text: "Văn Bản: Chuyển đổi kiểu chữ, đếm ký tự, đếm từ - các công cụ độc lập để thao tác văn bản",
                     design: "Công Cụ Thiết Kế: Chọn màu, chuyển đổi màu - các trang riêng cho nhu cầu thiết kế",
                     more: "Và nhiều hơn nữa! Chúng tôi liên tục thêm các công cụ mới dựa trên phản hồi của người dùng. Mỗi công cụ mới sẽ có trang riêng trên trang chủ.",
                 },

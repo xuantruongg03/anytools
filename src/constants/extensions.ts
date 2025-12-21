@@ -40,6 +40,19 @@ export const extensions: Extension[] = [
         author: "xuantruongg03",
         tags: ["auto", "form", "filler"],
     },
+    {
+        id: "css-inspector",
+        name: "CSS Inspector",
+        description: {
+            en: "An extension that allows you to inspect and analyze CSS styles on any webpage.",
+            vi: "Một extension cho phép bạn kiểm tra và phân tích các kiểu CSS trên bất kỳ trang web nào.",
+        },
+        category: "developer",
+        chromeUrl: "",
+        githubUrl: "https://github.com/xuantruongg03/css-inspector-extension",
+        author: "xuantruongg03",
+        tags: ["css", "inspector", "developer"],
+    },
 ];
 
 // Helper function to get extensions by category

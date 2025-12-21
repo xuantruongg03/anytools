@@ -1,7 +1,7 @@
 export const categoryTranslations = {
     developer: { en: "Developer", vi: "Công cụ Dev" },
     design: { en: "Design", vi: "Thiết kế" },
-    text: { en: "Text", vi: "Công cụ Văn bản" },
+    text: { en: "Text", vi: "Văn bản" },
     security: { en: "Security", vi: "Bảo mật" },
     downloader: { en: "Downloader", vi: "Tải xuống" },
     education: { en: "Education", vi: "Giáo dục" },

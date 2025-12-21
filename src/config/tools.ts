@@ -35,6 +35,7 @@ export const toolsConfig: ToolCategory[] = [
         icon: "🎨",
         tools: [
             { href: "/tools/color-picker", icon: "🎨", key: "colorPicker" },
+            { href: "/tools/png-to-svg", icon: "🔄", key: "pngToSvg" },
             { href: "/tools/svg-preview", icon: "🖼️", key: "svgPreview" },
             { href: "/tools/tailwind-css", icon: "⚡", key: "tailwindCss" },
         ],

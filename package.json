@@ -14,6 +14,7 @@
     "@types/qrcode": "^1.5.6",
     "@upstash/qstash": "^2.8.4",
     "@upstash/redis": "^1.35.7",
+    "imagetracerjs": "^1.2.6",
     "next": "16.0.10",
     "qr-code-styling": "^1.9.2",
     "qrcode": "^1.5.4",
