@@ -49,6 +49,14 @@ export default function RootLayout({
     return (
         <html lang='en' suppressHydrationWarning>
             <head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6F8BFBEBKF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6F8BFBEBKF');
+</script>
                 <meta name='google-adsense-account' content='ca-pub-1892668821213380' />
                 <script
                     dangerouslySetInnerHTML={{
