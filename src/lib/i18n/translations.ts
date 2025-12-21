@@ -384,6 +384,11 @@ export const translations = {
                     },
                 },
             },
+            svgPreview: {
+                name: "SVG Preview",
+                description: "Preview, edit and optimize SVG files in real-time",
+                category: "Design",
+            },
             hashGenerator: {
                 name: "Hash Generator",
                 description: "Generate MD5, SHA-1, SHA-256 hashes from text",
@@ -1236,6 +1241,11 @@ export const translations = {
                         a5: "Không, hoàn toàn không! Tất cả xử lý ảnh diễn ra hoàn toàn trong trình duyệt của bạn sử dụng JavaScript. Ảnh của bạn không bao giờ rời khỏi thiết bị và không được tải lên bất kỳ máy chủ nào. Bạn thậm chí có thể sử dụng công cụ này ngoại tuyến sau khi trang được tải.",
                     },
                 },
+            },
+            svgPreview: {
+                name: "Xem trước SVG",
+                description: "Xem trước, chỉnh sửa và tối ưu hóa file SVG theo thời gian thực",
+                category: "Thiết kế",
             },
             tailwindCss: {
                 name: "Chuyển Đổi Tailwind ↔ CSS",

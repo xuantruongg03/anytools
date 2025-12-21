@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { FloatingButtons } from "@/components/FloatingButtons";
 import QueryProvider from "@/components/QueryProvider";
 
@@ -50,6 +49,7 @@ export default function RootLayout({
     return (
         <html lang='en' suppressHydrationWarning>
             <head>
+                <meta name='google-adsense-account' content='ca-pub-1892668821213380' />
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
