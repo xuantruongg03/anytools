@@ -96,6 +96,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
         });
     });
 
+    locales.forEach((locale) => {
+        sitemap.push({
+            url: `${baseUrl}/${locale}/browser-extensions`,
+            lastModified: new Date(),
+            changeFrequency: "monthly",
+            priority: 0.5,
+            alternates: {
+                languages: {
+                    en: `${baseUrl}/en/browser-extensions`,
+                    vi: `${baseUrl}/vi/browser-extensions`,
+                    "x-default": `${baseUrl}/${defaultLocale}/browser-extensions`,
+                },
+            },
+        });
+    });
+
     // Add all tools for each locale
     tools.forEach((tool) => {
         locales.forEach((locale) => {
