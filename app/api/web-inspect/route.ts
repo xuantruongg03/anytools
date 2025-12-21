@@ -134,11 +134,14 @@ export async function POST(request: NextRequest) {
         });
 
         const data = await response.json();
+        console.log("Google PageSpeed API response status:", response.status);
+        console.log("Google PageSpeed API data:", JSON.stringify(data, null, 2));
 
         // Handle Google API errors
         if (!response.ok) {
             const errorMessage = data?.error?.message || "Failed to fetch PageSpeed data";
             const errorCode = data?.error?.code || response.status;
+            console.error("Google PageSpeed API error:", JSON.stringify(data, null, 2));
 
             // Handle specific error codes
             if (response.status === 429) {
