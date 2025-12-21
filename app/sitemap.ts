@@ -41,6 +41,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "uuid-generator",
         "weather",
         "world-clock",
+        "svg-preview",
+        "png-to-svg"
     ];
 
     const sitemap: MetadataRoute.Sitemap = [];
