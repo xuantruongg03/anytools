@@ -53,6 +53,19 @@ export const extensions: Extension[] = [
         author: "xuantruongg03",
         tags: ["css", "inspector", "developer"],
     },
+    {
+        id: "web-inspector",
+        name: "Web Inspector",
+        description: {
+            en: "An extension that provides web inspection tools for developers to debug and analyze web pages.",
+            vi: "Một extension cung cấp các công cụ kiểm tra web cho các nhà phát triển để gỡ lỗi và phân tích các trang web.",
+        },
+        category: "developer",
+        chromeUrl: "",
+        githubUrl: "https://github.com/xuantruongg03/web-inspector-extension",
+        author: "xuantruongg03",
+        tags: ["web", "inspector", "developer"],
+    },
 ];
 
 // Helper function to get extensions by category
