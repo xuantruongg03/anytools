@@ -197,7 +197,19 @@ export default function EventReminderClient() {
         if (savedEvents) {
             try {
                 const parsed = JSON.parse(savedEvents);
-                setEvents(parsed);
+                // Migrate old events: convert datetime-local format to ISO string
+                const migratedEvents = parsed.map((event: EventReminder) => {
+                    // Check if targetDate is already ISO format (contains 'Z' or timezone offset)
+                    if (event.targetDate && !event.targetDate.includes("Z") && !event.targetDate.match(/[+-]\d{2}:\d{2}$/)) {
+                        // Convert datetime-local format to ISO string
+                        return {
+                            ...event,
+                            targetDate: new Date(event.targetDate).toISOString(),
+                        };
+                    }
+                    return event;
+                });
+                setEvents(migratedEvents);
             } catch (e) {
                 console.error("Failed to parse saved events", e);
             }
@@ -370,7 +382,7 @@ export default function EventReminderClient() {
             id: Date.now().toString(),
             name: formData.name,
             description: formData.description,
-            targetDate: formData.targetDate,
+            targetDate: new Date(formData.targetDate).toISOString(), // Convert to ISO string with timezone
             email: formData.email,
             reminderFrequency: formData.reminderFrequency,
             customRemindersPerDay: formData.customRemindersPerDay,

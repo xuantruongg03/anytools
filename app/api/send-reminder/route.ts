@@ -137,11 +137,9 @@ async function handler(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.text();
-        console.log("📥 Received QStash webhook:", body);
-        
+
         // Log headers for debugging
         const signature = request.headers.get("upstash-signature");
-        console.log("🔑 QStash signature present:", !!signature);
 
         // Parse body and call handler
         const payload = JSON.parse(body);
