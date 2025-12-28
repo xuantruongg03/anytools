@@ -45,6 +45,33 @@ export default function StunTurnClient() {
     const pcRef = useRef<RTCPeerConnection | null>(null);
     const logsContainerRef = useRef<HTMLDivElement>(null);
 
+    // Load saved config from localStorage on mount
+    useEffect(() => {
+        const savedConfig = localStorage.getItem("stun-turn-config");
+        if (savedConfig) {
+            try {
+                const config = JSON.parse(savedConfig);
+                if (config.stunServer) setStunServer(config.stunServer);
+                if (config.turnServer) setTurnServer(config.turnServer);
+                if (config.turnUsername) setTurnUsername(config.turnUsername);
+                if (config.turnPassword) setTurnPassword(config.turnPassword);
+            } catch {
+                // Invalid JSON, ignore
+            }
+        }
+    }, []);
+
+    // Save config to localStorage
+    const saveConfig = () => {
+        const config = {
+            stunServer,
+            turnServer,
+            turnUsername,
+            turnPassword,
+        };
+        localStorage.setItem("stun-turn-config", JSON.stringify(config));
+    };
+
     const addLog = (message: string, type: LogEntry["type"] = "info") => {
         const timestamp = new Date().toLocaleTimeString("en-US", {
             hour12: false,
@@ -80,6 +107,9 @@ export default function StunTurnClient() {
     };
 
     const runTest = async () => {
+        // Save config when starting test
+        saveConfig();
+
         clearResults();
         setTesting(true);
 
@@ -362,6 +392,52 @@ export default function StunTurnClient() {
                     </div>
                 </div>
             )}
+
+            {/* Free STUN/TURN Servers List */}
+            <div className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mt-6'>
+                <h3 className='text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100'>📡 {locale === "vi" ? "Danh sách STUN/TURN Server miễn phí" : "Free STUN/TURN Servers"}</h3>
+
+                {/* STUN Servers */}
+                <div className='mb-4'>
+                    <h4 className='text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2'>STUN Servers</h4>
+                    <div className='grid sm:grid-cols-2 gap-2'>
+                        {[
+                            { name: "Google", url: "stun:stun.l.google.com:19302" },
+                            { name: "Google 2", url: "stun:stun1.l.google.com:19302" },
+                            { name: "Google 3", url: "stun:stun2.l.google.com:19302" },
+                            { name: "Google 4", url: "stun:stun3.l.google.com:19302" },
+                            { name: "Cloudflare", url: "stun:stun.cloudflare.com:3478" },
+                            { name: "Twilio", url: "stun:global.stun.twilio.com:3478" },
+                            { name: "Nextcloud", url: "stun:stun.nextcloud.com:443" },
+                            { name: "Stunprotocol", url: "stun:stun.stunprotocol.org:3478" },
+                        ].map((server) => (
+                            <button key={server.url} onClick={() => setStunServer(server.url)} className='flex items-center justify-between p-2 text-sm bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors text-left'>
+                                <span className='text-gray-700 dark:text-gray-300 font-medium'>{server.name}</span>
+                                <span className='text-gray-500 dark:text-gray-400 text-xs font-mono truncate ml-2'>{server.url}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* TURN Servers */}
+                <div>
+                    <h4 className='text-sm font-semibold text-purple-600 dark:text-purple-400 mb-2'>TURN Servers ({locale === "vi" ? "có thể cần đăng ký" : "may require signup"})</h4>
+                    <div className='grid sm:grid-cols-2 gap-2'>
+                        {[
+                            { name: "Metered (Free tier)", url: "turn:a.relay.metered.ca:80", note: "metered.ca" },
+                            { name: "OpenRelay", url: "turn:openrelay.metered.ca:80", note: "openrelay" },
+                            { name: "Xirsys (Free tier)", url: "turn:turn.xirsys.com:3478", note: "xirsys.com" },
+                            { name: "Twilio (Trial)", url: "turn:global.turn.twilio.com:3478", note: "twilio.com" },
+                        ].map((server) => (
+                            <button key={server.url} onClick={() => setTurnServer(server.url)} className='flex items-center justify-between p-2 text-sm bg-gray-50 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors text-left'>
+                                <span className='text-gray-700 dark:text-gray-300 font-medium'>{server.name}</span>
+                                <span className='text-gray-500 dark:text-gray-400 text-xs font-mono truncate ml-2'>{server.url}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>⚠️ {locale === "vi" ? "TURN server thường yêu cầu đăng ký để lấy username/password. Click để điền URL, sau đó nhập credentials từ nhà cung cấp." : "TURN servers usually require signup to get username/password. Click to fill URL, then enter credentials from provider."}</p>
+                </div>
+            </div>
         </div>
     );
 }

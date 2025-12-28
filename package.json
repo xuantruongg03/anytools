@@ -11,10 +11,12 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@tanstack/react-query": "^5.90.9",
+    "@types/katex": "^0.16.7",
     "@types/qrcode": "^1.5.6",
     "@upstash/qstash": "^2.8.4",
     "@upstash/redis": "^1.35.7",
     "imagetracerjs": "^1.2.6",
+    "katex": "^0.16.27",
     "next": "16.0.10",
     "qr-code-styling": "^1.9.2",
     "qrcode": "^1.5.4",

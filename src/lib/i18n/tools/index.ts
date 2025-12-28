@@ -21,6 +21,7 @@ import { slideshareDownloaderTranslations } from "./slideshare-downloader";
 import { studocuDownloaderTranslations } from "./studocu-downloader";
 import { speechToTextTranslations } from "./speech-to-text";
 import { removeBackgroundTranslations } from "./remove-background";
+import { latexEditorTranslations } from "./latex-editor";
 
 export const toolsTranslations = {
     en: {
@@ -47,6 +48,7 @@ export const toolsTranslations = {
         studocuDownloader: studocuDownloaderTranslations.en,
         speechToText: speechToTextTranslations.en,
         removeBackground: removeBackgroundTranslations.en,
+        latexEditor: latexEditorTranslations.en.latexEditor,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -72,5 +74,6 @@ export const toolsTranslations = {
         studocuDownloader: studocuDownloaderTranslations.vi,
         speechToText: speechToTextTranslations.vi,
         removeBackground: removeBackgroundTranslations.vi,
+        latexEditor: latexEditorTranslations.vi.latexEditor,
     },
 };

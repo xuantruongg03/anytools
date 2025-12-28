@@ -1,0 +1,120 @@
+/* LaTeX/KaTeX Dark Mode Styles */
+
+/* Force color on all KaTeX elements in dark mode */
+:is(.dark) .katex,
+:is(.dark) .katex-html,
+:is(.dark) .katex .base,
+:is(.dark) .katex .strut,
+:is(.dark) .katex .textbf,
+:is(.dark) .katex .textit,
+:is(.dark) .katex .textrm,
+:is(.dark) .katex .textsf,
+:is(.dark) .katex .texttt,
+:is(.dark) .katex .mathnormal,
+:is(.dark) .katex .mathit,
+:is(.dark) .katex .mathrm,
+:is(.dark) .katex .mathbf,
+:is(.dark) .katex .mathsf,
+:is(.dark) .katex .mathtt,
+:is(.dark) .katex .mathbb,
+:is(.dark) .katex .mathcal,
+:is(.dark) .katex .mathscr,
+:is(.dark) .katex .mathfrak,
+:is(.dark) .katex .mord,
+:is(.dark) .katex .mbin,
+:is(.dark) .katex .mrel,
+:is(.dark) .katex .mopen,
+:is(.dark) .katex .mclose,
+:is(.dark) .katex .mpunct,
+:is(.dark) .katex .minner,
+:is(.dark) .katex .mop,
+:is(.dark) .katex .mspace,
+:is(.dark) .katex .msupsub,
+:is(.dark) .katex .vlist,
+:is(.dark) .katex .vlist-t,
+:is(.dark) .katex .vlist-r,
+:is(.dark) .katex .vlist-s,
+:is(.dark) .katex span {
+    color: #f3f4f6 !important; /* gray-100 */
+}
+
+/* Fix for fractions lines */
+:is(.dark) .katex .frac-line {
+    border-bottom-color: #d1d5db !important;
+    background-color: #d1d5db !important;
+}
+
+/* Fix for sqrt symbol */
+:is(.dark) .katex .sqrt > .sqrt-sign {
+    color: #f3f4f6 !important;
+}
+
+:is(.dark) .katex .sqrt-line {
+    border-bottom-color: #d1d5db !important;
+    background-color: #d1d5db !important;
+}
+
+/* Fix overline/underline */
+:is(.dark) .katex .overline .overline-line,
+:is(.dark) .katex .underline .underline-line {
+    border-bottom-color: #d1d5db !important;
+    background-color: #d1d5db !important;
+}
+
+/* Matrix brackets and delimiters */
+:is(.dark) .katex .delimsizing,
+:is(.dark) .katex .delimsizinginner,
+:is(.dark) .katex .delim-size1,
+:is(.dark) .katex .delim-size2,
+:is(.dark) .katex .delim-size3,
+:is(.dark) .katex .delim-size4 {
+    color: #f3f4f6 !important;
+}
+
+/* Rule lines */
+:is(.dark) .katex .rule {
+    border-color: #d1d5db !important;
+    background-color: #d1d5db !important;
+}
+
+/* Array/Matrix lines */
+:is(.dark) .katex .arraycolsep,
+:is(.dark) .katex .col-align-c,
+:is(.dark) .katex .col-align-l,
+:is(.dark) .katex .col-align-r {
+    color: #f3f4f6 !important;
+}
+
+/* Ensure SVG elements are visible */
+:is(.dark) .katex svg {
+    fill: #f3f4f6;
+}
+
+:is(.dark) .katex svg path {
+    stroke: #f3f4f6;
+}
+
+/* Display wrapper specific (main large preview) */
+.katex-display-wrapper .katex-display {
+    margin: 0;
+}
+
+/* Small preview wrapper - inherit color from parent button */
+.katex-preview .katex {
+    font-size: 1em;
+    color: inherit !important;
+}
+
+.katex-preview .katex span,
+.katex-preview .katex .mord,
+.katex-preview .katex .mbin,
+.katex-preview .katex .mrel,
+.katex-preview .katex .mopen,
+.katex-preview .katex .mclose,
+.katex-preview .katex .mpunct,
+.katex-preview .katex .minner,
+.katex-preview .katex .mop,
+.katex-preview .katex .mathnormal,
+.katex-preview .katex .mathit {
+    color: inherit !important;
+}

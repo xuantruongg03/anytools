@@ -64,7 +64,10 @@ export const toolsConfig: ToolCategory[] = [
     {
         key: "education",
         icon: "🎓",
-        tools: [{ href: "/tools/gpa-calculator", icon: "🧩", key: "gpaCalculator" }],
+        tools: [
+            { href: "/tools/gpa-calculator", icon: "🧩", key: "gpaCalculator" },
+            { href: "/tools/latex-editor", icon: "∑", key: "latexEditor" },
+        ],
     },
     {
         key: "productivity",
