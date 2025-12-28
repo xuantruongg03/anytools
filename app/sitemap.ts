@@ -42,7 +42,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "weather",
         "world-clock",
         "svg-preview",
-        "png-to-svg"
+        "png-to-svg",
+        "latex-editor",
+        "markdown-editor",
     ];
 
     const sitemap: MetadataRoute.Sitemap = [];

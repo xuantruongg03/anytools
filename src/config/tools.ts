@@ -45,6 +45,7 @@ export const toolsConfig: ToolCategory[] = [
         icon: "📝",
         tools: [
             { href: "/tools/diff-checker", icon: "↔️", key: "diffChecker" },
+            { href: "/tools/markdown-editor", icon: "📄", key: "markdownEditor" },
             { href: "/tools/text-case", icon: "Aa", key: "textCase" },
         ],
     },
