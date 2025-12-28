@@ -1,2 +1,15 @@
 {
+    "redirects": [
+        {
+            "source": "/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "www.anytools.online"
+                }
+            ],
+            "destination": "https://anytools.online/:path*",
+            "permanent": true
+        }
+    ]
 }
