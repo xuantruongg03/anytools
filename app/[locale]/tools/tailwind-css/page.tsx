@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi Tailwind CSS sang CSS - Công Cụ Miễn Phí 2025" : "Tailwind CSS to CSS Converter - Convert Tailwind Classes to Vanilla CSS 2025";
-    const description = isVi ? "Chuyển đổi Tailwind CSS sang CSS thuần và ngược lại. Hoàn hảo để học Tailwind, debug và migrate dự án." : "Free online Tailwind CSS to vanilla CSS converter. Convert Tailwind utility classes to CSS styles and vice versa. Perfect for learning Tailwind, debugging, and project migration.";
+    const title = isVi ? "Chuyển Đổi Tailwind CSS Sang CSS - Công Cụ Miễn Phí 2026" : "Tailwind CSS to CSS Converter - Free Online Tool 2026";
+    const description = isVi ? "Chuyển đổi Tailwind CSS sang CSS thuần và ngược lại. Hoàn hảo để học Tailwind, debug và migrate dự án." : "Free online Tailwind CSS to vanilla CSS converter. Convert Tailwind utility classes to CSS styles and vice versa.";
 
     return {
         title,

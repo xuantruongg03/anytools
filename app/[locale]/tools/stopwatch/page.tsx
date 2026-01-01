@@ -12,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Đồng Hồ Bấm Giây Online - Stopwatch Miễn Phí 2025" : "Online Stopwatch - Free Time Measurement Tool 2025";
+    const title = isVi ? "Đồng Hồ Bấm Giây Online - Stopwatch Miễn Phí 2026" : "Online Stopwatch - Free Time Measurement Tool 2026";
     const description = isVi ? "Đo thời gian chính xác với tính năng bấm giờ từng vòng. Công cụ đồng hồ bấm giây miễn phí." : "Precise time measurement with lap tracking. Free online stopwatch tool.";
 
     return {

@@ -11,7 +11,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Giọng Nói Thành Văn Bản - Công Cụ Speech to Text Miễn Phí | AnyTools" : "Speech to Text Converter - Free Audio Transcription Tool | AnyTools";
+    const title = isVi ? "Chuyển Giọng Nói Thành Văn Bản - Speech to Text Miễn Phí 2026" : "Speech to Text Converter - Free Audio Transcription 2026";
     const description = isVi ? "Chuyển đổi giọng nói thành văn bản miễn phí. Hỗ trợ tải file âm thanh và ghi âm trực tiếp từ micro. Chính xác, nhanh chóng, bảo mật. Không cần đăng ký." : "Convert speech to text for free. Upload audio files or record directly from your microphone. Accurate, fast, and secure. No registration required.";
 
     return {

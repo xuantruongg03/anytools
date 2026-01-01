@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tạo Hash & Mã Hóa Văn Bản - MD5, SHA-256, SHA-512, AES 2025" : "Hash Generator & Text Encryptor - MD5, SHA-256, SHA-512, AES Encryption 2025";
-    const description = isVi ? "Công cụ tạo hash và mã hóa văn bản miễn phí trực tuyến. Tạo hash SHA-1, SHA-256, SHA-512 hoặc mã hóa/giải mã văn bản với mã hóa AES-256. An toàn, nhanh và hoạt động hoàn toàn trên trình duyệt của bạn." : "Free online hash generator and text encryptor. Generate SHA-1, SHA-256, SHA-512 hashes or encrypt/decrypt text with AES-256 encryption. Secure, fast, and works entirely in your browser.";
+    const title = isVi ? "Tạo Hash & Mã Hóa - MD5, SHA-256, SHA-512, AES 2026" : "Hash Generator - MD5, SHA-256, SHA-512, AES Online 2026";
+    const description = isVi ? "Công cụ tạo hash và mã hóa văn bản miễn phí. Tạo hash SHA-1, SHA-256, SHA-512 hoặc mã hóa AES-256. An toàn và nhanh." : "Free online hash generator and encryptor. Generate SHA-1, SHA-256, SHA-512 hashes or encrypt with AES-256. Secure and fast.";
 
     return {
         title,

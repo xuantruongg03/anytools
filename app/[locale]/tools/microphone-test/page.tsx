@@ -12,15 +12,15 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     return {
-        title: locale === "vi" ? "Test Microphone - Kiểm Tra Mic Online Miễn Phí 2025 | AnyTools" : "Microphone Test - Free Online Mic Testing Tool 2025 | AnyTools",
-        description: locale === "vi" ? "Công cụ test microphone online miễn phí. Kiểm tra mic, xem sóng âm thanh real-time, ghi âm và phát lại, đánh giá chất lượng âm thanh. 100% miễn phí và bảo mật." : "Free online microphone testing tool. Test your mic, view real-time audio waveform, record and playback, analyze audio quality. 100% free and secure.",
+        title: locale === "vi" ? "Test Microphone - Kiểm Tra Mic Online Miễn Phí 2026" : "Microphone Test - Free Online Mic Testing Tool 2026",
+        description: locale === "vi" ? "Công cụ test microphone online miễn phí. Kiểm tra mic, xem sóng âm thanh real-time, ghi âm và phát lại. 100% bảo mật." : "Free online microphone testing tool. Test mic, view real-time waveform, record and playback. 100% free and secure.",
         keywords: ["microphone test", "mic test", "test mic online", "audio test", "microphone check", "mic check", "sound test", "audio quality test", "test microphone", "kiểm tra mic", "test mic", "kiểm tra microphone", "test âm thanh"],
         authors: [{ name: "AnyTools" }],
         creator: "AnyTools",
         publisher: "AnyTools",
         applicationName: "AnyTools Microphone Test",
         openGraph: {
-            title: locale === "vi" ? "Test Microphone Online - Kiểm Tra Mic Miễn Phí 2025" : "Microphone Test Online - Free Mic Testing Tool 2025",
+            title: locale === "vi" ? "Test Microphone Online - Kiểm Tra Mic Miễn Phí 2026" : "Microphone Test Online - Free Mic Testing Tool 2026",
             description: locale === "vi" ? "Kiểm tra microphone miễn phí. Xem sóng âm thanh, ghi âm, phát lại, đánh giá chất lượng. 100% client-side." : "Free microphone testing. View waveform, record, playback, analyze quality. 100% client-side.",
             type: "website",
             siteName: "AnyTools",

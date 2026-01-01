@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Kiểm Tra Regex - Công Cụ Test Biểu Thức Chính Quy 2025" : "Regex Tester - Regular Expression Testing Tool Online 2025";
-    const description = isVi ? "Kiểm tra và xác thực biểu thức chính quy trực tuyến. Công cụ kiểm tra regex miễn phí với khớp mẫu, hỗ trợ cờ và kết quả tức thì. Hoàn hảo cho lập trình viên gỡ lỗi mẫu regex. 100% xử lý phía client và an toàn." : "Test and validate regular expressions online. Free regex tester with pattern matching, flags support, and instant results. Perfect for developers debugging regex patterns. 100% client-side and secure.";
+    const title = isVi ? "Kiểm Tra Regex - Công Cụ Test Biểu Thức Chính Quy 2026" : "Regex Tester - Regular Expression Testing Tool Online 2026";
+    const description = isVi ? "Kiểm tra và xác thực biểu thức chính quy trực tuyến. Công cụ regex miễn phí với khớp mẫu, hỗ trợ cờ và kết quả tức thì. 100% bảo mật." : "Test and validate regular expressions online. Free regex tester with pattern matching, flags support, instant results. 100% secure.";
 
     return {
         title,

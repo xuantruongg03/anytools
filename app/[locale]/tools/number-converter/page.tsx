@@ -11,7 +11,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi Hệ Số & Máy Tính Bitwise - Nhị Phân, Hex, Decimal 2025" : "Number System Converter & Bitwise Calculator - Binary, Hex, Decimal Online 2025";
+    const title = isVi ? "Chuyển Đổi Hệ Số & Máy Tính Bitwise - Nhị Phân, Hex 2026" : "Number System Converter & Bitwise Calculator Online 2026";
     const description = isVi ? "Công cụ chuyển đổi hệ số và máy tính bitwise miễn phí. Chuyển đổi giữa nhị phân, thập phân, thập lục phân, bát phân. Thực hiện AND, OR, XOR." : "Free number system converter and bitwise calculator. Convert between binary, decimal, hexadecimal, octal. Perform AND, OR, XOR, shift operations.";
 
     return {

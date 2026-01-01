@@ -13,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
 
     const titles = {
-        en: "QR Code Generator Online - Free Custom QR Code Maker with Logo 2025",
-        vi: "Tạo Mã QR Online - Công Cụ Tạo QR Code Miễn Phí Có Logo 2025",
+        en: "QR Code Generator - Free Custom QR Code with Logo 2026",
+        vi: "Tạo Mã QR Online - Công Cụ Tạo QR Code Có Logo 2026",
     };
 
     const descriptions = {

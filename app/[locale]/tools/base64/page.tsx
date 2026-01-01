@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Mã Hóa & Giải Mã Base64 - Công Cụ Chuyển Đổi Base64 Miễn Phí 2025" : "Base64 Encoder & Decoder Online - Free Base64 Converter Tool 2025";
-    const description = isVi ? "Công cụ mã hóa và giải mã Base64 miễn phí trực tuyến. Chuyển đổi văn bản và hình ảnh sang Base64 và giải mã chuỗi Base64 ngay lập tức. Nhanh, an toàn và dễ sử dụng. Hoàn hảo cho lập trình viên!" : "Free online Base64 encoder and decoder. Convert text and images to Base64 and decode Base64 strings instantly. Fast, secure, and easy to use. Perfect for developers!";
+    const title = isVi ? "Mã Hóa & Giải Mã Base64 - Công Cụ Chuyển Đổi Miễn Phí 2026" : "Base64 Encoder & Decoder - Free Online Converter 2026";
+    const description = isVi ? "Công cụ mã hóa và giải mã Base64 miễn phí. Chuyển đổi văn bản, hình ảnh sang Base64 ngay lập tức. Nhanh, an toàn, dễ sử dụng." : "Free online Base64 encoder and decoder. Convert text and images to Base64 instantly. Fast, secure, and easy to use.";
 
     return {
         title,

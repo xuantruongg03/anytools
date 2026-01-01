@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Bảng Chọn Màu & Chuyển Đổi - HEX, RGB, HSL 2025" : "Color Picker & Converter - HEX, RGB, HSL Color Tool 2025";
-    const description = isVi ? "Công cụ chọn màu và chuyển đổi miễn phí. Chọn màu từ bảng màu hoặc trích xuất từ ảnh. Chuyển đổi giữa HEX, RGB, HSL, RGBA ngay lập tức." : "Free online color picker and converter. Pick colors from color wheel or extract colors from uploaded images. Convert between HEX, RGB, HSL, and RGBA formats instantly. Perfect for web designers and developers.";
+    const title = isVi ? "Bảng Chọn Màu & Chuyển Đổi - HEX, RGB, HSL 2026" : "Color Picker & Converter - HEX, RGB, HSL Tool 2026";
+    const description = isVi ? "Công cụ chọn màu và chuyển đổi miễn phí. Chọn màu từ bảng màu hoặc trích xuất từ ảnh. Chuyển đổi HEX, RGB, HSL, RGBA." : "Free online color picker and converter. Pick colors from wheel or extract from images. Convert HEX, RGB, HSL, RGBA instantly.";
 
     return {
         title,

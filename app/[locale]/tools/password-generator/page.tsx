@@ -14,12 +14,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "Password Generator & Strengthener - Create Secure Passwords 2025 | AnyTools",
-            description: "Generate strong random passwords, create memorable passphrases, or strengthen existing passwords. Free online tool with entropy calculation, security analysis, and customizable options for maximum protection.",
+            title: "Password Generator - Create Strong Secure Passwords 2026",
+            description: "Generate strong random passwords, create memorable passphrases. Free tool with entropy calculation and security analysis.",
         },
         vi: {
-            title: "Trình tạo mật khẩu - Tạo mật khẩu mạnh & an toàn 2025 | AnyTools",
-            description: "Tạo mật khẩu ngẫu nhiên mạnh mẽ, tạo cụm mật khẩu dễ nhớ, hoặc tăng cường mật khẩu hiện có. Công cụ miễn phí với tính toán entropy, phân tích bảo mật và tùy chọn tối đa.",
+            title: "Trình Tạo Mật Khẩu - Tạo Mật Khẩu Mạnh An Toàn 2026",
+            description: "Tạo mật khẩu ngẫu nhiên mạnh mẽ, cụm mật khẩu dễ nhớ. Công cụ miễn phí với tính toán entropy và phân tích bảo mật.",
         },
     };
 

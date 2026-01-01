@@ -12,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Đồng Hồ Thế Giới - Xem Giờ Trực Tuyến Miễn Phí 2025" : "World Clock - Free Online Time Zone Checker 2025";
+    const title = isVi ? "Đồng Hồ Thế Giới - Xem Giờ Trực Tuyến Miễn Phí 2026" : "World Clock - Free Online Time Zone Checker 2026";
     const description = isVi ? "Xem giờ hiện tại của các thành phố trên thế giới. Công cụ đồng hồ thế giới miễn phí." : "Check current time across multiple time zones worldwide. Free online world clock tool.";
 
     return {

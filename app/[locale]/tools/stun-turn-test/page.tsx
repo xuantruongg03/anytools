@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Kiểm Tra STUN/TURN Server - Công Cụ Test WebRTC 2025" : "STUN/TURN Server Test - WebRTC ICE Candidate Testing Tool 2025";
-    const description = isVi ? "Công cụ kiểm tra STUN/TURN server miễn phí cho WebRTC. Test cấu hình server, xác thực ICE candidate, chẩn đoán kết nối." : "Free online STUN/TURN server tester for WebRTC applications. Test server configuration, validate ICE candidate gathering, and diagnose connectivity issues.";
+    const title = isVi ? "Kiểm Tra STUN/TURN Server - Công Cụ Test WebRTC 2026" : "STUN/TURN Server Test - WebRTC ICE Candidate Tool 2026";
+    const description = isVi ? "Công cụ kiểm tra STUN/TURN server miễn phí cho WebRTC. Test cấu hình server, xác thực ICE candidate, chẩn đoán kết nối." : "Free online STUN/TURN server tester for WebRTC. Test server config, validate ICE candidate gathering, diagnose issues.";
 
     return {
         title,

@@ -12,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Đếm Ngược Thời Gian - Countdown Timer Online Miễn Phí 2025" : "Countdown Timer Online - Free Event Countdown Tool 2025";
+    const title = isVi ? "Đếm Ngược Thời Gian - Countdown Timer Online Miễn Phí 2026" : "Countdown Timer Online - Free Event Countdown Tool 2026";
     const description = isVi ? "Đếm ngược đến các sự kiện quan trọng của bạn. Công cụ hẹn giờ đếm ngược miễn phí với cập nhật trực tiếp." : "Count down to your important events with live updates. Free online countdown timer tool.";
 
     return {

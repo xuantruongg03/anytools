@@ -11,7 +11,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi Timestamp - Công Cụ Convert Unix Timestamp Miễn Phí 2025" : "Timestamp Converter - Unix Timestamp to Date Converter Online 2025";
+    const title = isVi ? "Chuyển Đổi Timestamp - Convert Unix Timestamp Miễn Phí 2026" : "Timestamp Converter - Unix Timestamp to Date Online 2026";
     const description = isVi ? "Chuyển đổi Unix timestamp sang ngày tháng và ngược lại. Công cụ chuyển đổi epoch time miễn phí cho lập trình viên." : "Convert Unix timestamps to human-readable dates and vice versa. Free online timestamp converter tool for developers.";
 
     return {

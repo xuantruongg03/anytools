@@ -11,7 +11,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi Kiểu Chữ - Công Cụ Đổi Chữ Hoa Thường Miễn Phí 2025" : "Text Case Converter - Convert to Uppercase, Lowercase, Title Case, camelCase 2025";
+    const title = isVi ? "Chuyển Đổi Kiểu Chữ - Đổi Chữ Hoa Thường Miễn Phí 2026" : "Text Case Converter - Uppercase, Lowercase, Title Case 2026";
     const description = isVi ? "Chuyển đổi văn bản sang CHỮ HOA, chữ thường, Kiểu Tiêu Đề, camelCase, snake_case và kebab-case ngay lập tức." : "Free online text case converter. Convert text to UPPERCASE, lowercase, Title Case, camelCase, snake_case, and kebab-case instantly.";
 
     return {

@@ -11,7 +11,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Trình Soạn LaTeX Online - Viết Công Thức Toán Học Miễn Phí 2025" : "LaTeX Editor Online - Free Math Equation Editor 2025";
+    const title = isVi ? "Trình Soạn LaTeX Online - Viết Công Thức Toán Học Miễn Phí 2026" : "LaTeX Editor Online - Free Math Equation Editor 2026";
     const description = isVi ? "Trình soạn LaTeX miễn phí với xem trước thời gian thực. Viết công thức toán học, phương trình, ký hiệu khoa học. Có bảng ký hiệu, mẫu công thức sẵn có." : "Free online LaTeX editor with real-time preview. Write math equations, formulas, scientific notation. Includes symbol palette, templates, and instant rendering.";
 
     return {

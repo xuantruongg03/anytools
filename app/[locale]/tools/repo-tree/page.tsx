@@ -14,13 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "GitHub Repository Tree Viewer - Generate Folder Structure Markdown 2025 | AnyTools",
-            description: "Free GitHub repository tree viewer. Visualize folder structure, generate markdown tree for README. Support public and private repos. Perfect for documentation and project overview.",
+            title: "GitHub Repository Tree Viewer - Folder Structure Markdown 2026",
+            description: "Free GitHub repo tree viewer. Visualize folder structure, generate markdown tree for README. Support public and private repos.",
             keywords: "github tree, repo tree viewer, folder structure, directory tree, github markdown, repository structure, project tree, github visualizer, readme tree, file structure generator",
         },
         vi: {
-            title: "Xem cây thư mục GitHub - Tạo cấu trúc Markdown cho README 2025 | AnyTools",
-            description: "Công cụ xem cây thư mục GitHub miễn phí. Hiển thị cấu trúc thư mục, tạo markdown tree cho README. Hỗ trợ repo public và private. Hoàn hảo cho tài liệu dự án.",
+            title: "Xem Cây Thư Mục GitHub - Tạo Cấu Trúc Markdown 2026",
+            description: "Công cụ xem cây thư mục GitHub miễn phí. Hiển thị cấu trúc thư mục, tạo markdown tree cho README. Hỗ trợ repo public và private.",
             keywords: "github tree, xem cây thư mục, cấu trúc thư mục, directory tree, github markdown, cấu trúc repo, project tree, repo structure, readme tree, tạo cây thư mục",
         },
     };

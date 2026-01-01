@@ -13,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
 
     const titles = {
-        en: "URL Shortener - Free Link Shortener Online with Multiple Services 2025",
-        vi: "Rút Gọn Link - Công Cụ Rút Gọn URL Online Miễn Phí 2025",
+        en: "URL Shortener - Free Link Shortener Online 2026",
+        vi: "Rút Gọn Link - Công Cụ Rút Gọn URL Miễn Phí 2026",
     };
 
     const descriptions = {

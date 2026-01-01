@@ -11,7 +11,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Xóa Phông Nền Ảnh - Công Cụ Remove Background Miễn Phí | AnyTools" : "Remove Image Background - Free AI Background Remover | AnyTools";
+    const title = isVi ? "Xóa Phông Nền Ảnh - Remove Background AI Miễn Phí 2026" : "Remove Image Background - Free AI Background Remover 2026";
     const description = isVi ? "Xóa phông nền ảnh tự động bằng AI. Hỗ trợ nhiều nhà cung cấp dịch vụ. Nhanh chóng, chính xác, bảo mật. Không cần đăng ký." : "Remove image backgrounds automatically with AI. Multiple service providers supported. Fast, accurate, and secure. No registration required.";
 
     return {

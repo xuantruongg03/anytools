@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Mã Hóa & Giải Mã URL - Công Cụ Encode URL Miễn Phí 2025" : "URL Encoder & Decoder Online - Free URL Encoding Tool 2025";
-    const description = isVi ? "Công cụ mã hóa và giải mã URL miễn phí trực tuyến. Mã hóa ký tự đặc biệt trong URL và giải mã chuỗi URL ngay lập tức." : "Free online URL encoder and decoder. Encode special characters for URLs and decode URL-encoded strings instantly. Perfect for web developers working with query parameters and API calls.";
+    const title = isVi ? "Mã Hóa & Giải Mã URL - Công Cụ Encode URL Miễn Phí 2026" : "URL Encoder & Decoder - Free URL Encoding Tool Online 2026";
+    const description = isVi ? "Công cụ mã hóa và giải mã URL miễn phí trực tuyến. Mã hóa ký tự đặc biệt trong URL và giải mã chuỗi URL ngay lập tức." : "Free online URL encoder and decoder. Encode special characters for URLs and decode URL-encoded strings instantly.";
 
     return {
         title,

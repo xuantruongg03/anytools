@@ -14,13 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "GPA Calculator - Calculate Grade Point Average & Credit System 2025 | AnyTools",
-            description: "Free online GPA calculator for Vietnamese universities. Calculate current GPA, predict target grades, simulate scenarios. Support multiple grading systems (4.0, 10-point scale, 100-point scale). Understand credit system, grade conversion, and graduation classification.",
+            title: "GPA Calculator - Calculate Grade Point Average Online 2026",
+            description: "Free online GPA calculator. Calculate current GPA, predict target grades, simulate scenarios. Support 4.0, 10-point, 100-point scales.",
             keywords: "GPA calculator, grade point average, calculate GPA, GPA conversion, credit system, university GPA, academic grade calculator, grade calculator Vietnam, cumulative GPA, semester GPA, graduation classification, tính GPA, điểm trung bình tích lũy, hệ thống tín chỉ",
         },
         vi: {
-            title: "Máy tính GPA - Tính điểm trung bình tích lũy & Hệ thống tín chỉ 2025 | AnyTools",
-            description: "Công cụ tính GPA miễn phí cho sinh viên Việt Nam. Tính GPA hiện tại, dự đoán điểm cần thiết, mô phỏng kết quả. Hỗ trợ nhiều khung tính điểm (thang 4.0, thang 10, thang 100). Giải thích hệ thống tín chỉ, quy đổi điểm, phân loại tốt nghiệp chi tiết.",
+            title: "Máy Tính GPA - Tính Điểm Trung Bình Tích Lũy Online 2026",
+            description: "Công cụ tính GPA miễn phí. Tính GPA hiện tại, dự đoán điểm cần thiết. Hỗ trợ thang 4.0, thang 10, thang 100.",
             keywords: "tính GPA, máy tính GPA, điểm trung bình tích lũy, GPA trung bình, hệ thống tín chỉ, tín chỉ đại học, quy đổi điểm, GPA calculator, tính điểm TB, phân loại tốt nghiệp, GPA 4.0, thang điểm 10, cách tính GPA",
         },
     };

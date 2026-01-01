@@ -15,10 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const toolData = t.tools.randomWheel;
 
     const isVi = locale === "vi";
-    const title = isVi ? "Vòng Quay May Mắn - Công Cụ Quay Số Ngẫu Nhiên Miễn Phí 2025" : "Random Wheel Spinner - Free Lucky Wheel Generator & Decision Maker Tool 2025";
-    const description = isVi
-        ? "Vòng quay may mắn miễn phí - Quay vòng để chọn ngẫu nhiên, ra quyết định, chọn người thắng cho cuộc thi & sự kiện. Tùy chỉnh vô hạn tùy chọn, thêm hàng loạt, kết quả tức thì. Hoàn hảo cho lớp học, team building, rút thăm, trò chơi. 100% miễn phí, không cần đăng ký!"
-        : "Free random wheel spinner online - Spin the wheel to pick random choices, make decisions, choose winners for giveaways & contests. Customize unlimited options, add bulk items, and get instant random results. Perfect for classroom activities, team building, prize draws, and fun games. 100% free, no registration required!";
+    const title = isVi ? "Vòng Quay May Mắn - Quay Số Ngẫu Nhiên Online 2026" : "Random Wheel Spinner - Free Lucky Wheel Online 2026";
+    const description = isVi ? "Vòng quay may mắn miễn phí - Quay vòng chọn ngẫu nhiên, ra quyết định, chọn người thắng. Tùy chỉnh vô hạn, kết quả tức thì. 100% miễn phí!" : "Free random wheel spinner - Spin to pick random choices, make decisions, choose winners. Customize options, get instant results. 100% free!";
 
     return {
         title,

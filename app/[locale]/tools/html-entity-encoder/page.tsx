@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Mã Hóa/Giải Mã HTML Entity - Chuyển Đổi Ký Tự Đặc Biệt 2025" : "HTML Entity Encoder/Decoder - Convert Special Characters to HTML Entities 2025";
-    const description = isVi ? "Công cụ mã hóa và giải mã HTML entity miễn phí. Chuyển đổi ký tự đặc biệt (&, <, >) thành HTML entities. Ngăn chặn tấn công XSS." : "Free HTML entity encoder and decoder tool. Convert special characters (&, <, >, quotes) to HTML entities for security. Prevent XSS attacks with proper encoding.";
+    const title = isVi ? "Mã Hóa/Giải Mã HTML Entity - Ký Tự Đặc Biệt 2026" : "HTML Entity Encoder/Decoder - Convert Special Characters 2026";
+    const description = isVi ? "Công cụ mã hóa và giải mã HTML entity miễn phí. Chuyển đổi ký tự đặc biệt thành HTML entities. Ngăn chặn XSS." : "Free HTML entity encoder and decoder. Convert special characters to HTML entities for security. Prevent XSS attacks.";
 
     return {
         title,

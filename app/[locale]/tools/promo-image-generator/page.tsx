@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tạo Ảnh Promo - Thiết Kế Banner Online Miễn Phí 2025 | AnyTools" : "Promo Image Generator - Free Online Banner Design Tool 2025 | AnyTools";
-    const description = isVi ? "Tạo ảnh quảng cáo chuyên nghiệp với kích thước tùy chỉnh. Ghép ảnh vào khung gradient đẹp mắt, hỗ trợ xuất PNG/JPEG chất lượng cao. Miễn phí, không cần đăng nhập." : "Create professional promotional images with custom dimensions. Combine images with beautiful gradient backgrounds, export high-quality PNG/JPEG. Free, no login required.";
+    const title = isVi ? "Tạo Ảnh Promo - Thiết Kế Banner Online Miễn Phí 2026" : "Promo Image Generator - Free Online Banner Design 2026";
+    const description = isVi ? "Tạo ảnh quảng cáo chuyên nghiệp với kích thước tùy chỉnh. Ghép ảnh vào khung gradient đẹp, xuất PNG/JPEG. Miễn phí." : "Create professional promo images with custom dimensions. Combine images with gradient backgrounds, export PNG/JPEG. Free.";
 
     return {
         title,

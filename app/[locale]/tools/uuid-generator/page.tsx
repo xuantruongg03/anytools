@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tạo UUID/GUID - Công Cụ Tạo UUID v1, v4 Miễn Phí 2025" : "UUID Generator Online - Free UUID v1, v4 GUID Generator Tool 2025";
-    const description = isVi ? "Tạo UUID/GUID trực tuyến ngay lập tức. Tạo UUID v4 (ngẫu nhiên) và UUID v1 (dựa trên thời gian) với hỗ trợ tạo hàng loạt. Công cụ tạo UUID miễn phí, nhanh và an toàn cho lập trình viên." : "Generate UUID/GUID online instantly. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk generation support. Free, fast, and secure UUID generator for developers.";
+    const title = isVi ? "Tạo UUID/GUID - Công Cụ Tạo UUID v1, v4 Miễn Phí 2026" : "UUID Generator Online - Free UUID v1, v4 Generator 2026";
+    const description = isVi ? "Tạo UUID/GUID trực tuyến ngay lập tức. Tạo UUID v4 (ngẫu nhiên) và UUID v1 (timestamp-based) với hỗ trợ bulk. Miễn phí, nhanh và an toàn." : "Generate UUID/GUID online instantly. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk support. Free and secure.";
 
     return {
         title,

@@ -11,8 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Định Dạng JSON - Công Cụ Format & Validate JSON Miễn Phí 2025" : "JSON Formatter Online - Free JSON Beautifier & Validator Tool 2025";
-    const description = isVi ? "Công cụ định dạng, xác thực và làm đẹp JSON miễn phí trực tuyến. Định dạng, xác thực, thu gọn JSON ngay lập tức. Trình chỉnh sửa JSON tốt nhất với làm nổi bật cú pháp. Không cần cài đặt. Dùng thử ngay!" : "Free online JSON formatter, validator and beautifier. Format, validate, minify JSON instantly. Best JSON editor with syntax highlighting. No installation required. Try now!";
+    const title = isVi ? "Định Dạng JSON - Công Cụ Format & Validate Miễn Phí 2026" : "JSON Formatter Online - Free Beautifier & Validator 2026";
+    const description = isVi ? "Công cụ định dạng, xác thực và làm đẹp JSON miễn phí. Định dạng, validate, thu gọn JSON ngay lập tức. Có syntax highlighting." : "Free online JSON formatter, validator and beautifier. Format, validate, minify JSON instantly. Syntax highlighting included.";
 
     return {
         title,

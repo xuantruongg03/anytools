@@ -13,13 +13,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "PNG to SVG Converter - Free Online Image to Vector Tool 2025 | AnyTools",
-            description: "Free online PNG to SVG converter. Transform raster images to scalable vector graphics instantly. Supports tracing (vectorization) and embedding modes. No upload required - 100% client-side processing.",
+            title: "PNG to SVG Converter - Free Image to Vector Tool 2026",
+            description: "Free online PNG to SVG converter. Transform raster images to vector graphics instantly. Supports tracing and embedding. 100% client-side.",
             keywords: "png to svg, image to svg, convert png to svg, png to svg converter, image to vector, raster to vector, vectorize image, svg converter, free svg converter, online image converter, png to svg online",
         },
         vi: {
-            title: "Chuyển đổi PNG sang SVG - Công cụ chuyển ảnh sang Vector miễn phí 2025 | AnyTools",
-            description: "Công cụ chuyển đổi PNG sang SVG trực tuyến miễn phí. Chuyển đổi hình ảnh raster thành đồ họa vector có thể mở rộng ngay lập tức. Hỗ trợ chế độ trace (vector hóa) và embed. Không cần upload - xử lý 100% phía client.",
+            title: "Chuyển Đổi PNG Sang SVG - Ảnh Sang Vector Miễn Phí 2026",
+            description: "Công cụ chuyển đổi PNG sang SVG miễn phí. Chuyển ảnh raster thành đồ họa vector ngay lập tức. Hỗ trợ trace và embed.",
             keywords: "png sang svg, ảnh sang svg, chuyển png sang svg, công cụ chuyển đổi png svg, ảnh sang vector, raster sang vector, vector hóa ảnh, chuyển đổi svg, công cụ svg miễn phí",
         },
     };
