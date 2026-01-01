@@ -12,6 +12,7 @@ export interface Extension {
     firefoxUrl?: string;
     edgeUrl?: string;
     githubUrl?: string;
+    privacyPolicyUrl?: string;
     icon?: string;
     author: string;
     tags?: string[];
@@ -50,6 +51,7 @@ export const extensions: Extension[] = [
         category: "developer",
         chromeUrl: "",
         githubUrl: "https://github.com/xuantruongg03/css-inspector-extension",
+        privacyPolicyUrl: "/privacy/css-inspector",
         author: "xuantruongg03",
         tags: ["css", "inspector", "developer"],
     },

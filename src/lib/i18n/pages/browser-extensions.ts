@@ -18,6 +18,7 @@ export const browserExtensionsTranslations = {
                 edge: "Edge Add-ons",
                 github: "GitHub",
                 sourceCode: "Source Code",
+                privacyPolicy: "Privacy Policy",
                 by: "by",
                 tags: "Tags",
                 categories: {
@@ -70,6 +71,7 @@ export const browserExtensionsTranslations = {
                 edge: "Edge Add-ons",
                 github: "GitHub",
                 sourceCode: "Mã nguồn",
+                privacyPolicy: "Chính sách riêng tư",
                 by: "bởi",
                 tags: "Thẻ",
                 categories: {
