@@ -66,6 +66,19 @@ export const extensions: Extension[] = [
         author: "xuantruongg03",
         tags: ["web", "inspector", "developer"],
     },
+    {
+        id: "audio-equalizer-booster-pro",
+        name: "Audio Equalizer & Booster Pro",
+        description: {
+            en: "Professional 10-band equalizer with 30+ presets, volume boost up to 800%, 7D auto-pan, spatial audio, per-site settings.",
+            vi: "Bộ cân bằng 10 băng tần chuyên nghiệp với hơn 30 cài đặt trước, tăng âm lượng lên đến 800%, tự động pan 7D, âm thanh không gian, cài đặt theo trang web.",
+        },
+        category: "utility",
+        chromeUrl: "",
+        githubUrl: "https://github.com/xuantruongg03/audio-equalizer-booster-extension",
+        author: "xuantruongg03",
+        tags: ["audio", "equalizer", "booster"],
+    },
 ];
 
 // Helper function to get extensions by category
