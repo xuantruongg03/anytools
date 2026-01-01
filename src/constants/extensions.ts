@@ -35,7 +35,7 @@ export const extensions: Extension[] = [
             vi: "Đây là một extension tự động điền các biểu mẫu cho bạn. Nó giúp tiết kiệm thời gian bằng cách điền các trường với dữ liệu đã được định nghĩa trước.",
         },
         category: "productivity",
-        chromeUrl: "",
+        chromeUrl: "https://chromewebstore.google.com/detail/auto-form-filler/ojdhfbmhdohbhfjcejdclcpbbhaggonc",
         githubUrl: "https://github.com/xuantruongg03/auto-form-filler-extension",
         author: "xuantruongg03",
         tags: ["auto", "form", "filler"],
