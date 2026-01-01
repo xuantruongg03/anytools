@@ -50,7 +50,7 @@ export const privacyTranslations = {
                     contact: {
                         title: "6. CONTACT",
                         content: "For questions about this privacy policy, contact:",
-                        email: "xuantruong03.work@gmail.com",
+                        email: "lexuantruong098@gmail.com",
                         website: "https://anytools.online",
                     },
                     changes: {
@@ -98,7 +98,7 @@ export const privacyTranslations = {
                     contact: {
                         title: "6. LIÊN HỆ",
                         content: "Nếu có câu hỏi về chính sách quyền riêng tư này, liên hệ:",
-                        email: "xuantruong03.work@gmail.com",
+                        email: "lexuantruong098@gmail.com",
                         website: "https://anytools.online",
                     },
                     changes: {
