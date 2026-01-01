@@ -45,6 +45,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "png-to-svg",
         "latex-editor",
         "markdown-editor",
+        "promo-image-generator",
+        "pdf-converter",
+        "image-compressor",
+        "code-formatter",
     ];
 
     const sitemap: MetadataRoute.Sitemap = [];

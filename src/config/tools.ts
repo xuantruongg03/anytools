@@ -17,6 +17,7 @@ export const toolsConfig: ToolCategory[] = [
         tools: [
             { href: "/tools/api-tester", icon: "🚀", key: "apiTester" },
             { href: "/tools/base64", icon: "64", key: "base64" },
+            { href: "/tools/code-formatter", icon: "✨", key: "codeFormatter" },
             { href: "/tools/hash-generator", icon: "#", key: "hashGenerator" },
             { href: "/tools/html-entity-encoder", icon: "🏷️", key: "htmlEntityEncoder" },
             { href: "/tools/json-formatter", icon: "{ }", key: "jsonFormatter" },
@@ -35,6 +36,7 @@ export const toolsConfig: ToolCategory[] = [
         icon: "🎨",
         tools: [
             { href: "/tools/color-picker", icon: "🎨", key: "colorPicker" },
+            { href: "/tools/image-compressor", icon: "🗜️", key: "imageCompressor" },
             { href: "/tools/png-to-svg", icon: "🔄", key: "pngToSvg" },
             { href: "/tools/promo-image-generator", icon: "🖼️", key: "promoImageGenerator" },
             { href: "/tools/svg-preview", icon: "🖼️", key: "svgPreview" },
@@ -77,6 +79,7 @@ export const toolsConfig: ToolCategory[] = [
         tools: [
             { href: "/tools/countdown", icon: "⏱️", key: "countdown" },
             { href: "/tools/event-reminder", icon: "📅", key: "eventReminder" },
+            { href: "/tools/pdf-converter", icon: "📄", key: "pdfConverter" },
             { href: "/tools/qr-code-generator", icon: "📱", key: "qrCodeGenerator" },
             { href: "/tools/stopwatch", icon: "⏲️", key: "stopwatch" },
             { href: "/tools/url-shortener", icon: "🔗", key: "urlShortener" },

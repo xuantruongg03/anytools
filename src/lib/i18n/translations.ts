@@ -67,6 +67,21 @@ export const translations = {
 
         // Tools
         tools: {
+            codeFormatter: {
+                name: "Code Formatter",
+                description: "Format and beautify code in JavaScript, CSS, HTML, SQL, Python, and more",
+                category: "Developer",
+            },
+            imageCompressor: {
+                name: "Image Compressor",
+                description: "Compress PNG, JPG, WebP images without losing quality",
+                category: "Design",
+            },
+            pdfConverter: {
+                name: "PDF Converter",
+                description: "Convert PDF to images and images to PDF",
+                category: "Productivity",
+            },
             jsonFormatter: {
                 name: "JSON Formatter",
                 description: "Format, validate, and beautify JSON data with syntax highlighting",
@@ -992,6 +1007,21 @@ export const translations = {
 
         // Tools
         tools: {
+            codeFormatter: {
+                name: "Format Code",
+                description: "Format và beautify code JavaScript, CSS, HTML, SQL, Python và nhiều hơn nữa",
+                category: "Lập Trình",
+            },
+            imageCompressor: {
+                name: "Nén Ảnh",
+                description: "Nén ảnh PNG, JPG, WebP mà không mất chất lượng",
+                category: "Thiết Kế",
+            },
+            pdfConverter: {
+                name: "Chuyển Đổi PDF",
+                description: "Chuyển PDF sang ảnh và ảnh sang PDF",
+                category: "Năng Suất",
+            },
             jsonFormatter: {
                 name: "Định Dạng JSON",
                 description: "Định dạng, xác thực và làm đẹp dữ liệu JSON với tô sáng cú pháp",

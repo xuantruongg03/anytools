@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
 import { HTTP_REQUEST_PATTERN, HOST_HEADER_PATTERN, HTTP_HEADER_LINE_PATTERN, CURL_URL_PATTERN, CURL_URL_FALLBACK_PATTERN, CURL_METHOD_PATTERN, CURL_HEADER_PATTERN, CURL_DATA_PATTERN, CURL_DATA_RAW_PATTERN } from "@/constants/regex";
@@ -28,6 +28,20 @@ interface ApiResponse {
     time: number;
 }
 
+interface SavedRequest {
+    id: string;
+    name: string;
+    method: HttpMethod;
+    url: string;
+    headers: Header[];
+    queryParams: QueryParam[];
+    body: string;
+    bodyType: "json" | "text" | "form";
+    createdAt: number;
+}
+
+const STORAGE_KEY = "anytools_saved_requests";
+
 export default function ApiTesterClient() {
     const { locale } = useLanguage();
     const t = getTranslation(locale).tools.apiTester.client;
@@ -46,6 +60,73 @@ export default function ApiTesterClient() {
     const [curlInput, setCurlInput] = useState("");
     const [showCurlImport, setShowCurlImport] = useState(false);
     const [copiedCurl, setCopiedCurl] = useState(false);
+    const [savedRequests, setSavedRequests] = useState<SavedRequest[]>([]);
+    const [showSavedRequests, setShowSavedRequests] = useState(false);
+    const [saveRequestName, setSaveRequestName] = useState("");
+    const [showSaveModal, setShowSaveModal] = useState(false);
+
+    // Load saved requests from localStorage
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                setSavedRequests(JSON.parse(saved));
+            }
+        } catch {
+            console.error("Failed to load saved requests");
+        }
+    }, []);
+
+    // Save requests to localStorage
+    const saveToStorage = (requests: SavedRequest[]) => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+            setSavedRequests(requests);
+        } catch {
+            alert(locale === "vi" ? "Không thể lưu request" : "Failed to save request");
+        }
+    };
+
+    // Save current request
+    const saveCurrentRequest = () => {
+        if (!saveRequestName.trim()) {
+            alert(locale === "vi" ? "Vui lòng nhập tên request" : "Please enter a request name");
+            return;
+        }
+        const newRequest: SavedRequest = {
+            id: Date.now().toString(),
+            name: saveRequestName.trim(),
+            method,
+            url,
+            headers: headers.filter((h) => h.key),
+            queryParams: queryParams.filter((p) => p.key),
+            body,
+            bodyType,
+            createdAt: Date.now(),
+        };
+        saveToStorage([newRequest, ...savedRequests]);
+        setSaveRequestName("");
+        setShowSaveModal(false);
+        alert(locale === "vi" ? "Đã lưu request!" : "Request saved!");
+    };
+
+    // Load a saved request
+    const loadSavedRequest = (req: SavedRequest) => {
+        setMethod(req.method);
+        setUrl(req.url);
+        setHeaders(req.headers.length > 0 ? req.headers : [{ id: "1", key: "", value: "", enabled: true }]);
+        setQueryParams(req.queryParams.length > 0 ? req.queryParams : [{ id: "1", key: "", value: "", enabled: true }]);
+        setBody(req.body);
+        setBodyType(req.bodyType);
+        setShowSavedRequests(false);
+    };
+
+    // Delete a saved request
+    const deleteSavedRequest = (id: string) => {
+        if (confirm(locale === "vi" ? "Xóa request này?" : "Delete this request?")) {
+            saveToStorage(savedRequests.filter((r) => r.id !== id));
+        }
+    };
 
     const parseCurl = (input: string) => {
         try {
@@ -412,7 +493,70 @@ export default function ApiTesterClient() {
                             {copiedCurl ? (locale === "vi" ? "✓ Đã sao chép!" : "✓ Copied!") : locale === "vi" ? "📋 Sao chép cURL" : "📋 Copy cURL"}
                         </button>
                     )}
+                    <div className='flex-1'></div>
+                    <button onClick={() => setShowSaveModal(true)} className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
+                        💾 {locale === "vi" ? "Lưu Request" : "Save Request"}
+                    </button>
+                    <button onClick={() => setShowSavedRequests(!showSavedRequests)} className='px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
+                        📂 {locale === "vi" ? `Đã Lưu (${savedRequests.length})` : `Saved (${savedRequests.length})`}
+                    </button>
                 </div>
+
+                {/* Save Request Modal */}
+                {showSaveModal && (
+                    <div className='mt-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800'>
+                        <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2'>{locale === "vi" ? "Lưu Request" : "Save Request"}</h3>
+                        <div className='flex gap-2'>
+                            <input type='text' value={saveRequestName} onChange={(e) => setSaveRequestName(e.target.value)} placeholder={locale === "vi" ? "Tên request (vd: Get Users API)" : "Request name (e.g., Get Users API)"} className='flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100' />
+                            <button onClick={saveCurrentRequest} className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer'>
+                                {locale === "vi" ? "Lưu" : "Save"}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowSaveModal(false);
+                                    setSaveRequestName("");
+                                }}
+                                className='px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-gray-100 rounded-lg text-sm font-semibold transition-colors cursor-pointer'
+                            >
+                                {locale === "vi" ? "Hủy" : "Cancel"}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Saved Requests List */}
+                {showSavedRequests && (
+                    <div className='mt-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800'>
+                        <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2'>{locale === "vi" ? "Requests Đã Lưu" : "Saved Requests"}</h3>
+                        {savedRequests.length === 0 ? (
+                            <p className='text-gray-500 dark:text-gray-400 text-sm'>{locale === "vi" ? "Chưa có request nào được lưu" : "No saved requests yet"}</p>
+                        ) : (
+                            <div className='space-y-2 max-h-60 overflow-y-auto'>
+                                {savedRequests.map((req) => (
+                                    <div key={req.id} className='flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700'>
+                                        <span
+                                            className={`px-2 py-0.5 text-xs font-bold rounded ${
+                                                req.method === "GET" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : req.method === "POST" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : req.method === "PUT" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" : req.method === "DELETE" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                            }`}
+                                        >
+                                            {req.method}
+                                        </span>
+                                        <div className='flex-1 min-w-0'>
+                                            <p className='font-medium text-gray-900 dark:text-gray-100 truncate'>{req.name}</p>
+                                            <p className='text-xs text-gray-500 dark:text-gray-400 truncate'>{req.url}</p>
+                                        </div>
+                                        <button onClick={() => loadSavedRequest(req)} className='px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold transition-colors cursor-pointer'>
+                                            {locale === "vi" ? "Load" : "Load"}
+                                        </button>
+                                        <button onClick={() => deleteSavedRequest(req.id)} className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-semibold transition-colors cursor-pointer'>
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* cURL Import */}
                 {showCurlImport && (
