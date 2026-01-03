@@ -6,6 +6,7 @@ export interface ErrorContext {
     userId?: string;
     params?: any;
     userAgent?: string;
+    ip?: string;
 }
 
 /**

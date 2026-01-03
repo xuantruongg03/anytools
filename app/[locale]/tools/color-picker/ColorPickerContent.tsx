@@ -150,7 +150,7 @@ export default function ColorPickerContent() {
 
             {/* FAQ */}
             <FAQSection
-                title={t.tools.colorPicker.page.faq}
+                locale={locale}
                 faqs={[
                     { question: t.tools.colorPicker.page.faqList.q1, answer: t.tools.colorPicker.page.faqList.a1 },
                     { question: t.tools.colorPicker.page.faqList.q2, answer: t.tools.colorPicker.page.faqList.a2 },

@@ -38,7 +38,7 @@ export default function RandomRaceContent() {
                     </ul>
                 </section>
 
-                <FAQSection title={t.faq} faqs={t.faqList} />
+                <FAQSection locale={locale} faqs={t.faqList} />
             </div>
         </div>
     );

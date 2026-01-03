@@ -256,7 +256,7 @@ export default function CodeFormatterContent({ locale }: CodeFormatterContentPro
             {/* FAQ */}
             <div className='rounded-xl shadow-lg p-6'>
                 <FAQSection
-                    title={`❓ ${t.faq}`}
+                    locale={locale}
                     faqs={[
                         { question: t.faqQ1, answer: t.faqA1 },
                         { question: t.faqQ2, answer: t.faqA2 },

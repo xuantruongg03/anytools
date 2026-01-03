@@ -1,6 +1,5 @@
 import { handleError } from "./error-handler";
 
-
 interface ServiceResult<T> {
     success: boolean;
     data?: T;
@@ -21,6 +20,7 @@ interface FallbackOptions {
     endpoint: string;
     method: string;
     userAgent?: string;
+    ip?: string;
     additionalParams?: Record<string, any>;
 }
 
@@ -99,6 +99,7 @@ export async function tryServicesWithFallback<T>(services: ServiceConfig<T>[], o
                 endpoint: options.endpoint,
                 method: options.method,
                 userAgent: options.userAgent,
+                ip: options.ip,
                 params: emailParams,
             });
 
@@ -111,6 +112,7 @@ export async function tryServicesWithFallback<T>(services: ServiceConfig<T>[], o
                 endpoint: options.endpoint,
                 method: options.method,
                 userAgent: options.userAgent,
+                ip: options.ip,
                 params: emailParams,
             }).catch((emailError) => console.error("Failed to send error notification:", emailError));
         }

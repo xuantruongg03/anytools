@@ -166,7 +166,7 @@ export default function ImageToTextContent({ locale }: ImageToTextContentProps) 
             {/* FAQ */}
             <div className='rounded-xl shadow-lg'>
                 <FAQSection
-                    title={`❓ ${page.faq}`}
+                    locale={locale}
                     faqs={[
                         { question: page.faqQ1, answer: page.faqA1 },
                         { question: page.faqQ2, answer: page.faqA2 },

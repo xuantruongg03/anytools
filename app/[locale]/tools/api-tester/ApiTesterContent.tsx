@@ -122,7 +122,7 @@ export default function ApiTesterContent() {
                 <p className='leading-relaxed'>{t.securityDesc2}</p>
             </section>
 
-            <FAQSection title={locale === "vi" ? "Câu Hỏi Thường Gặp" : "Frequently Asked Questions"} faqs={faqs} />
+            <FAQSection locale ={locale} faqs={faqs} />
         </div>
     );
 }

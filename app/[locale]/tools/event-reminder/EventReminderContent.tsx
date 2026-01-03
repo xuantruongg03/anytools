@@ -103,7 +103,7 @@ export default function EventReminderContent() {
                     </ul>
                 </section>
 
-                <FAQSection faqs={content.faqList} title={content.faqTitle} />
+                <FAQSection faqs={content.faqList} locale={locale} />
             </div>
         </div>
     );

@@ -74,7 +74,7 @@ export default function RepoTreeContent() {
                 </section>
 
                 {/* FAQ */}
-                <FAQSection title={content.faqTitle} faqs={content.faqs} />
+                <FAQSection locale={locale} faqs={content.faqs} />
 
                 {/* Tips */}
                 <section className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6'>

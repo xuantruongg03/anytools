@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/utils/api-wrapper";
 import { tryServicesWithFallback } from "@/lib/utils/service-fallback";
+import { getClientIp } from "@/lib/utils/get-client-ip";
 
 interface OCRResult {
     text: string;
@@ -177,6 +178,7 @@ async function handleImageToText(request: NextRequest) {
         endpoint: "/api/image-to-text",
         method: request.method,
         userAgent: request.headers.get("user-agent") || undefined,
+        ip: getClientIp(request),
         additionalParams: {
             fileName: imageFile.name,
             fileSize: imageFile.size,

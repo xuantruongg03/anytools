@@ -238,7 +238,7 @@ export default function PdfConverterContent({ locale }: PdfConverterContentProps
             {/* FAQ */}
             <div className='rounded-xl shadow-lg'>
                 <FAQSection
-                    title={`❓ ${t.faq}`}
+                    locale={locale}
                     faqs={[
                         { question: t.faqQ1, answer: t.faqA1 },
                         { question: t.faqQ2, answer: t.faqA2 },

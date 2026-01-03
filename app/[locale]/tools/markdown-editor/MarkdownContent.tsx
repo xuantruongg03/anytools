@@ -111,7 +111,7 @@ export default function MarkdownContent({ locale }: MarkdownContentProps) {
 
             {/* FAQ */}
             <FAQSection
-                title={page.faq}
+                locale={locale}
                 faqs={[
                     { question: page.faqQ1, answer: page.faqA1 },
                     { question: page.faqQ2, answer: page.faqA2 },

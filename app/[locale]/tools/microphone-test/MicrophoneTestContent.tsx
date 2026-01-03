@@ -115,7 +115,7 @@ export default function MicrophoneTestContent() {
                     <p className='leading-relaxed'>{t.privacyDesc2}</p>
                 </section>
 
-                <FAQSection title={locale === "vi" ? "Câu Hỏi Thường Gặp" : "Frequently Asked Questions"} faqs={faqs} />
+                <FAQSection locale={locale} faqs={faqs} />
             </div>
         </div>
     );

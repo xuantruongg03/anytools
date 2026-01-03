@@ -154,7 +154,7 @@ export default function PromoImageContent({ locale }: PromoImageContentProps) {
             </div>
 
             {/* FAQ */}
-            <FAQSection title={locale === "en" ? "Frequently Asked Questions" : "Câu Hỏi Thường Gặp"} faqs={faqs} />
+            <FAQSection locale={locale} faqs={faqs} />
         </div>
     );
 }

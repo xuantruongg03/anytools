@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SLIDESHARE_URL_PATTERN } from "@/constants/regex";
 import { withErrorHandler } from "@/lib/utils/api-wrapper";
 import { tryServicesWithFallback } from "@/lib/utils/service-fallback";
+import { getClientIp } from "@/lib/utils/get-client-ip";
 
 const RAPIDAPI_KEY = process.env.NEXT_RAPIDAPI_KEY;
 
@@ -262,6 +263,7 @@ async function handleSlideshareDownload(request: NextRequest) {
             endpoint: "/api/slideshare-download",
             method: request.method,
             userAgent: request.headers.get("user-agent") || undefined,
+            ip: getClientIp(request),
             additionalParams: {
                 slideshareUrl: url,
                 format,

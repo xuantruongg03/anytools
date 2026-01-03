@@ -164,7 +164,7 @@ export default function SvgPreviewContent() {
                 <p className='text-gray-600 dark:text-gray-400 mb-6'>{t.whatIsSvgDesc}</p>
             </section>
 
-            <FAQSection title={t.faq} faqs={t.faqList} />
+            <FAQSection locale={locale} faqs={t.faqList} />
         </div>
     );
 }

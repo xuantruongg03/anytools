@@ -178,7 +178,7 @@ export default function HashGeneratorContent() {
 
                 {/* FAQ */}
                 <FAQSection
-                    title={t.tools.hashGenerator.page.faq}
+                    locale={locale}
                     faqs={[
                         { question: t.tools.hashGenerator.page.faqList.q1, answer: t.tools.hashGenerator.page.faqList.a1 },
                         { question: t.tools.hashGenerator.page.faqList.q2, answer: t.tools.hashGenerator.page.faqList.a2 },

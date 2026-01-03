@@ -1,5 +1,6 @@
 import { withErrorHandler } from "@/lib/utils/api-wrapper";
 import { tryServicesWithFallback } from "@/lib/utils/service-fallback";
+import { getClientIp } from "@/lib/utils/get-client-ip";
 import { NextRequest, NextResponse } from "next/server";
 
 // Validate URL format
@@ -122,6 +123,7 @@ async function handleShorten(request: NextRequest) {
             endpoint: "/api/shorten",
             method: request.method,
             userAgent: request.headers.get("user-agent") || undefined,
+            ip: getClientIp(request),
             additionalParams: { originalUrl: url },
         }
     );

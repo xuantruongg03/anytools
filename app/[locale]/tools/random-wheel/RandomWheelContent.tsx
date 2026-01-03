@@ -39,7 +39,7 @@ export default function RandomWheelContent() {
                     </ul>
                 </section>
 
-                <FAQSection title={t.faq} faqs={t.faqList} />
+                <FAQSection locale={locale} faqs={t.faqList} />
             </div>
         </div>
     );

@@ -23,6 +23,7 @@ import { speechToTextTranslations } from "./speech-to-text";
 import { removeBackgroundTranslations } from "./remove-background";
 import { latexEditorTranslations } from "./latex-editor";
 import { markdownEditorTranslations } from "./markdown-editor";
+import { mockApiGeneratorTranslations } from "./mock-api-generator";
 
 export const toolsTranslations = {
     en: {
@@ -51,6 +52,7 @@ export const toolsTranslations = {
         removeBackground: removeBackgroundTranslations.en,
         latexEditor: latexEditorTranslations.en.latexEditor,
         markdownEditor: markdownEditorTranslations.en.markdownEditor,
+        mockApiGenerator: mockApiGeneratorTranslations.en.mockApiGenerator,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -78,5 +80,6 @@ export const toolsTranslations = {
         removeBackground: removeBackgroundTranslations.vi,
         latexEditor: latexEditorTranslations.vi.latexEditor,
         markdownEditor: markdownEditorTranslations.vi.markdownEditor,
+        mockApiGenerator: mockApiGeneratorTranslations.vi.mockApiGenerator,
     },
 };

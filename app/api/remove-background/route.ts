@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/utils/api-wrapper";
 import { tryServicesWithFallback } from "@/lib/utils/service-fallback";
+import { getClientIp } from "@/lib/utils/get-client-ip";
 
 type ServiceProvider = "auto" | "removebg" | "photoroom" | "clipdrop";
 
@@ -94,6 +95,7 @@ async function handleRemoveBackground(request: NextRequest) {
             endpoint: "/api/remove-background",
             method: request.method,
             userAgent: request.headers.get("user-agent") || undefined,
+            ip: getClientIp(request),
             additionalParams: {
                 fileName: imageFile.name,
                 fileSize: imageFile.size,

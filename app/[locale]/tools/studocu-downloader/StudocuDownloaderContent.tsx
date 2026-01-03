@@ -177,7 +177,7 @@ export default function StudocuDownloaderContent({ locale }: StudocuDownloaderCo
             {/* FAQ */}
             <div className=' rounded-xl shadow-lg p-6'>
                 <FAQSection
-                    title={`❓ ${page.faq}`}
+                    locale={locale}
                     faqs={[
                         { question: page.faqQ1, answer: page.faqA1 },
                         { question: page.faqQ2, answer: page.faqA2 },

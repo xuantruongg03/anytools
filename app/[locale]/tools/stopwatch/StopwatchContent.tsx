@@ -40,7 +40,7 @@ export default function StopwatchContent() {
                     </ul>
                 </section>
 
-                <FAQSection faqs={page.faqList} title={page.faqTitle} />
+                <FAQSection faqs={page.faqList} locale={locale} />
             </div>
         </div>
     );

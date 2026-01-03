@@ -79,7 +79,7 @@ export default function JsonFormatterContent() {
             </section>
 
             <FAQSection
-                title={page.faq}
+               locale={locale}
                 faqs={[
                     { question: page.faqList.q1, answer: page.faqList.a1 },
                     { question: page.faqList.q2, answer: page.faqList.a2 },

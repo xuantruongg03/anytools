@@ -22,6 +22,7 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/html-entity-encoder", icon: "🏷️", key: "htmlEntityEncoder" },
             { href: "/tools/json-formatter", icon: "{ }", key: "jsonFormatter" },
             { href: "/tools/jwt-decoder", icon: "🔓", key: "jwtDecoder" },
+            { href: "/tools/mock-api-generator", icon: "📡", key: "mockApiGenerator" },
             { href: "/tools/number-converter", icon: "🔢", key: "numberConverter" },
             { href: "/tools/regex-tester", icon: "🔍", key: "regexTester" },
             { href: "/tools/repo-tree", icon: "🌳", key: "repoTree" },

@@ -196,7 +196,7 @@ export default function PngToSvgContent() {
                 </div>
             </section>
 
-            <FAQSection title={t.faq} faqs={t.faqList} />
+            <FAQSection locale={locale} faqs={t.faqList} />
         </div>
     );
 }

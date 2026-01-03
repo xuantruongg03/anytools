@@ -34,6 +34,7 @@ export async function sendErrorEmail(data: EmailData) {
     }
 
     const { error, context, environment = "development" } = data;
+    const ipUser = context?.ip || "Unknown IP";
 
     const resendClient = getResend();
     if (!resendClient) {
@@ -71,6 +72,7 @@ export async function sendErrorEmail(data: EmailData) {
                             ${context?.endpoint ? `<p><span class="label">Endpoint:</span> ${context.endpoint}</p>` : ""}
                             ${context?.method ? `<p><span class="label">Method:</span> ${context.method}</p>` : ""}
                             ${context?.userId ? `<p><span class="label">User ID:</span> ${context.userId}</p>` : ""}
+                            <p><span class="label">IP Address:</span> ${ipUser}</p>
                             ${context?.userAgent ? `<p><span class="label">User Agent:</span> ${context.userAgent}</p>` : ""}
                         </div>
 

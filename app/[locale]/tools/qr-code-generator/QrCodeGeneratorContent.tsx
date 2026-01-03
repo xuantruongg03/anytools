@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import QRCodeStyling from "qr-code-styling";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
-import FAQSection from "@/components/ui/FAQSection";
 
 type QrCodeGeneratorContentProps = {
     locale: "en" | "vi";

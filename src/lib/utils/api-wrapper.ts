@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleError, type ErrorContext } from "./error-handler";
+import { getClientIp } from "./get-client-ip";
 
 type ApiHandler = (req: Request | any, context?: any) => Promise<Response>;
 
@@ -33,6 +34,7 @@ export function withErrorHandler(handler: ApiHandler, endpoint: string) {
                 endpoint,
                 method: req.method,
                 userAgent: req.headers.get("user-agent") || undefined,
+                ip: getClientIp(req),
             };
 
             // Try to parse request body for additional context

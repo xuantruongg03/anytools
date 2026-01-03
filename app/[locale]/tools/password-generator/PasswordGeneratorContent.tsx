@@ -274,7 +274,7 @@ export default function PasswordGeneratorContent() {
 
                 {/* FAQ */}
                 <FAQSection
-                    title={t.faq}
+                    locale={locale}
                     faqs={[
                         { question: t.q1, answer: t.a1 },
                         { question: t.q2, answer: t.a2 },

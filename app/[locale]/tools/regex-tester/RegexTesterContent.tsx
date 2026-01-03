@@ -214,7 +214,7 @@ export default function RegexTesterContent() {
                     </ol>
                 </section>
 
-                <FAQSection title={t.faq} faqs={t.faqList} />
+                <FAQSection locale={locale} faqs={t.faqList} />
             </div>
         </div>
     );
