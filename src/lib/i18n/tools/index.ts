@@ -24,6 +24,7 @@ import { removeBackgroundTranslations } from "./remove-background";
 import { latexEditorTranslations } from "./latex-editor";
 import { markdownEditorTranslations } from "./markdown-editor";
 import { mockApiGeneratorTranslations } from "./mock-api-generator";
+import { placeholderImageTranslations } from "./placeholder-image";
 
 export const toolsTranslations = {
     en: {
@@ -53,6 +54,7 @@ export const toolsTranslations = {
         latexEditor: latexEditorTranslations.en.latexEditor,
         markdownEditor: markdownEditorTranslations.en.markdownEditor,
         mockApiGenerator: mockApiGeneratorTranslations.en.mockApiGenerator,
+        placeholderImage: placeholderImageTranslations.en.placeholderImage,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -81,5 +83,6 @@ export const toolsTranslations = {
         latexEditor: latexEditorTranslations.vi.latexEditor,
         markdownEditor: markdownEditorTranslations.vi.markdownEditor,
         mockApiGenerator: mockApiGeneratorTranslations.vi.mockApiGenerator,
+        placeholderImage: placeholderImageTranslations.vi.placeholderImage,
     },
 };

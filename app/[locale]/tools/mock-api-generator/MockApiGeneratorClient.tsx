@@ -642,7 +642,7 @@ export default function MockApiGeneratorClient() {
             {activeTab === "create" && (
                 <div className='space-y-6'>
                     {/* Examples */}
-                    <div className='flex flex-wrap gap-2'>
+                    <div className='flex flex-wrap gap-2 items-center'>
                         <span className='text-sm text-gray-600 dark:text-gray-400'>{t.examples}:</span>
                         <button onClick={() => loadExample("users")} className='text-sm px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500'>
                             👤 {t.userExample}

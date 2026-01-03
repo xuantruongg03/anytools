@@ -38,6 +38,7 @@ export const toolsConfig: ToolCategory[] = [
         tools: [
             { href: "/tools/color-picker", icon: "🎨", key: "colorPicker" },
             { href: "/tools/image-compressor", icon: "🗜️", key: "imageCompressor" },
+            { href: "/tools/placeholder-image", icon: "🖼️", key: "placeholderImage" },
             { href: "/tools/png-to-svg", icon: "🔄", key: "pngToSvg" },
             { href: "/tools/promo-image-generator", icon: "🖼️", key: "promoImageGenerator" },
             { href: "/tools/svg-preview", icon: "🖼️", key: "svgPreview" },

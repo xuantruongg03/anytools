@@ -49,6 +49,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "pdf-converter",
         "image-compressor",
         "code-formatter",
+        "mock-api-generator",
+        "placeholder-image",
     ];
 
     const sitemap: MetadataRoute.Sitemap = [];
