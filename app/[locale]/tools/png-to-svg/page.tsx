@@ -13,12 +13,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "PNG to SVG Converter - Free Image to Vector Tool 2026",
+            title: "PNG to SVG Converter - Image to Vector 2026",
             description: "Free online PNG to SVG converter. Transform raster images to vector graphics instantly. Supports tracing and embedding. 100% client-side.",
             keywords: "png to svg, image to svg, convert png to svg, png to svg converter, image to vector, raster to vector, vectorize image, svg converter, free svg converter, online image converter, png to svg online",
         },
         vi: {
-            title: "Chuyển Đổi PNG Sang SVG - Ảnh Sang Vector Miễn Phí 2026",
+            title: "PNG Sang SVG - Chuyển Ảnh Sang Vector 2026",
             description: "Công cụ chuyển đổi PNG sang SVG miễn phí. Chuyển ảnh raster thành đồ họa vector ngay lập tức. Hỗ trợ trace và embed.",
             keywords: "png sang svg, ảnh sang svg, chuyển png sang svg, công cụ chuyển đổi png svg, ảnh sang vector, raster sang vector, vector hóa ảnh, chuyển đổi svg, công cụ svg miễn phí",
         },

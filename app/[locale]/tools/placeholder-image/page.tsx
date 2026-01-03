@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
 
-    const title = isVi ? "Placeholder Image Generator - Tạo Ảnh Giữ Chỗ Online Miễn Phí 2026" : "Placeholder Image Generator - Free Placeholder Images API 2026";
+    const title = isVi ? "Tạo Ảnh Giữ Chỗ - Placeholder Image API 2026" : "Placeholder Image Generator - Free API 2026";
 
     const description = isVi ? "Tạo ảnh giữ chỗ với kích thước tùy chỉnh. API đơn giản: /api/placeholder-image/640x480. Hỗ trợ gradient, solid color, pattern. Miễn phí, không giới hạn." : "Generate placeholder images with custom sizes. Simple API: /api/placeholder-image/640x480. Supports gradients, solid colors, patterns. Free & unlimited.";
 
