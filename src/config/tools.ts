@@ -57,7 +57,10 @@ export const toolsConfig: ToolCategory[] = [
     {
         key: "security",
         icon: "🔒",
-        tools: [{ href: "/tools/password-generator", icon: "🔑", key: "passwordGenerator" }],
+        tools: [
+            { href: "/tools/password-generator", icon: "🔑", key: "passwordGenerator" },
+            { href: "/tools/ip-lookup", icon: "🌐", key: "ipLookup" },
+        ],
     },
     {
         key: "downloader",

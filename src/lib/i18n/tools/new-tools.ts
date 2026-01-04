@@ -221,6 +221,11 @@ export const newToolsTranslations = {
             description: "Convert between binary, decimal, hex",
             category: "Developer",
         },
+        ipLookup: {
+            name: "IP Lookup",
+            description: "Find your IP address and location",
+            category: "Network",
+        },
     },
     vi: {
         passwordGenerator: {
@@ -442,6 +447,11 @@ export const newToolsTranslations = {
             name: "Chuyển Đổi Hệ Số",
             description: "Chuyển đổi giữa nhị phân, thập phân, hex",
             category: "Lập Trình",
+        },
+        ipLookup: {
+            name: "Tra Cứu IP",
+            description: "Tìm địa chỉ IP và vị trí của bạn",
+            category: "Mạng",
         },
     },
 };

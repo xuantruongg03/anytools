@@ -25,6 +25,7 @@ import { latexEditorTranslations } from "./latex-editor";
 import { markdownEditorTranslations } from "./markdown-editor";
 import { mockApiGeneratorTranslations } from "./mock-api-generator";
 import { placeholderImageTranslations } from "./placeholder-image";
+import { ipLookupTranslations } from "./ip-lookup";
 
 export const toolsTranslations = {
     en: {
@@ -55,6 +56,7 @@ export const toolsTranslations = {
         markdownEditor: markdownEditorTranslations.en.markdownEditor,
         mockApiGenerator: mockApiGeneratorTranslations.en.mockApiGenerator,
         placeholderImage: placeholderImageTranslations.en.placeholderImage,
+        ipLookup: ipLookupTranslations.en.ipLookup,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -84,5 +86,6 @@ export const toolsTranslations = {
         markdownEditor: markdownEditorTranslations.vi.markdownEditor,
         mockApiGenerator: mockApiGeneratorTranslations.vi.mockApiGenerator,
         placeholderImage: placeholderImageTranslations.vi.placeholderImage,
+        ipLookup: ipLookupTranslations.vi.ipLookup,
     },
 };
