@@ -76,7 +76,7 @@ export const extensions: Extension[] = [
             vi: "Bộ cân bằng 10 băng tần chuyên nghiệp với hơn 30 cài đặt trước, tăng âm lượng lên đến 800%, tự động pan 7D, âm thanh không gian, cài đặt theo trang web.",
         },
         category: "utility",
-        chromeUrl: "",
+        chromeUrl: "https://chromewebstore.google.com/detail/audio-equalizer-booster-p/afjahjpokoljjendbbacaldjaakncpdn",
         githubUrl: "https://github.com/xuantruongg03/audio-equalizer-booster-extension",
         author: "xuantruongg03",
         tags: ["audio", "equalizer", "booster"],

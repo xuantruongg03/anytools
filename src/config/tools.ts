@@ -64,7 +64,7 @@ export const toolsConfig: ToolCategory[] = [
         icon: "📥",
         tools: [
             { href: "/tools/slideshare-downloader", icon: "📊", key: "slideshareDownloader" },
-            { href: "/tools/studocu-downloader", icon: "📚", key: "studocuDownloader" },
+            // { href: "/tools/studocu-downloader", icon: "📚", key: "studocuDownloader" },
         ],
     },
     {
