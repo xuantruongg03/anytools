@@ -101,48 +101,114 @@ async function upstashRefreshTTL(id: string): Promise<boolean> {
 
 // ============ MongoDB Functions ============
 
-// MongoDB client singleton for connection pooling
+// MongoDB client singleton for connection pooling in serverless environments
+// Using global to persist across hot reloads in development and function invocations
+declare global {
+    // eslint-disable-next-line no-var
+    var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
+
 let mongoClient: MongoClient | null = null;
+let mongoClientPromise: Promise<MongoClient> | null = null;
 
 async function getMongoClient(): Promise<MongoClient | null> {
     const mongoUri = process.env.MONGODB_URI;
     if (!mongoUri) return null;
 
-    if (!mongoClient) {
-        mongoClient = new MongoClient(mongoUri, {
+    try {
+        // In development, use global to preserve connection across hot reloads
+        // In production, use module-level variable
+        const clientOptions = {
             serverApi: {
                 version: ServerApiVersion.v1,
                 strict: true,
                 deprecationErrors: true,
             },
-        });
-    }
+            maxPoolSize: 10,
+            minPoolSize: 1,
+            maxIdleTimeMS: 60000,
+            connectTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+            // TLS settings for serverless environments
+            tls: true,
+            tlsAllowInvalidCertificates: false,
+            tlsAllowInvalidHostnames: false,
+            // Retry settings
+            retryWrites: true,
+            retryReads: true,
+        };
 
-    try {
-        await mongoClient.connect();
-        return mongoClient;
+        if (process.env.NODE_ENV === "development") {
+            if (!global._mongoClientPromise) {
+                mongoClient = new MongoClient(mongoUri, clientOptions);
+                global._mongoClientPromise = mongoClient.connect();
+            }
+            mongoClientPromise = global._mongoClientPromise;
+        } else {
+            // Production: reuse existing promise or create new one
+            if (!mongoClientPromise) {
+                mongoClient = new MongoClient(mongoUri, clientOptions);
+                mongoClientPromise = mongoClient.connect();
+            }
+        }
+
+        return await mongoClientPromise;
     } catch (error) {
         console.error("MongoDB connection error:", error);
+        // Reset connection state on error so next attempt creates fresh connection
+        mongoClient = null;
+        mongoClientPromise = null;
+        if (process.env.NODE_ENV === "development") {
+            global._mongoClientPromise = undefined;
+        }
         return null;
     }
 }
 
 async function getMongoCollection() {
-    const client = await getMongoClient();
-    if (!client) return null;
-    const dbName = process.env.MONGODB_DATABASE || DEFAULT_DATABASE_NAME;
-    return client.db(dbName).collection<StoredMockApi>(MONGODB_COLLECTION_NAME);
+    try {
+        const client = await getMongoClient();
+        if (!client) {
+            console.error("MongoDB getMongoCollection: No client available");
+            return null;
+        }
+        const dbName = process.env.MONGODB_DATABASE || DEFAULT_DATABASE_NAME;
+        return client.db(dbName).collection<StoredMockApi>(MONGODB_COLLECTION_NAME);
+    } catch (error) {
+        console.error("MongoDB getMongoCollection error:", error);
+        return null;
+    }
 }
 
 async function mongoSave(mock: StoredMockApi): Promise<boolean> {
     try {
         const collection = await getMongoCollection();
-        if (!collection) return false;
+        if (!collection) {
+            console.error("MongoDB save error: Could not get collection (connection failed)");
+            return false;
+        }
 
         const result = await collection.updateOne({ id: mock.id }, { $set: mock }, { upsert: true });
-        return result?.acknowledged === true || (result?.matchedCount || 0) > 0 || (result?.upsertedCount || 0) > 0;
+
+        // Check if operation was acknowledged - this is the most reliable indicator
+        if (result?.acknowledged) {
+            return true;
+        }
+
+        // Fallback checks for older driver versions
+        const success = (result?.matchedCount || 0) > 0 || (result?.upsertedCount || 0) > 0;
+        if (!success) {
+            console.error("MongoDB save returned unexpected result:", JSON.stringify(result));
+        }
+        return success;
     } catch (error) {
         console.error("MongoDB save error:", error);
+        // Reset connection on save error to allow fresh connection on retry
+        mongoClient = null;
+        mongoClientPromise = null;
+        if (process.env.NODE_ENV === "development") {
+            global._mongoClientPromise = undefined;
+        }
         return false;
     }
 }
