@@ -93,9 +93,10 @@ export function getClientIp(request: NextRequest | Request): string {
         }
     }
 
-    // Check NextRequest's ip property (Vercel)
-    if ("ip" in request && (request as NextRequest).ip) {
-        return (request as NextRequest).ip!;
+    // Check NextRequest's ip property (Vercel) - use type assertion to avoid TS error
+    const reqWithIp = request as NextRequest & { ip?: string };
+    if (reqWithIp.ip) {
+        return reqWithIp.ip;
     }
 
     // Fallback: try to get from request URL for local development
