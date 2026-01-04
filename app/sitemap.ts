@@ -51,6 +51,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "code-formatter",
         "mock-api-generator",
         "placeholder-image",
+        "ip-lookup"
     ];
 
     const sitemap: MetadataRoute.Sitemap = [];
