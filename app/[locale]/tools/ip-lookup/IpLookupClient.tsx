@@ -34,7 +34,6 @@ export default function IpLookupClient() {
     const [webRtcIps, setWebRtcIps] = useState<WebRTCIp>({ local: [], public: [] });
     const [ipv4, setIpv4] = useState<string>("");
     const [ipv6, setIpv6] = useState<string>("");
-    const [serverIp, setServerIp] = useState<string>("");
     const [copied, setCopied] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -96,17 +95,6 @@ export default function IpLookupClient() {
             }
         } catch (err) {
             console.error("ipify v6 error:", err);
-        }
-
-        // Get server-detected IP
-        try {
-            const serverResponse = await fetch("/api/get-ip");
-            if (serverResponse.ok) {
-                const data = await serverResponse.json();
-                setServerIp(data.ip);
-            }
-        } catch (err) {
-            console.error("Server IP error:", err);
         }
 
         setLoading(false);
@@ -195,7 +183,6 @@ export default function IpLookupClient() {
 
     const refreshAll = () => {
         setWebRtcIps({ local: [], public: [] });
-        setServerIp("");
         fetchPublicIp();
         getWebRTCIps();
     };
@@ -258,14 +245,9 @@ export default function IpLookupClient() {
                     </div>
                     <div className='flex items-center gap-2'>
                         <code className='flex-1 font-mono text-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 rounded break-all'>{ipv4 || t.notDetected}</code>
-                        {ipv4 && (
-                            <button
-                                className='px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors'
-                                onClick={() => copyToClipboard(ipv4, "ipv4")}
-                            >
-                                {copied === "ipv4" ? "✓" : "📋"}
-                            </button>
-                        )}
+                        <button className='px-3 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed' onClick={() => copyToClipboard(ipv4, "ipv4")} disabled={!ipv4}>
+                            {copied === "ipv4" ? "✓" : "📋"}
+                        </button>
                     </div>
                 </div>
 
@@ -276,36 +258,11 @@ export default function IpLookupClient() {
                         <span className='px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded'>IPv6</span>
                     </div>
                     <div className='flex items-center gap-2'>
-                        <code className='flex-1 font-mono text-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 rounded break-all'>{ipv6 || t.notDetected}</code>
-                        {ipv6 && (
-                            <button
-                                className='px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors'
-                                onClick={() => copyToClipboard(ipv6, "ipv6")}
-                            >
-                                {copied === "ipv6" ? "✓" : "📋"}
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Server-detected IP */}
-            <div className='bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700'>
-                <div className='flex items-center justify-between mb-3'>
-                    <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>🖥️ {t.serverIp || "Server-detected IP"}</h3>
-                    <span className='px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded'>Server</span>
-                </div>
-                <p className='text-sm text-gray-500 dark:text-gray-400 mb-3'>{t.serverIpDesc || "IP address detected by the server (using getClientIp function)"}</p>
-                <div className='flex items-center gap-2'>
-                    <code className='flex-1 font-mono text-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 rounded break-all'>{serverIp || t.notDetected}</code>
-                    {serverIp && (
-                        <button
-                            className='px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors'
-                            onClick={() => copyToClipboard(serverIp, "server")}
-                        >
-                            {copied === "server" ? "✓" : "📋"}
+                        <code className='flex-1 font-mono text-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 rounded break-all'>{ipv6 || t.notDetected}</code>
+                        <button className='px-3 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed' onClick={() => copyToClipboard(ipv6, "ipv6")} disabled={!ipv6}>
+                            {copied === "ipv6" ? "✓" : "📋"}
                         </button>
-                    )}
+                    </div>
                 </div>
             </div>
 
@@ -318,10 +275,7 @@ export default function IpLookupClient() {
                         webRtcIps.local.map((ip, idx) => (
                             <div key={idx} className='flex items-center gap-2'>
                                 <code className='flex-1 font-mono bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 rounded text-sm'>{ip}</code>
-                                <button
-                                    className='px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors'
-                                    onClick={() => copyToClipboard(ip, `local-${idx}`)}
-                                >
+                                <button className='px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors' onClick={() => copyToClipboard(ip, `local-${idx}`)}>
                                     {copied === `local-${idx}` ? "✓" : "📋"}
                                 </button>
                             </div>
