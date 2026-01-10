@@ -28,6 +28,7 @@ export interface Course {
 
 export interface GPAResult {
     gpa: number;
+    gpa10: number;
     totalCredits: number;
     totalGradePoints: number;
     classification: string;

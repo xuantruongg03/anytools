@@ -1,14 +1,24 @@
 "use client";
 
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
 import { GRADE_SYSTEMS, CLASSIFICATION } from "@/constants/gpa";
-import type { Course, GradeSystemType, GPAResult, PredictionInput } from "@/types/gpa";
+import type { Course, GradeSystemType, PredictionInput } from "@/types/gpa";
+
+const STORAGE_KEY = "gpa-calculator-data";
+
+interface StoredData {
+    courses: Course[];
+    selectedSystem: GradeSystemType;
+    prediction: PredictionInput;
+    simulationCourses: Course[];
+}
 
 export default function GpaCalculatorClient() {
     const { locale } = useLanguage();
     const t = getTranslation(locale);
+    const [isHydrated, setIsHydrated] = useState(false);
     const [selectedSystem, setSelectedSystem] = useState<GradeSystemType>("standard");
     const [courses, setCourses] = useState<Course[]>([{ id: "1", name: "", grade: 0, credits: 0 }]);
     const [showConversionTable, setShowConversionTable] = useState(false);
@@ -38,6 +48,56 @@ export default function GpaCalculatorClient() {
 
     const currentSystem = useMemo(() => GRADE_SYSTEMS.find((s) => s.id === selectedSystem) || GRADE_SYSTEMS[0], [selectedSystem]);
 
+    // Load data from localStorage on mount
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const data: StoredData = JSON.parse(stored);
+                if (data.courses && data.courses.length > 0) {
+                    setCourses(data.courses);
+                }
+                if (data.selectedSystem) {
+                    setSelectedSystem(data.selectedSystem);
+                }
+                if (data.prediction) {
+                    setPrediction(data.prediction);
+                }
+                if (data.simulationCourses && data.simulationCourses.length > 0) {
+                    setSimulationCourses(data.simulationCourses);
+                }
+            }
+        } catch (e) {
+            console.error("Error loading GPA data from localStorage:", e);
+        }
+        setIsHydrated(true);
+    }, []);
+
+    // Save data to localStorage whenever it changes
+    useEffect(() => {
+        if (!isHydrated) return;
+        try {
+            const data: StoredData = {
+                courses,
+                selectedSystem,
+                prediction,
+                simulationCourses,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+            console.error("Error saving GPA data to localStorage:", e);
+        }
+    }, [courses, selectedSystem, prediction, simulationCourses, isHydrated]);
+
+    // Clear all data
+    const clearAllData = useCallback(() => {
+        setCourses([{ id: "1", name: "", grade: 0, credits: 0 }]);
+        setSimulationCourses([{ id: "sim-1", name: "", grade: 0, credits: 0 }]);
+        setPrediction({ currentGPA: 0, currentCredits: 0, targetGPA: 0, remainingCredits: 0 });
+        setSelectedSystem("standard");
+        localStorage.removeItem(STORAGE_KEY);
+    }, []);
+
     // Convert grade to GPA
     const gradeToGPA = useCallback(
         (grade: number): number => {
@@ -64,11 +124,12 @@ export default function GpaCalculatorClient() {
     );
 
     // Calculate GPA
-    const gpaResult: GPAResult = useMemo(() => {
+    const gpaResult = useMemo(() => {
         const validCourses = courses.filter((c) => c.grade > 0 && c.credits > 0);
         if (validCourses.length === 0) {
             return {
                 gpa: 0,
+                gpa10: 0,
                 totalCredits: 0,
                 totalGradePoints: 0,
                 classification: CLASSIFICATION.weak.nameEn,
@@ -81,8 +142,16 @@ export default function GpaCalculatorClient() {
             return sum + gpa * course.credits;
         }, 0);
 
+        // Calculate scale 10 GPA (weighted average of raw grades)
+        const totalGradePoints10 = validCourses.reduce((sum, course) => {
+            // Normalize grade to scale 10 if using scale 100
+            const normalizedGrade = currentSystem.scale === 100 ? course.grade / 10 : course.grade;
+            return sum + normalizedGrade * course.credits;
+        }, 0);
+
         const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
         const gpa = totalCredits > 0 ? totalGradePoints / totalCredits : 0;
+        const gpa10 = totalCredits > 0 ? totalGradePoints10 / totalCredits : 0;
 
         let classification = CLASSIFICATION.weak.nameEn;
         let classificationVi = CLASSIFICATION.weak.nameVi;
@@ -101,8 +170,8 @@ export default function GpaCalculatorClient() {
             classificationVi = CLASSIFICATION.average.nameVi;
         }
 
-        return { gpa, totalCredits, totalGradePoints, classification, classificationVi };
-    }, [courses, gradeToGPA]);
+        return { gpa, gpa10, totalCredits, totalGradePoints, classification, classificationVi };
+    }, [courses, gradeToGPA, currentSystem.scale]);
 
     // Prediction calculation
     const predictionResult = useMemo(() => {
@@ -452,21 +521,38 @@ export default function GpaCalculatorClient() {
                         </table>
                     </div>
 
-                    <div className='flex gap-3'>
-                        <button onClick={addCourse} className='flex-1 py-3 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2'>
+                    <div className='space-y-4'>
+                        {/* Add Course Button */}
+                        <button onClick={addCourse} className='w-full py-3 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2'>
                             <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
                             </svg>
                             {locale === "vi" ? "Thêm môn học" : "Add Course"}
                         </button>
-                        <div className='flex flex-col items-end gap-1'>
-                            <button onClick={() => fileInputRef.current?.click()} className='py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2'>
-                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
-                                </svg>
-                                {locale === "vi" ? "Import CSV" : "Import CSV"}
-                            </button>
-                            <span className='text-xs text-gray-500 dark:text-gray-400'>{locale === "vi" ? "Format: Tên môn, Điểm, Tín chỉ" : "Format: Course, Grade, Credits"}</span>
+
+                        {/* Action Buttons */}
+                        <div className='flex justify-end'>
+                            <div className='flex flex-wrap items-center gap-2'>
+                                <span className='text-xs text-gray-500 dark:text-gray-400 mr-2 hidden sm:inline'>{locale === "vi" ? "Format: Tên môn, Điểm, Tín chỉ" : "Format: Course, Grade, Credits"}</span>
+                                <a href='/gpa-sample.csv' download='gpa-sample.csv' className='py-2 px-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg transition-colors flex items-center gap-1.5'>
+                                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' />
+                                    </svg>
+                                    {locale === "vi" ? "File mẫu" : "Sample"}
+                                </a>
+                                <button onClick={() => fileInputRef.current?.click()} className='py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors flex items-center gap-1.5'>
+                                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
+                                    </svg>
+                                    Import
+                                </button>
+                                <button onClick={clearAllData} className='py-2 px-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm rounded-lg transition-colors flex items-center gap-1.5'>
+                                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                                    </svg>
+                                    {locale === "vi" ? "Xóa" : "Clear"}
+                                </button>
+                            </div>
                         </div>
                         <input ref={fileInputRef} type='file' accept='.csv,.txt' onChange={(e) => handleFileImport(e, false)} className='hidden' />
                     </div>
@@ -474,9 +560,13 @@ export default function GpaCalculatorClient() {
                     {/* Results */}
                     <div className='mt-6 p-6 bg-linear-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl'>
                         <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>{locale === "vi" ? "Kết quả" : "Results"}</h3>
-                        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                        <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
                             <div className='bg-white dark:bg-gray-800 p-4 rounded-lg'>
-                                <div className='text-sm text-gray-600 dark:text-gray-400 mb-1'>GPA (4.0)</div>
+                                <div className='text-sm text-gray-600 dark:text-gray-400 mb-1'>{locale === "vi" ? "Điểm TB (Hệ 10)" : "GPA (Scale 10)"}</div>
+                                <div className='text-3xl font-bold text-indigo-600 dark:text-indigo-400'>{gpaResult.gpa10.toFixed(2)}</div>
+                            </div>
+                            <div className='bg-white dark:bg-gray-800 p-4 rounded-lg'>
+                                <div className='text-sm text-gray-600 dark:text-gray-400 mb-1'>{locale === "vi" ? "GPA (Hệ 4)" : "GPA (Scale 4)"}</div>
                                 <div className='text-3xl font-bold text-blue-600 dark:text-blue-400'>{gpaResult.gpa.toFixed(2)}</div>
                             </div>
                             <div className='bg-white dark:bg-gray-800 p-4 rounded-lg'>
@@ -586,21 +676,26 @@ export default function GpaCalculatorClient() {
                         </table>
                     </div>
 
-                    <div className='flex gap-3'>
-                        <button onClick={addSimulationCourse} className='flex-1 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2'>
+                    <div className='space-y-4'>
+                        {/* Add Course Button */}
+                        <button onClick={addSimulationCourse} className='w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2'>
                             <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
                             </svg>
                             {locale === "vi" ? "Thêm môn" : "Add Course"}
                         </button>
-                        <div className='flex flex-col items-end gap-1'>
-                            <button onClick={() => simFileInputRef.current?.click()} className='py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2'>
-                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
-                                </svg>
-                                {locale === "vi" ? "Import CSV" : "Import CSV"}
-                            </button>
-                            <span className='text-xs text-gray-500 dark:text-gray-400'>{locale === "vi" ? "Format: Tên môn, Điểm, Tín chỉ" : "Format: Course, Grade, Credits"}</span>
+
+                        {/* Action Buttons */}
+                        <div className='flex justify-end'>
+                            <div className='flex flex-wrap items-center gap-2'>
+                                <span className='text-xs text-gray-500 dark:text-gray-400 mr-2 hidden sm:inline'>{locale === "vi" ? "Format: Tên môn, Điểm, Tín chỉ" : "Format: Course, Grade, Credits"}</span>
+                                <button onClick={() => simFileInputRef.current?.click()} className='py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors flex items-center gap-1.5'>
+                                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
+                                    </svg>
+                                    Import
+                                </button>
+                            </div>
                         </div>
                         <input ref={simFileInputRef} type='file' accept='.csv,.txt' onChange={(e) => handleFileImport(e, true)} className='hidden' />
                     </div>
