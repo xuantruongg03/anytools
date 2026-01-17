@@ -44,6 +44,25 @@ export const browserExtensionsTranslations = {
                         description: "Extensions are from official stores or open-source repositories.",
                     },
                 },
+                installGuide: {
+                    title: "How to Install Unpublished Extensions",
+                    description: "If an extension is not yet available on the Chrome Web Store, you can install it manually in Developer Mode.",
+                    steps: {
+                        title: "Installation Steps:",
+                        step1: "Download the extension folder or clone the GitHub repository to your computer",
+                        step2: "Open Chrome and navigate to chrome://extensions/",
+                        step3: "Enable 'Developer mode' by clicking the toggle in the top right corner",
+                        step4: "Click 'Load unpacked' button",
+                        step5: "Select the folder containing the extension files (must have manifest.json)",
+                        step6: "The extension is now installed! You should see it in your extensions list",
+                    },
+                    notes: {
+                        title: "Important Notes:",
+                        note1: "Unpublished extensions won't auto-update. You'll need to manually update them",
+                        note2: "Chrome may show warnings for unpacked extensions - this is normal",
+                        note3: "Most browsers (Edge, Brave, Opera) also support unpacked extensions using the same process",
+                    },
+                },
                 cta: {
                     title: "Have a suggestion?",
                     description: "Know a great extension that should be in this collection? Let me know!",
@@ -95,6 +114,25 @@ export const browserExtensionsTranslations = {
                     safe: {
                         title: "An Toàn & Đáng Tin",
                         description: "Các extension đều từ cửa hàng chính thức hoặc mã nguồn mở.",
+                    },
+                },
+                installGuide: {
+                    title: "Cách Cài Đặt Extension Chưa Publish",
+                    description: "Nếu extension chưa có trên Chrome Web Store, bạn có thể cài đặt thủ công ở chế độ Developer Mode.",
+                    steps: {
+                        title: "Các Bước Cài Đặt:",
+                        step1: "Tải folder extension hoặc clone GitHub repository về máy",
+                        step2: "Mở Chrome và truy cập chrome://extensions/",
+                        step3: "Bật 'Developer mode' bằng cách click toggle ở góc trên bên phải",
+                        step4: "Click nút 'Load unpacked'",
+                        step5: "Chọn folder chứa file extension (phải có file manifest.json)",
+                        step6: "Extension đã được cài đặt! Bạn sẽ thấy nó trong danh sách extensions",
+                    },
+                    notes: {
+                        title: "Lưu Ý Quan Trọng:",
+                        note1: "Extension chưa publish sẽ không tự động cập nhật. Bạn cần update thủ công",
+                        note2: "Chrome có thể hiện cảnh báo cho unpacked extensions - đây là điều bình thường",
+                        note3: "Hầu hết trình duyệt (Edge, Brave, Opera) cũng hỗ trợ unpacked extensions với cùng quy trình",
                     },
                 },
                 cta: {

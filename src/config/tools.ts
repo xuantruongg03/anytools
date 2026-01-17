@@ -18,6 +18,9 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/api-tester", icon: "🚀", key: "apiTester" },
             { href: "/tools/base64", icon: "64", key: "base64" },
             { href: "/tools/code-formatter", icon: "✨", key: "codeFormatter" },
+            { href: "/tools/code-minifier", icon: "🗜️", key: "codeMinifier" },
+            { href: "/tools/csv-converter", icon: "📊", key: "csvConverter" },
+            { href: "/tools/fake-data-generator", icon: "🎲", key: "fakeDataGenerator" },
             { href: "/tools/hash-generator", icon: "#", key: "hashGenerator" },
             { href: "/tools/html-entity-encoder", icon: "🏷️", key: "htmlEntityEncoder" },
             { href: "/tools/json-formatter", icon: "{ }", key: "jsonFormatter" },
@@ -58,8 +61,10 @@ export const toolsConfig: ToolCategory[] = [
         key: "security",
         icon: "🔒",
         tools: [
+            { href: "/tools/dns-lookup", icon: "🌐", key: "dnsLookup" },
+            { href: "/tools/ip-lookup", icon: "🔍", key: "ipLookup" },
             { href: "/tools/password-generator", icon: "🔑", key: "passwordGenerator" },
-            { href: "/tools/ip-lookup", icon: "🌐", key: "ipLookup" },
+            { href: "/tools/text-encryption", icon: "🔐", key: "textEncryption" },
         ],
     },
     {
@@ -67,7 +72,7 @@ export const toolsConfig: ToolCategory[] = [
         icon: "📥",
         tools: [
             { href: "/tools/slideshare-downloader", icon: "📊", key: "slideshareDownloader" },
-            // { href: "/tools/studocu-downloader", icon: "📚", key: "studocuDownloader" },
+            { href: "/tools/studocu-downloader", icon: "📚", key: "studocuDownloader" },
         ],
     },
     {

@@ -118,6 +118,70 @@ export default function ExtensionsContent() {
                 </div>
             </div>
 
+            {/* Install Guide Section */}
+            <div className='mt-16 py-12 border-t border-gray-200 dark:border-gray-700'>
+                <div className='max-w-4xl mx-auto'>
+                    <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-3'>{t.installGuide.title}</h2>
+                    <p className='text-gray-600 dark:text-gray-400 mb-8'>{t.installGuide.description}</p>
+
+                    {/* Installation Steps */}
+                    <div className='bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-6'>
+                        <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2'>
+                            <span className='text-2xl'>📋</span>
+                            {t.installGuide.steps.title}
+                        </h3>
+                        <ol className='space-y-3'>
+                            <li className='flex gap-3'>
+                                <span className='flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold'>1</span>
+                                <span className='text-gray-700 dark:text-gray-300 pt-0.5'>{t.installGuide.steps.step1}</span>
+                            </li>
+                            <li className='flex gap-3'>
+                                <span className='flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold'>2</span>
+                                <span className='text-gray-700 dark:text-gray-300 pt-0.5'>{t.installGuide.steps.step2}</span>
+                            </li>
+                            <li className='flex gap-3'>
+                                <span className='flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold'>3</span>
+                                <span className='text-gray-700 dark:text-gray-300 pt-0.5'>{t.installGuide.steps.step3}</span>
+                            </li>
+                            <li className='flex gap-3'>
+                                <span className='flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold'>4</span>
+                                <span className='text-gray-700 dark:text-gray-300 pt-0.5'>{t.installGuide.steps.step4}</span>
+                            </li>
+                            <li className='flex gap-3'>
+                                <span className='flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold'>5</span>
+                                <span className='text-gray-700 dark:text-gray-300 pt-0.5'>{t.installGuide.steps.step5}</span>
+                            </li>
+                            <li className='flex gap-3'>
+                                <span className='flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold'>6</span>
+                                <span className='text-gray-700 dark:text-gray-300 pt-0.5'>{t.installGuide.steps.step6}</span>
+                            </li>
+                        </ol>
+                    </div>
+
+                    {/* Important Notes */}
+                    <div className='bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6'>
+                        <h3 className='text-lg font-semibold text-yellow-900 dark:text-yellow-100 mb-4 flex items-center gap-2'>
+                            <span className='text-2xl'>⚠️</span>
+                            {t.installGuide.notes.title}
+                        </h3>
+                        <ul className='space-y-2'>
+                            <li className='flex gap-2 text-yellow-800 dark:text-yellow-200'>
+                                <span className='flex-shrink-0'>•</span>
+                                <span>{t.installGuide.notes.note1}</span>
+                            </li>
+                            <li className='flex gap-2 text-yellow-800 dark:text-yellow-200'>
+                                <span className='flex-shrink-0'>•</span>
+                                <span>{t.installGuide.notes.note2}</span>
+                            </li>
+                            <li className='flex gap-2 text-yellow-800 dark:text-yellow-200'>
+                                <span className='flex-shrink-0'>•</span>
+                                <span>{t.installGuide.notes.note3}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             {/* CTA Section */}
             <div className='mt-12 text-center p-8 bg-linear-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl'>
                 <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>{t.cta.title}</h2>

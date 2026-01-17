@@ -26,11 +26,13 @@ import { markdownEditorTranslations } from "./markdown-editor";
 import { mockApiGeneratorTranslations } from "./mock-api-generator";
 import { placeholderImageTranslations } from "./placeholder-image";
 import { ipLookupTranslations } from "./ip-lookup";
+import { fiveNewToolsTranslations } from "./five-new-tools";
 
 export const toolsTranslations = {
     en: {
         ...newToolsTranslations.en,
         ...randomToolsTranslations.en,
+        ...fiveNewToolsTranslations.en,
         uuidGenerator: uuidGeneratorTranslations.en,
         jwtDecoder: jwtDecoderTranslations.en,
         timestampConverter: timestampConverterTranslations.en.timestampConverter,
@@ -61,6 +63,7 @@ export const toolsTranslations = {
     vi: {
         ...newToolsTranslations.vi,
         ...randomToolsTranslations.vi,
+        ...fiveNewToolsTranslations.vi,
         uuidGenerator: uuidGeneratorTranslations.vi,
         jwtDecoder: jwtDecoderTranslations.vi,
         timestampConverter: timestampConverterTranslations.vi.timestampConverter,

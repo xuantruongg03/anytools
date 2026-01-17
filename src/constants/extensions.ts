@@ -49,7 +49,7 @@ export const extensions: Extension[] = [
             vi: "Một extension cho phép bạn kiểm tra và phân tích các kiểu CSS trên bất kỳ trang web nào.",
         },
         category: "developer",
-        chromeUrl: "",
+        chromeUrl: "https://chromewebstore.google.com/detail/css-inspector/jphlhfamggkfipndpgkihpbcbdnddkdc",
         githubUrl: "https://github.com/xuantruongg03/css-inspector-extension",
         privacyPolicyUrl: "/privacy/css-inspector",
         author: "xuantruongg03",
@@ -80,6 +80,20 @@ export const extensions: Extension[] = [
         githubUrl: "https://github.com/xuantruongg03/audio-equalizer-booster-extension",
         author: "xuantruongg03",
         tags: ["audio", "equalizer", "booster"],
+    },
+    {
+        id: "studocu-downloader",
+        name: "StudoCu Downloader",
+        description: {
+            en: "Download Studocu files with ease.",
+            vi: "Tải xuống các tệp Studocu dễ dàng.",
+        },
+        category: "utility",
+        chromeUrl: "",
+        githubUrl: "https://github.com/xuantruongg03/studocu-downloader",
+        privacyPolicyUrl: "/privacy/studocu-downloader",
+        author: "xuantruongg03",
+        tags: ["studocu", "downloader"],
     },
 ];
 

@@ -155,6 +155,45 @@ export const extensionPrivacyPolicies: Record<string, PrivacyPolicyData> = {
             vi: "Tất cả các thuộc tính CSS được kiểm tra vẫn ở trên thiết bị của bạn và không bao giờ được truyền đến máy chủ bên ngoài.",
         },
     },
+    "studocu-downloader": {
+        extensionId: "studocu-downloader",
+        extensionName: "StudoCu Downloader Pro",
+        lastUpdated: "January 2026",
+        permissions: [
+            {
+                name: "activeTab",
+                description: {
+                    en: "Only to read StudoCu page content for PDF creation",
+                    vi: "Chỉ để đọc nội dung trang StudoCu để tạo PDF",
+                },
+            },
+            {
+                name: "scripting",
+                description: {
+                    en: "Only to enhance page functionality for downloading",
+                    vi: "Chỉ để nâng cao chức năng trang để tải xuống",
+                },
+            },
+            {
+                name: "cookies",
+                description: {
+                    en: "Only to remove StudoCu access restrictions when needed",
+                    vi: "Chỉ để xóa các hạn chế truy cập StudoCu khi cần thiết",
+                },
+            },
+            {
+                name: "storage",
+                description: {
+                    en: "Only to save your progress and settings locally",
+                    vi: "Chỉ để lưu tiến trình và cài đặt của bạn cục bộ",
+                },
+            },
+        ],
+        additionalInfo: {
+            en: "All document processing happens locally in your browser. No content is sent to external servers. The extension stores only download progress and settings locally. No data is shared with third parties - the extension works entirely offline after installation.",
+            vi: "Tất cả việc xử lý tài liệu diễn ra cục bộ trong trình duyệt của bạn. Không có nội dung nào được gửi đến máy chủ bên ngoài. Extension chỉ lưu trữ tiến trình tải xuống và cài đặt cục bộ. Không có dữ liệu nào được chia sẻ với bên thứ ba - extension hoạt động hoàn toàn ngoại tuyến sau khi cài đặt.",
+        },
+    },
 };
 
 // Helper function to get privacy policy by extension ID

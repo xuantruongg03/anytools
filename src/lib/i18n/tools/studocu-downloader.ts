@@ -18,6 +18,10 @@ export const studocuDownloaderTranslations = {
         noUrlError: "No download URL available",
         downloadFailedError: "Failed to download document",
         genericError: "An error occurred while processing",
+        temporaryNotice: {
+            text: "Temporarily we provide a browser extension tool for you to download content from Studocu, we are still finding a way to fix it for the website. Everything will work soon.",
+            linkText: "browser extension tool",
+        },
         howToUse: "How to Use",
         step1: "Find the document you want to download on StuDocu",
         step2: "Copy the URL from your browser's address bar",
@@ -100,6 +104,10 @@ export const studocuDownloaderTranslations = {
         noUrlError: "Không có URL tải xuống",
         downloadFailedError: "Tải tài liệu thất bại",
         genericError: "Đã xảy ra lỗi khi xử lý",
+        temporaryNotice: {
+            text: "Tạm thời chúng tôi cung cấp 1 công cụ tiện ích mở rộng để bạn tải nội dung từ Studocu, chúng tôi vẫn đang tìm cách khắc phục cho trang web. Mọi thứ sẽ sớm hoạt động.",
+            linkText: "công cụ tiện ích mở rộng",
+        },
         howToUse: "Cách Sử Dụng",
         step1: "Tìm tài liệu bạn muốn tải trên StuDocu",
         step2: "Sao chép URL từ thanh địa chỉ trình duyệt",

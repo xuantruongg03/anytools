@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.2.0",
     "@headlessui/react": "^2.2.9",
     "@tanstack/react-query": "^5.90.9",
     "@types/dompurify": "^3.0.5",
@@ -16,7 +17,10 @@
     "@types/qrcode": "^1.5.6",
     "@upstash/qstash": "^2.8.4",
     "@upstash/redis": "^1.35.7",
+    "clean-css": "^5.3.3",
+    "crypto-js": "^4.2.0",
     "dompurify": "^3.3.1",
+    "html-minifier-terser": "^7.2.0",
     "html2pdf.js": "^0.12.1",
     "imagetracerjs": "^1.2.6",
     "jspdf": "^3.0.4",
@@ -25,6 +29,7 @@
     "marked": "^17.0.1",
     "mongodb": "^7.0.0",
     "next": "16.0.10",
+    "papaparse": "^5.5.3",
     "pdfjs-dist": "^5.4.530",
     "prettier": "^3.7.4",
     "qr-code-styling": "^1.9.2",
@@ -34,11 +39,14 @@
     "resend": "^6.5.2",
     "sharp": "^0.34.5",
     "sql-formatter": "^15.6.12",
+    "terser": "^5.46.0",
     "wavesurfer.js": "^7.11.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^20",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
