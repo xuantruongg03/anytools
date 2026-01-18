@@ -11,12 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi 
-        ? "Chuyển Đổi CSV - Công Cụ Xem & Convert CSV/JSON/Excel Miễn Phí 2026" 
-        : "CSV Converter - Free CSV to JSON, Excel Viewer & Editor 2026";
-    const description = isVi 
-        ? "Công cụ xem, chỉnh sửa và chuyển đổi CSV miễn phí. Chuyển CSV sang JSON, chỉnh sửa bảng trực tuyến, tải xuống định dạng mới. Nhanh, an toàn, không giới hạn." 
-        : "Free online CSV viewer and converter. Convert CSV to JSON, edit tables, download in multiple formats. Fast, secure, and unlimited use.";
+    const title = isVi ? "Chuyển Đổi CSV - Công Cụ Xem & Convert CSV/JSON/Excel Miễn Phí 2026" : "CSV Converter - Free CSV to JSON, Excel Viewer & Editor 2026";
+    const description = isVi ? "Công cụ xem, chỉnh sửa và chuyển đổi CSV miễn phí. Chuyển CSV sang JSON, chỉnh sửa bảng online. Nhanh, an toàn." : "Free CSV viewer and converter. Convert CSV to JSON, edit tables online. Download in multiple formats. Fast and secure.";
 
     return {
         title,
@@ -85,13 +81,7 @@ export default async function CsvConverterPage({ params }: Props) {
     const relatedTools = getRelatedTools("/tools/csv-converter", 6);
 
     return (
-        <ToolPageLayout 
-            title={isVi ? "Chuyển Đổi CSV" : "CSV Converter"} 
-            description={isVi 
-                ? "Xem, chỉnh sửa và chuyển đổi file CSV sang JSON hoặc các định dạng khác. Công cụ miễn phí, nhanh chóng và bảo mật hoàn toàn trong trình duyệt." 
-                : "View, edit, and convert CSV files to JSON or other formats. Free online tool with instant results, all processing happens in your browser."
-            }
-        >
+        <ToolPageLayout title={isVi ? "Chuyển Đổi CSV" : "CSV Converter"} description={isVi ? "Xem, chỉnh sửa và chuyển đổi file CSV sang JSON hoặc các định dạng khác. Công cụ miễn phí, nhanh chóng và bảo mật hoàn toàn trong trình duyệt." : "View, edit, and convert CSV files to JSON or other formats. Free online tool with instant results, all processing happens in your browser."}>
             <CsvConverterContent />
             <RelatedTools tools={relatedTools} currentPath='/tools/csv-converter' />
         </ToolPageLayout>

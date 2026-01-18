@@ -14,9 +14,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
 
-    const title = isVi ? "Mock API Generator - Tạo API Giả Lập Miễn Phí Online 2026" : "Mock API Generator - Create Free Mock APIs Online 2026";
+    const title = isVi ? "Mock API Generator - Tạo API Giả Lập Miễn Phí 2026" : "Mock API Generator - Create Free Mock APIs Online 2026";
 
-    const description = isVi ? "Công cụ tạo Mock API miễn phí. Tạo REST API giả lập với JSON response tùy chỉnh, hỗ trợ dynamic data, chia sẻ API endpoint. Hoàn hảo cho frontend development, testing và prototyping." : "Free Mock API Generator tool. Create custom REST APIs with JSON responses, dynamic data placeholders, shareable endpoints. Perfect for frontend development, testing, and prototyping.";
+    const description = isVi ? "Tạo Mock API miễn phí với JSON response tùy chỉnh, dynamic data, chia sẻ endpoint. Hoàn hảo cho frontend dev, testing và prototyping." : "Free Mock API Generator. Create REST APIs with custom JSON responses, dynamic data, shareable endpoints. Perfect for frontend development and testing.";
 
     const keywords = [
         "mock api generator",

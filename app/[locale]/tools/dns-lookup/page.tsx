@@ -11,12 +11,8 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi 
-        ? "DNS Lookup - Tra Cứu DNS Records & WHOIS Online Miễn Phí 2026" 
-        : "DNS Lookup - Check DNS Records & WHOIS Information Online 2026";
-    const description = isVi 
-        ? "Công cụ tra cứu DNS miễn phí. Kiểm tra DNS records (A, AAAA, MX, TXT, NS), WHOIS domain, SSL certificate. Nhanh, chính xác, không giới hạn." 
-        : "Free online DNS lookup tool. Check DNS records (A, AAAA, MX, TXT, NS), WHOIS domain information, SSL certificates. Fast, accurate, unlimited queries.";
+    const title = isVi ? "DNS Lookup - Tra Cứu DNS Records & WHOIS Online Miễn Phí 2026" : "DNS Lookup - Check DNS Records & WHOIS Information Online 2026";
+    const description = isVi ? "Tra cứu DNS miễn phí. Kiểm tra DNS records (A, AAAA, MX, TXT, NS), WHOIS domain, SSL certificate. Nhanh, chính xác." : "Free DNS lookup tool. Check DNS records (A, AAAA, MX, TXT, NS), WHOIS domain info, SSL certificates. Fast and accurate.";
 
     return {
         title,
@@ -81,13 +77,7 @@ export default async function DnsLookupPage({ params }: Props) {
     const relatedTools = getRelatedTools("/tools/dns-lookup", 6);
 
     return (
-        <ToolPageLayout 
-            title={isVi ? "Tra Cứu DNS" : "DNS Lookup"} 
-            description={isVi 
-                ? "Kiểm tra DNS records, WHOIS thông tin domain và SSL certificate. Công cụ miễn phí, nhanh chóng cho developers và system admins." 
-                : "Check DNS records, WHOIS domain information, and SSL certificates. Free and fast tool for developers and system administrators."
-            }
-        >
+        <ToolPageLayout title={isVi ? "Tra Cứu DNS" : "DNS Lookup"} description={isVi ? "Kiểm tra DNS records, WHOIS thông tin domain và SSL certificate. Công cụ miễn phí, nhanh chóng cho developers và system admins." : "Check DNS records, WHOIS domain information, and SSL certificates. Free and fast tool for developers and system administrators."}>
             <DnsLookupContent />
             <RelatedTools tools={relatedTools} currentPath='/tools/dns-lookup' />
         </ToolPageLayout>

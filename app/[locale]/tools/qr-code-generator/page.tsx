@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 
     const descriptions = {
-        en: "Generate customizable QR codes online for free. Add logos, change colors, adjust size and style. Create QR codes for URLs, text, WiFi, contact info, and more. Download as PNG or SVG.",
-        vi: "Tạo mã QR tùy chỉnh online miễn phí. Thêm logo, đổi màu sắc, điều chỉnh kích thước và phong cách. Tạo mã QR cho URL, văn bản, WiFi, thông tin liên hệ. Tải về PNG hoặc SVG.",
+        en: "Free QR code generator with logo. Customize colors, size, style. Create QR for URLs, text, WiFi, contacts. Download PNG or SVG.",
+        vi: "Tạo mã QR miễn phí có logo. Tùy chỉnh màu sắc, kích thước, phong cách. Tạo QR cho URL, WiFi, liên hệ. Tải PNG hoặc SVG.",
     };
 
     const keywords = {

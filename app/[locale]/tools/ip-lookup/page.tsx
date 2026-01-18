@@ -15,11 +15,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const metadata = {
         en: {
             title: "What Is My IP Address - IP Lookup Tool 2026",
-            description: "Find your public IP address, local IP, IPv4, IPv6, and detailed geolocation information. Free online IP checker with ISP, country, city detection.",
+            description: "Find your public IP, local IP, IPv4, IPv6 and geolocation info. Free IP checker with ISP, country, city detection.",
         },
         vi: {
             title: "Tra Cứu Địa Chỉ IP - Kiểm Tra IP Của Bạn 2026",
-            description: "Tìm địa chỉ IP công cộng, IP local, IPv4, IPv6 và thông tin vị trí chi tiết. Công cụ kiểm tra IP miễn phí với phát hiện ISP, quốc gia, thành phố.",
+            description: "Tìm địa chỉ IP công cộng, IP local, IPv4, IPv6 và thông tin vị trí. Kiểm tra IP miễn phí với phát hiện ISP, quốc gia, thành phố.",
         },
     };
 

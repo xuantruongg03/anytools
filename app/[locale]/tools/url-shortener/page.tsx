@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 
     const descriptions = {
-        en: "Shorten long URLs instantly for free. Multiple reliable services with automatic fallback. No registration required. Perfect for social media, SMS, print materials, and email campaigns.",
-        vi: "Rút gọn URL dài ngay lập tức miễn phí. Nhiều dịch vụ đáng tin cậy với hệ thống dự phòng tự động. Không cần đăng ký. Hoàn hảo cho mạng xã hội, SMS, tài liệu in và chiến dịch email.",
+        en: "Shorten URLs instantly for free. Multiple reliable services with automatic fallback. No registration. Perfect for social media and SMS.",
+        vi: "Rút gọn URL ngay lập tức miễn phí. Nhiều dịch vụ đáng tin cậy với dự phòng tự động. Không cần đăng ký. Hoàn hảo cho mạng xã hội, SMS.",
     };
 
     const keywords = {

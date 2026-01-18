@@ -53,7 +53,7 @@ export const weatherTranslations = {
             // Page Content
             page: {
                 title: "Weather Forecast - Accurate Hourly Weather & 5-Day Forecast | AnyTools",
-                subtitle: "Check current weather, 12-hour forecast, and 5-day forecast for any location worldwide. Auto-detect GPS location or search by specific address. Multiple data sources: OpenWeather, WeatherAPI, AccuWeather. 100% free weather tool.",
+                subtitle: "Check weather, 12-hour forecast and 5-day forecast for any location. Auto GPS or search by address. OpenWeather, WeatherAPI. Free!",
                 whatIs: "What is Weather Forecast Tool?",
                 whatIsDesc: "Our Weather Forecast tool provides accurate, real-time weather information for any location worldwide. Get current conditions, detailed weather metrics, and a 5-day forecast with just one click. Perfect for planning your day, trips, or outdoor activities.",
 
@@ -160,7 +160,7 @@ export const weatherTranslations = {
             // Page Content
             page: {
                 title: "Dự Báo Thời Tiết - Dự Báo Chính Xác Theo Giờ & 5 Ngày | AnyTools",
-                subtitle: "Xem thời tiết hiện tại, dự báo 12 giờ tới và dự báo 5 ngày cho bất kỳ địa điểm nào. Tự động phát hiện vị trí GPS, tìm kiếm theo địa chỉ cụ thể. Hỗ trợ nhiều nguồn: OpenWeather, WeatherAPI, AccuWeather. Miễn phí 100%.",
+                subtitle: "Xem thời tiết, dự báo 12 giờ và 5 ngày. Tự động GPS hoặc tìm theo địa chỉ. OpenWeather, WeatherAPI. Miễn phí 100%!",
                 whatIs: "Công Cụ Dự Báo Thời Tiết Là Gì?",
                 whatIsDesc: "Công cụ Dự Báo Thời Tiết của chúng tôi cung cấp thông tin thời tiết chính xác, theo thời gian thực cho bất kỳ địa điểm nào trên thế giới. Nhận điều kiện hiện tại, các chỉ số thời tiết chi tiết và dự báo 5 ngày chỉ với một cú nhấp chuột. Hoàn hảo để lên kế hoạch cho ngày của bạn, chuyến đi hoặc các hoạt động ngoài trời.",
 
