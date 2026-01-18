@@ -51,7 +51,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "code-formatter",
         "mock-api-generator",
         "placeholder-image",
-        "ip-lookup"
+        "ip-lookup",
+        "csv-converter",
+        "text-encryption",
+        "code-minifier",
+        "dns-lookup",
+        "fake-data-generator",
     ];
 
     const sitemap: MetadataRoute.Sitemap = [];
