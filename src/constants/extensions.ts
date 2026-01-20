@@ -89,7 +89,7 @@ export const extensions: Extension[] = [
             vi: "Tải xuống các tệp Studocu dễ dàng.",
         },
         category: "utility",
-        chromeUrl: "",
+        chromeUrl: "https://chromewebstore.google.com/detail/studocu-downloader/ciodeebggclhgbgfocaemdnknjfpncco",
         githubUrl: "https://github.com/xuantruongg03/studocu-downloader",
         privacyPolicyUrl: "/privacy/studocu-downloader",
         author: "xuantruongg03",
