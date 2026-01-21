@@ -12,7 +12,7 @@ const INTERNAL_SECRET = process.env.INTERNAL_LOG_SECRET;
 export async function POST(request: NextRequest) {
     // Nếu không set INTERNAL_LOG_SECRET, disable logging
     if (!INTERNAL_SECRET) {
-        return Response.json({ error: "Logging disabled" }, { status: 503 });
+        return Response.json({ error: "Logging disabled", reason: "INTERNAL_LOG_SECRET not set" }, { status: 503 });
     }
 
     // Verify internal request
@@ -22,7 +22,18 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isGoogleSheetsConfigured()) {
-        return Response.json({ error: "Not configured" }, { status: 503 });
+        return Response.json(
+            {
+                error: "Not configured",
+                reason: "Google Sheets not configured",
+                missing: {
+                    clientEmail: !process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+                    privateKey: !process.env.GOOGLE_SHEETS_PRIVATE_KEY,
+                    spreadsheetId: !process.env.GOOGLE_SHEETS_SPREADSHEET_ID,
+                },
+            },
+            { status: 503 },
+        );
     }
 
     try {
