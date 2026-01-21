@@ -1,17 +1,40 @@
+<div align="center">
+
 # 🛠️ AnyTools
+
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+[![GitHub stars](https://img.shields.io/github/stars/xuantruongg03/anytools?style=social)](https://github.com/xuantruongg03/anytools/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/xuantruongg03/anytools?style=social)](https://github.com/xuantruongg03/anytools/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/xuantruongg03/anytools?style=flat-square)](https://github.com/xuantruongg03/anytools/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/xuantruongg03/anytools?style=flat-square)](https://github.com/xuantruongg03/anytools/pulls)
 
 **Free, fast, and privacy-friendly online utilities for developers, designers, and content creators.**
 
-AnyTools is a 100% free and open-source collection of web-based tools that run entirely in your browser. No data is sent to any server - everything happens locally on your device.
+[🌐 Live Demo](https://anytools.online) • [📖 Documentation](#-getting-started) • [🐛 Report Bug](https://github.com/xuantruongg03/anytools/issues) • [💡 Request Feature](https://github.com/xuantruongg03/anytools/discussions)
+
+</div>
 
 ---
 
-## ✨ Features
-- **🌍 Bilingual Support**: Full support for English and Vietnamese (Tiếng Việt).
-- **🌓 Dark Mode**: Beautiful UI with automatic dark mode support.
-- **📱 Responsive**: Works perfectly on desktop, tablet, and mobile devices.
-- **🆓 100% Free**: No subscriptions, no ads, no tracking.
-- **🔓 Open Source**: Contribute, fork, and customize as you need.
+## 📋 About
+
+AnyTools is a **100% free and open-source** collection of web-based tools that run entirely in your browser. No data is sent to any server - everything happens locally on your device.
+
+### ✨ Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 🌍 **Bilingual** | Full support for English and Vietnamese |
+| 🌓 **Dark Mode** | Beautiful UI with automatic dark mode |
+| 📱 **Responsive** | Works on desktop, tablet, and mobile |
+| 🔒 **Privacy First** | All processing happens in your browser |
+| 🆓 **100% Free** | No subscriptions, no ads, no tracking |
+| 🔓 **Open Source** | MIT Licensed - fork & customize freely |
 
 ---
 
@@ -22,7 +45,7 @@ AnyTools is a 100% free and open-source collection of web-based tools that run e
 - Node.js 18.x or higher
 - npm, yarn, pnpm, or bun
 
-### Installation
+### Quick Start
 
 ```bash
 # Clone the repository
@@ -31,34 +54,17 @@ cd anytools
 
 # Install dependencies
 npm install
-# or
-yarn install
-# or
-pnpm install
-```
 
-### Development
-
-```bash
-# Run the development server
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 
-# Open http://localhost:3000 in your browser
+# Open http://localhost:3000
 ```
 
-The page auto-updates as you edit files. Start by modifying `app/page.tsx`.
-
-### Build
+### Production Build
 
 ```bash
-# Create production build
 npm run build
-
-# Start production server
 npm start
 ```
 
@@ -66,12 +72,30 @@ npm start
 
 ## 🏗️ Tech Stack
 
-- **Framework**: [Next.js 16](https://nextjs.org) with App Router
-- **Language**: [TypeScript 5](https://www.typescriptlang.org)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com)
-- **UI Library**: [React 19](https://react.dev)
-- **Internationalization**: Custom i18n implementation with server/client components
-- **Font**: [Geist Font Family](https://vercel.com/font) optimized with `next/font`
+<table>
+<tr>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=nextjs" width="48" height="48" alt="Next.js" />
+<br>Next.js 16
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=ts" width="48" height="48" alt="TypeScript" />
+<br>TypeScript 5
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=tailwind" width="48" height="48" alt="Tailwind" />
+<br>Tailwind v4
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=react" width="48" height="48" alt="React" />
+<br>React 19
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=vercel" width="48" height="48" alt="Vercel" />
+<br>Vercel
+</td>
+</tr>
+</table>
 
 ---
 
@@ -80,24 +104,22 @@ npm start
 ```
 anytools/
 ├── app/                      # Next.js App Router
-│   ├── tools/               # Tool pages
-│   │   ├── [tool-name]/
-│   │   │   ├── page.tsx           # Server component (SEO metadata)
-│   │   │   ├── [Tool]Content.tsx  # Client component (i18n content)
-│   │   │   └── [Tool]Client.tsx   # Tool logic component
-│   ├── about/               # About page
-│   ├── layout.tsx           # Root layout
-│   └── page.tsx             # Homepage
+│   ├── [locale]/            # Internationalized routes
+│   │   ├── tools/           # Tool pages
+│   │   │   └── [tool-name]/
+│   │   │       ├── page.tsx           # Server component (SEO)
+│   │   │       ├── [Tool]Content.tsx  # i18n wrapper
+│   │   │       └── [Tool]Client.tsx   # Tool logic
+│   │   ├── about/           # About page
+│   │   └── page.tsx         # Homepage
+│   └── api/                 # API routes
 ├── src/
 │   ├── components/          # Reusable components
-│   │   ├── Header.tsx
-│   │   ├── Footer.tsx
-│   │   └── LanguageSwitcher.tsx
-│   ├── lib/
-│   │   └── i18n/           # Internationalization
-│   │       ├── translations.ts
-│   │       └── LanguageContext.tsx
-│   └── contexts/            # React contexts
+│   ├── lib/                 # Utilities & helpers
+│   │   ├── i18n/           # Internationalization
+│   │   └── utils/          # Helper functions
+│   ├── constants/          # App constants
+│   └── types/              # TypeScript types
 ├── public/                  # Static assets
 └── README.md
 ```
@@ -106,117 +128,100 @@ anytools/
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Here's how you can help:
+We welcome contributions! Here's how you can help:
 
-### How to Contribute
+### Quick Contribution Guide
 
-1. **Fork the repository** on GitHub
-2. **Clone your fork**:
-   ```bash
-   git clone https://github.com/xuantruongg03/anytools.git
-   cd anytools
-   ```
-3. **Create a feature branch**:
-   ```bash
-   git checkout -b feature/your-new-tool
-   ```
-4. **Make your changes**:
-   - Add new tools in `app/tools/[tool-name]/`
-   - Update translations in `src/lib/i18n/translations.ts`
-   - Add tool to homepage in `app/page.tsx`
-5. **Test your changes**:
-   - Test in both light and dark modes
-   - Test in both English and Vietnamese
-   - Ensure responsive design works
-6. **Commit your changes**:
-   ```bash
-   git add .
-   git commit -m "Add: [Brief description of your changes]"
-   ```
-7. **Push to your fork**:
-   ```bash
-   git push origin feature/your-new-tool
-   ```
-8. **Create a Pull Request** on GitHub
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-tool`
+3. **Commit** your changes: `git commit -m "Add: amazing tool"`
+4. **Push** to branch: `git push origin feature/amazing-tool`
+5. **Open** a Pull Request
 
 ### Adding a New Tool
 
-Each tool follows a consistent architecture:
+```bash
+# 1. Create tool folder
+mkdir -p app/[locale]/tools/my-tool
 
-1. Create folder: `app/tools/[tool-name]/`
-2. Create three files:
-   - `page.tsx` - Server component with SEO metadata
-   - `[Tool]Content.tsx` - Client component with i18n content wrapper
-   - `[Tool]Client.tsx` - Interactive tool logic
-3. Add translations to `src/lib/i18n/translations.ts`
-4. Add tool card to homepage `app/page.tsx`
+# 2. Create required files
+# - page.tsx (Server component with SEO)
+# - MyToolContent.tsx (i18n wrapper)
+# - MyToolClient.tsx (Tool logic)
 
-See existing tools for reference (e.g., `app/tools/base64/`).
+# 3. Add translations to src/lib/i18n/
+
+# 4. Add to tools config in src/config/tools.ts
+```
+
+See existing tools in `app/[locale]/tools/` for reference.
 
 ---
 
 ## 🌐 Internationalization
 
-AnyTools supports multiple languages through a custom i18n implementation:
-
-- **Server Components**: Use `generateMetadata()` for SEO with bilingual keywords
-- **Client Components**: Use `useLanguage()` hook to access current locale
-- **Translations**: Centralized in `src/lib/i18n/translations.ts`
-
-Example:
 ```typescript
-import { useLanguage } from "@/src/contexts/LanguageContext";
-import { getTranslation } from "@/src/lib/i18n/translations";
+import { useLanguage } from "@/lib/hooks/useLanguage";
 
 export default function MyComponent() {
-    const { locale } = useLanguage();
-    const t = getTranslation(locale);
-    
-    return <h1>{t.tools.myTool.title}</h1>;
+    const { locale, t } = useLanguage();
+    return <h1>{t.myTool.title}</h1>;
 }
 ```
 
 ---
 
-## 🎨 Dark Mode
-
-Dark mode is implemented using Tailwind CSS with the `dark:` variant:
-
-```tsx
-<div className="text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
-    {/* Your content */}
-</div>
-```
-
-The theme is automatically detected from system preferences and can be toggled by users.
-
----
-
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Support
+## ☕ Support the Project
 
-If you find AnyTools useful:
+If you find AnyTools useful, consider supporting its development:
 
-- ⭐ **Star this repository** on GitHub
-- 🐛 **Report bugs** via [GitHub Issues](https://github.com/xuantruongg03/anytools/issues)
-- 💡 **Suggest features** via [GitHub Discussions](https://github.com/xuantruongg03/anytools/discussions)
-- 🤝 **Contribute** by submitting pull requests
+<div align="center">
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/xuantruongg03)
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/lexuantruong098)
+
+</div>
+
+**Other ways to support:**
+- ⭐ **Star** this repository
+- 🐛 **Report bugs** via [Issues](https://github.com/xuantruongg03/anytools/issues)
+- 💡 **Suggest features** via [Discussions](https://github.com/xuantruongg03/anytools/discussions)
+- 🤝 **Contribute** code or documentation
 
 ---
 
 ## 📞 Contact
 
-- **Website**: [anytools.vercel.app](https://anytools.vercel.app)
-- **GitHub**: [github.com/xuantruongg03/anytools](https://github.com/xuantruongg03/anytools)
-- **Issues**: [GitHub Issues](https://github.com/xuantruongg03/anytools/issues)
+<div align="center">
+
+[![Website](https://img.shields.io/badge/Website-anytools.online-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://anytools.online)
+[![GitHub](https://img.shields.io/badge/GitHub-xuantruongg03-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/xuantruongg03)
+[![Email](https://img.shields.io/badge/Email-Contact-red?style=for-the-badge&logo=gmail&logoColor=white)](mailto:xuantruongg03@gmail.com)
+
+</div>
+
+---
+
+## 🌟 Star History
+
+<div align="center">
+
+[![Star History Chart](https://api.star-history.com/svg?repos=xuantruongg03/anytools&type=Date)](https://star-history.com/#xuantruongg03/anytools&Date)
+
+</div>
 
 ---
 
 <div align="center">
-Made with ❤️ by the open-source community
+
+**Made with ❤️ by [Xuan Truong](https://github.com/xuantruongg03) and the open-source community**
+
+<sub>© 2024-2026 AnyTools. All rights reserved.</sub>
+
 </div>
