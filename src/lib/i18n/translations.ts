@@ -1,5 +1,6 @@
 import { Locale } from "./config";
 import { toolsTranslations } from "./tools";
+import { redirectTranslations } from "./pages/redirect";
 
 export const translations = {
     en: {
@@ -940,6 +941,9 @@ export const translations = {
             contribute: "Contribute on GitHub",
             url: "https://github.com/xuantruongg03/anytools",
         },
+
+        // Redirect
+        ...redirectTranslations.en,
     },
 
     vi: {
@@ -1880,6 +1884,9 @@ export const translations = {
             contribute: "Đóng Góp trên GitHub",
             url: "https://github.com/xuantruongg03/anytools",
         },
+
+        // Redirect
+        ...redirectTranslations.vi,
     },
 } as const;
 

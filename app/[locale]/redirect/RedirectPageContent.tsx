@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Script from "next/script";
 import { RedirectProgress } from "@/components/ui/RedirectProgress";
 import { useRedirectTimer } from "@/lib/hooks";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getTranslation } from "@/lib/i18n";
 
 /**
  * Trang redirect trung gian
@@ -15,6 +17,9 @@ export default function RedirectPageContent() {
     const router = useRouter();
     const [targetUrl, setTargetUrl] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
+    const { locale } = useLanguage();
+    const t = getTranslation(locale);
+    const page = t.redirect.page;
 
     // Xử lý URL: lưu vào sessionStorage và xóa khỏi address bar
     useEffect(() => {
@@ -27,7 +32,7 @@ export default function RedirectPageContent() {
             setIsReady(true);
 
             // Xóa query params khỏi URL trong address bar
-            const locale = window.location.pathname.split('/')[1];
+            const locale = window.location.pathname.split("/")[1];
             router.replace(`/${locale}/redirect`);
         } else {
             // Nếu không có params, đọc từ sessionStorage
@@ -38,7 +43,7 @@ export default function RedirectPageContent() {
             } else {
                 // Không có URL → User back lại hoặc access trực tiếp
                 // → Redirect về home
-                const locale = window.location.pathname.split('/')[1];
+                const locale = window.location.pathname.split("/")[1];
                 router.replace(`/${locale}`);
                 return;
             }
@@ -61,10 +66,7 @@ export default function RedirectPageContent() {
     };
 
     // Sử dụng hook để xử lý đếm ngược và redirect
-    const { timeRemaining, progress } = useRedirectTimer(
-        delayMs,
-        isValidUrl(targetUrl) ? targetUrl : null
-    );
+    const { timeRemaining, progress } = useRedirectTimer(delayMs, isValidUrl(targetUrl) ? targetUrl : null);
 
     // Hiển thị lỗi nếu URL không hợp lệ
     if (!isValidUrl(targetUrl)) {
@@ -73,27 +75,12 @@ export default function RedirectPageContent() {
                 <div className='max-w-md w-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6'>
                     <div className='flex items-start gap-3'>
                         {/* Alert icon */}
-                        <svg
-                            className='w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5'
-                            fill='none'
-                            stroke='currentColor'
-                            viewBox='0 0 24 24'
-                        >
-                            <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth={2}
-                                d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                            />
+                        <svg className='w-6 h-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
                         </svg>
                         <div>
-                            <h3 className='font-semibold text-red-800 dark:text-red-200 mb-1'>
-                                URL không hợp lệ
-                            </h3>
-                            <p className='text-sm text-red-700 dark:text-red-300'>
-                                Vui lòng kiểm tra lại đường dẫn. URL phải bắt
-                                đầu bằng http:// hoặc https://
-                            </p>
+                            <h3 className='font-semibold text-red-800 dark:text-red-200 mb-1'>{page.invalidUrl.title}</h3>
+                            <p className='text-sm text-red-700 dark:text-red-300'>{page.invalidUrl.description}</p>
                         </div>
                     </div>
                 </div>
@@ -109,18 +96,20 @@ export default function RedirectPageContent() {
                     timeRemaining={timeRemaining}
                     progress={progress}
                     targetUrl={targetUrl!}
+                    translations={{
+                        redirecting: page.redirecting,
+                        seconds: page.seconds,
+                        waitMessage: page.waitMessage,
+                    }}
                 />
 
                 {/* Khu vực quảng cáo */}
                 <div className='mt-12'>
                     <div className='text-center'>
                         {/* Ad Script - Sử dụng Next.js Script component */}
-                        <Script
-                            src="https://pl28546821.effectivegatecpm.com/84/3d/82/843d82e83a68c53ab793f5c632750d19.js"
-                            strategy="lazyOnload"
-                        />
+                        <Script src='https://pl28622513.effectivegatecpm.com/f8/d1/4d/f8d14d55048b451393a51e5e5a0f3743.js' strategy='lazyOnload' />
                         {/* Container cho quảng cáo */}
-                        <div id="ad-container" className="min-h-[250px]"></div>
+                        <div id='ad-container' className='min-h-[250px]'></div>
                     </div>
                 </div>
             </div>
