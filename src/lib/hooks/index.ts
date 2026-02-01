@@ -9,4 +9,5 @@ export { useSpeechToText } from "./useSpeechToText";
 export { useImageUpload } from "./useImageUpload";
 export { useBackgroundRemover } from "./useBackgroundRemover";
 export { useImageToText } from "./useImageToText";
+export { useRedirectTimer } from "./useRedirectTimer";
 export type { LocationAddress } from "./useGeolocation";

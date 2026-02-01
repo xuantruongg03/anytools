@@ -10,7 +10,7 @@ const INTERNAL_SECRET = process.env.INTERNAL_LOG_SECRET;
 
 export async function POST(request: NextRequest) {
     console.log("[Internal Log] Request received");
-    
+
     // Nếu không set INTERNAL_LOG_SECRET, disable logging
     if (!INTERNAL_SECRET) {
         console.log("[Internal Log] INTERNAL_LOG_SECRET not set");
@@ -33,10 +33,13 @@ export async function POST(request: NextRequest) {
         console.log("[Internal Log] Google Sheets module loaded");
     } catch (importError) {
         console.error("[Internal Log] Failed to import google-sheets:", importError);
-        return Response.json({ 
-            error: "Module import failed", 
-            details: String(importError) 
-        }, { status: 503 });
+        return Response.json(
+            {
+                error: "Module import failed",
+                details: String(importError),
+            },
+            { status: 503 },
+        );
     }
 
     if (!isGoogleSheetsConfigured()) {

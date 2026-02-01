@@ -10,9 +10,10 @@
 !.yarn/releases
 !.yarn/versions
 note.txt
-
+/.antigravity
 # testing
 /coverage
+todo.md
 
 # next.js
 /.next/

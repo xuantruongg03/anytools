@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { browserExtensionsTranslations } from "@/lib/i18n/pages/browser-extensions";
 import { extensions, extensionCategoryTranslations, type ExtensionCategory, type Extension } from "@/constants/extensions";
@@ -205,6 +206,13 @@ interface ExtensionCardProps {
 }
 
 function ExtensionCard({ extension, locale, t }: ExtensionCardProps) {
+    const router = useRouter();
+
+    // Helper function để redirect qua trang trung gian (dùng router thay vì href)
+    const handleRedirect = (targetUrl: string) => {
+        router.push(`/${locale}/redirect?url=${encodeURIComponent(targetUrl)}`);
+    };
+
     return (
         <article className='bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 flex flex-col h-full'>
             {/* Header */}
@@ -232,39 +240,39 @@ function ExtensionCard({ extension, locale, t }: ExtensionCardProps) {
                 </div>
             )}
 
-            {/* Links */}
+            {/* Links - Dùng button thay vì <a> để ẩn URL khi hover */}
             <div className='flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700'>
                 {extension.chromeUrl && (
-                    <a href={extension.chromeUrl} target='_blank' rel='noopener noreferrer' className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors' title={t.chrome}>
+                    <button onClick={() => handleRedirect(extension.chromeUrl!)} className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors cursor-pointer' title={t.chrome}>
                         <svg className='w-4 h-4' viewBox='0 0 24 24' fill='currentColor'>
                             <path d='M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166a5.446 5.446 0 0 1 1.45 7.09l.002.001h-.002l-3.952 6.848a12.014 12.014 0 0 0 9.229-9.606zM12 16.364a4.364 4.364 0 1 1 0-8.728 4.364 4.364 0 0 1 0 8.728z' />
                         </svg>
                         Chrome
-                    </a>
+                    </button>
                 )}
                 {extension.firefoxUrl && (
-                    <a href={extension.firefoxUrl} target='_blank' rel='noopener noreferrer' className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors' title={t.firefox}>
+                    <button onClick={() => handleRedirect(extension.firefoxUrl!)} className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors cursor-pointer' title={t.firefox}>
                         <svg className='w-4 h-4' viewBox='0 0 24 24' fill='currentColor'>
                             <path d='M12.006 0a12.188 12.188 0 0 0-4.126.721c.122.047.478.197.602.255 1.266.598 2.156 1.441 2.769 2.064l.098.103a9.154 9.154 0 0 1 .581.674c-.077-.025-.156-.046-.234-.072a7.428 7.428 0 0 0-2.199-.434c-.734-.035-1.29.039-1.553.074l-.013.002a8.046 8.046 0 0 0-.542.087 6.332 6.332 0 0 0-.628.161 5.352 5.352 0 0 0-.201.065 4.63 4.63 0 0 0-.108.04c-1.692.628-3.095 1.9-3.641 3.073-.074.158-.211.498-.26.631l-.016.046c-.006.02-.032.102-.032.102l.019-.052a7.086 7.086 0 0 0-.2.739l-.001.003a8.68 8.68 0 0 0-.141.749c-.037.274-.065.554-.083.83l-.007.1a10.583 10.583 0 0 0-.01.577l.004.155v.074A11.987 11.987 0 0 0 12.006 24a11.987 11.987 0 0 0 11.987-11.977l.001-.169v-.019A11.987 11.987 0 0 0 12.006 0z' />
                         </svg>
                         Firefox
-                    </a>
+                    </button>
                 )}
                 {extension.edgeUrl && (
-                    <a href={extension.edgeUrl} target='_blank' rel='noopener noreferrer' className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors' title={t.edge}>
+                    <button onClick={() => handleRedirect(extension.edgeUrl!)} className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors cursor-pointer' title={t.edge}>
                         <svg className='w-4 h-4' viewBox='0 0 24 24' fill='currentColor'>
-                            <path d='M21.86 17.86q.14 0 .25.12.1.13.08.25a7.24 7.24 0 0 1-.21.86q-.86 2.88-3.54 4.63Q15.92 25.15 12.34 25q-3.07-.07-5.5-1.68T3.2 18.77a10.27 10.27 0 0 1-.86-4.35q0-5.35 4.08-8.4a11.43 11.43 0 0 1 7.3-2.65q2.79 0 5.05 1.16 2.26 1.17 3.64 3.27 1.37 2.1 1.37 4.7 0 .56-.08 1.1-.07.54-.28 1.06-.2.51-.58.95-.38.43-1.01.75-.64.31-1.5.31H9.91q-.26 0-.37.15-.1.15-.1.37v.04q.15 1.87 1.58 3.04 1.44 1.17 3.41 1.17 1.48 0 2.75-.66t2.01-1.85q.15-.23.37-.32.22-.1.47-.1zM9.91 9.84q-2.3 0-3.84 1.65-1.53 1.65-1.53 4.33v.47q0 .19.15.35.15.17.36.17h7.51q.2 0 .35-.14.14-.14.14-.34 0-1.6-.82-2.96-.82-1.37-2.09-2.15-1.28-.78-2.75-.78z' />
+                            <path d='M21.86 17.86q.14 0 .25.12.1.13.08.25a7.24 7.24 0 0 1-.21.86q-.86 2.88-3.54 4.63Q15.92 25.15 12.34 25q-3.07-.07-5.5-1.68T3.2 18.77a10.27 10.27 0 0 1-.86-4.35q0-5.35 4.08-8.4a11.43 11.43 0 0 1 7.3-2.65q2.79 0 5.05 1.16 2.26 1.17 3.64 3.27 1.37 2.1 1.37 4.7 0 .56-.08 1.10-.07.54-.28 1.06-.2.51-.58.95-.38.43-1.01.75-.64.31-1.5.31H9.91q-.26 0-.37.15-.1.15-.1.37v.04q.15 1.87 1.58 3.04 1.44 1.17 3.41 1.17 1.48 0 2.75-.66t2.01-1.85q.15-.23.37-.32.22-.1.47-.10zM9.91 9.84q-2.3 0-3.84 1.65-1.53 1.65-1.53 4.33v.47q0 .19.15.35.15.17.36.17h7.51q.2 0 .35-.14.14-.14.14-.34 0-1.6-.82-2.96-.82-1.37-2.09-2.15-1.28-.78-2.75-.78z' />
                         </svg>
                         Edge
-                    </a>
+                    </button>
                 )}
                 {extension.githubUrl && (
-                    <a href={extension.githubUrl} target='_blank' rel='noopener noreferrer' className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors' title={t.sourceCode}>
+                    <button onClick={() => handleRedirect(extension.githubUrl!)} className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer' title={t.sourceCode}>
                         <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 24 24'>
                             <path d='M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z' />
                         </svg>
                         GitHub
-                    </a>
+                    </button>
                 )}
                 {extension.privacyPolicyUrl && (
                     <a href={extension.privacyPolicyUrl} className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors' title={t.privacyPolicy}>
