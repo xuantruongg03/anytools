@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { apps } from "@/constants/apps";
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = "https://anytools.online";
@@ -125,6 +126,42 @@ export default function sitemap(): MetadataRoute.Sitemap {
                     "x-default": `${baseUrl}/${defaultLocale}/browser-extensions`,
                 },
             },
+        });
+    });
+
+    // Add apps page for each locale
+    locales.forEach((locale) => {
+        sitemap.push({
+            url: `${baseUrl}/${locale}/apps`,
+            lastModified: new Date(),
+            changeFrequency: "weekly",
+            priority: 0.7,
+            alternates: {
+                languages: {
+                    en: `${baseUrl}/en/apps`,
+                    vi: `${baseUrl}/vi/apps`,
+                    "x-default": `${baseUrl}/${defaultLocale}/apps`,
+                },
+            },
+        });
+    });
+
+    // Add individual app detail pages for each locale
+    apps.forEach((app) => {
+        locales.forEach((locale) => {
+            sitemap.push({
+                url: `${baseUrl}/${locale}/apps/${app.id}`,
+                lastModified: new Date(),
+                changeFrequency: "weekly",
+                priority: 0.6,
+                alternates: {
+                    languages: {
+                        en: `${baseUrl}/en/apps/${app.id}`,
+                        vi: `${baseUrl}/vi/apps/${app.id}`,
+                        "x-default": `${baseUrl}/${defaultLocale}/apps/${app.id}`,
+                    },
+                },
+            });
         });
     });
 

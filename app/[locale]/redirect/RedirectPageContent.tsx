@@ -48,6 +48,7 @@ export default function RedirectPageContent() {
                 return;
             }
         }
+        window.scrollTo(0, 0);
     }, [searchParams, router]);
 
     // Lấy thời gian chờ từ env (mặc định 5000ms)

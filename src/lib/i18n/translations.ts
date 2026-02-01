@@ -63,6 +63,7 @@ export const translations = {
             home: "Home",
             about: "About",
             extensions: "Extensions",
+            apps: "Apps",
             contact: "Contact",
         },
 
@@ -1006,6 +1007,7 @@ export const translations = {
             home: "Trang Chủ",
             about: "Về Chúng Tôi",
             extensions: "Tiện ích",
+            apps: "Ứng dụng",
             contact: "Liên Hệ",
         },
 

@@ -40,6 +40,11 @@ export function Header() {
                             {t?.header.extensions}
                         </Link>
 
+                        {/* Apps Link */}
+                        <Link href={`/${locale}/apps`} className='text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hidden md:block font-medium'>
+                            {t?.header.apps}
+                        </Link>
+
                         {/* Contact Link */}
                         <Link href={`/${locale}/contact`} className='text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 hidden md:block font-medium'>
                             {t?.header.contact}
