@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     // Verify authorization
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${API_SECRET}`) {
+        console.log("Unauthorized access attempt");
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
