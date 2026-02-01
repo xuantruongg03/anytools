@@ -17,6 +17,17 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+    // Rewrite IndexNow key file to API route (bypass i18n middleware)
+    async rewrites() {
+        return {
+            beforeFiles: [
+                {
+                    source: "/6d3e12248a4740dfab15f1fe5a51241a.txt",
+                    destination: "/api/6d3e12248a4740dfab15f1fe5a51241a.txt",
+                },
+            ],
+        };
+    },
     // Add trailing slash consistency
     trailingSlash: false,
 };
