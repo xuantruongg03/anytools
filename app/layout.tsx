@@ -60,7 +60,7 @@ export default function RootLayout({
                         `,
                     }}
                 />
-                <script src="https://pl28622513.effectivegatecpm.com/f8/d1/4d/f8d14d55048b451393a51e5e5a0f3743.js"></script>
+                {/* <script src="https://pl28622513.effectivegatecpm.com/f8/d1/4d/f8d14d55048b451393a51e5e5a0f3743.js"></script> */}
                 <meta name='google-adsense-account' content='ca-pub-1892668821213380' />
                 <script
                     dangerouslySetInnerHTML={{
