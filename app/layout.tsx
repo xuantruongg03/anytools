@@ -1,10 +1,10 @@
+import { FloatingButtons } from "@/components/FloatingButtons";
+import { Header } from "@/components/Header";
+import QueryProvider from "@/components/QueryProvider";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { LanguageProvider } from "@/lib/i18n/LanguageContext";
-import { Header } from "@/components/Header";
-import { FloatingButtons } from "@/components/FloatingButtons";
-import QueryProvider from "@/components/QueryProvider";
 
 const inter = Inter({
     variable: "--font-inter",
@@ -60,6 +60,7 @@ export default function RootLayout({
                         `,
                     }}
                 />
+                <script src="https://pl28622513.effectivegatecpm.com/f8/d1/4d/f8d14d55048b451393a51e5e5a0f3743.js"></script>
                 <meta name='google-adsense-account' content='ca-pub-1892668821213380' />
                 <script
                     dangerouslySetInnerHTML={{

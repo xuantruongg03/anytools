@@ -108,7 +108,7 @@ export default function RedirectPageContent() {
                 <div className='mt-12'>
                     <div className='text-center'>
                         {/* Ad Script - Sử dụng Next.js Script component */}
-                        <Script src='https://pl28622513.effectivegatecpm.com/f8/d1/4d/f8d14d55048b451393a51e5e5a0f3743.js' />
+                        {/* <Script src='https://pl28622513.effectivegatecpm.com/f8/d1/4d/f8d14d55048b451393a51e5e5a0f3743.js' /> */}
                         {/* Container cho quảng cáo */}
                         <div id='ad-container' className='min-h-[250px]'>
                             <Script src='https://pl28622555.effectivegatecpm.com/5f7b64e63267398ca630c4710af5ad5b/invoke.js'></Script>
