@@ -94,6 +94,7 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/stopwatch", icon: "⏲️", key: "stopwatch" },
             { href: "/tools/url-shortener", icon: "🔗", key: "urlShortener" },
             { href: "/tools/world-clock", icon: "🌍", key: "worldClock" },
+            { href: "/tools/auto-bing-search", icon: "🔍", key: "autoBingSearch" },
         ],
     },
     {

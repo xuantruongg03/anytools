@@ -27,12 +27,14 @@ import { mockApiGeneratorTranslations } from "./mock-api-generator";
 import { placeholderImageTranslations } from "./placeholder-image";
 import { ipLookupTranslations } from "./ip-lookup";
 import { fiveNewToolsTranslations } from "./five-new-tools";
+import { autoBingSearch } from "./auto-bing-search";
 
 export const toolsTranslations = {
     en: {
         ...newToolsTranslations.en,
         ...randomToolsTranslations.en,
         ...fiveNewToolsTranslations.en,
+        autoBingSearch: autoBingSearch,
         uuidGenerator: uuidGeneratorTranslations.en,
         jwtDecoder: jwtDecoderTranslations.en,
         timestampConverter: timestampConverterTranslations.en.timestampConverter,
@@ -64,6 +66,7 @@ export const toolsTranslations = {
         ...newToolsTranslations.vi,
         ...randomToolsTranslations.vi,
         ...fiveNewToolsTranslations.vi,
+        autoBingSearch: autoBingSearch,
         uuidGenerator: uuidGeneratorTranslations.vi,
         jwtDecoder: jwtDecoderTranslations.vi,
         timestampConverter: timestampConverterTranslations.vi.timestampConverter,
