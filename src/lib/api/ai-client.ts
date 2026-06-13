@@ -93,7 +93,7 @@ export class AIClient {
     /**
      * Quick helper methods for each provider
      */
-    async askGemini(prompt: string, model: AIModel = "gemini-1.5-flash", systemPrompt?: string): Promise<string> {
+    async askGemini(prompt: string, model: AIModel = "gemini-2.5-flash", systemPrompt?: string): Promise<string> {
         return this.ask("gemini", model, prompt, { systemPrompt });
     }
 
