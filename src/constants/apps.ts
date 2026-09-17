@@ -25,6 +25,7 @@ export interface App {
     category: AppCategory;
     windowsUrl?: string;
     iosUrl?: string;
+    androidUrl?: string;
     icon?: string;
     author: string;
     tags?: string[];
@@ -79,7 +80,7 @@ export const apps: App[] = [
             vi: "Ứng dụng android giúp chặn cuộc gọi và tin nhắn hoàn toàn miễn phí.",
         },
         category: "utility",
-        iosUrl: "https://apkpure.com/group/com.simple.mika",
+        androidUrl: "https://apkpure.com/group/com.simple.mika",
         author: "xuantruongg03",
         tags: ["block calls", "block sms", "block scam calls", "block spam messages"],
         isFree: true,
