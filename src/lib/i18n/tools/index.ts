@@ -28,12 +28,14 @@ import { placeholderImageTranslations } from "./placeholder-image";
 import { ipLookupTranslations } from "./ip-lookup";
 import { fiveNewToolsTranslations } from "./five-new-tools";
 import { autoBingSearch } from "./auto-bing-search";
+import { sixNewToolsTranslations } from "./six-new-tools";
 
 export const toolsTranslations = {
     en: {
         ...newToolsTranslations.en,
         ...randomToolsTranslations.en,
         ...fiveNewToolsTranslations.en,
+        ...sixNewToolsTranslations.en,
         autoBingSearch: autoBingSearch,
         uuidGenerator: uuidGeneratorTranslations.en,
         jwtDecoder: jwtDecoderTranslations.en,
@@ -66,6 +68,7 @@ export const toolsTranslations = {
         ...newToolsTranslations.vi,
         ...randomToolsTranslations.vi,
         ...fiveNewToolsTranslations.vi,
+        ...sixNewToolsTranslations.vi,
         autoBingSearch: autoBingSearch,
         uuidGenerator: uuidGeneratorTranslations.vi,
         jwtDecoder: jwtDecoderTranslations.vi,

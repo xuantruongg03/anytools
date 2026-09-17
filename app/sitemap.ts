@@ -1,64 +1,14 @@
 import { MetadataRoute } from "next";
 import { apps } from "@/constants/apps";
+import { allTools } from "@/config/tools";
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = "https://anytools.online";
     const locales = ["en", "vi"];
     const defaultLocale = "en";
 
-    // All tools - synced with tools.ts
-    const tools = [
-        "api-tester",
-        "base64",
-        "color-picker",
-        "countdown",
-        "css-unit-converter",
-        "diff-checker",
-        "gpa-calculator",
-        "hash-generator",
-        "html-entity-encoder",
-        "image-to-text",
-        "json-formatter",
-        "jwt-decoder",
-        "microphone-test",
-        "number-converter",
-        "password-generator",
-        "qr-code-generator",
-        "random-race",
-        "random-wheel",
-        "regex-tester",
-        "remove-background",
-        "repo-tree",
-        "slideshare-downloader",
-        "speech-to-text",
-        "stopwatch",
-        "studocu-downloader",
-        "stun-turn-test",
-        "tailwind-css",
-        "text-case",
-        "timestamp-converter",
-        "url-encoder",
-        "url-shortener",
-        "uuid-generator",
-        "weather",
-        "world-clock",
-        "svg-preview",
-        "png-to-svg",
-        "latex-editor",
-        "markdown-editor",
-        "promo-image-generator",
-        "pdf-converter",
-        "image-compressor",
-        "code-formatter",
-        "mock-api-generator",
-        "placeholder-image",
-        "ip-lookup",
-        "csv-converter",
-        "text-encryption",
-        "code-minifier",
-        "dns-lookup",
-        "fake-data-generator",
-    ];
+    // All tools - dynamically derived from toolsConfig to prevent 404s and sync automatically
+    const tools = allTools.map((tool) => tool.href.replace("/tools/", ""));
 
     const sitemap: MetadataRoute.Sitemap = [];
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
 // Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy_build");
 const fromEmail = process.env.ERROR_EMAIL_FROM || "AnyTools <onboarding@resend.dev>";
 
 // Type for reminder payload from QStash

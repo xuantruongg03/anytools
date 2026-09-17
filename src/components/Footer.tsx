@@ -8,24 +8,30 @@ export function Footer() {
     const { locale } = useLanguage();
     const t = getTranslation(locale);
 
+    const getToolName = (key: string, fallback: string) => {
+        return (t.tools as any)?.[key]?.name || fallback;
+    };
+
     const toolCategories = {
         developer: [
-            { name: t.tools.jsonFormatter.name, href: `/${locale}/tools/json-formatter` },
-            { name: t.tools.base64.name, href: `/${locale}/tools/base64` },
-            { name: t.tools.urlEncoder.name, href: `/${locale}/tools/url-encoder` },
-            { name: t.tools.hashGenerator.name, href: `/${locale}/tools/hash-generator` },
+            { name: getToolName("jsonFormatter", "JSON Formatter"), href: `/${locale}/tools/json-formatter` },
+            { name: getToolName("cronGenerator", "Cron Generator"), href: `/${locale}/tools/cron-generator` },
+            { name: getToolName("jsonToTypes", "JSON to Types"), href: `/${locale}/tools/json-to-types` },
+            { name: getToolName("chmodCalculator", "Chmod Calculator"), href: `/${locale}/tools/chmod-calculator` },
+            { name: getToolName("base64", "Base64"), href: `/${locale}/tools/base64` },
+            { name: getToolName("hashGenerator", "Hash Generator"), href: `/${locale}/tools/hash-generator` },
         ],
-        text: [{ name: t.tools.textCase.name, href: `/${locale}/tools/text-case` }],
-        other: [
-            { name: t.tools.colorPicker.name, href: `/${locale}/tools/color-picker` },
-            {
-                name: t.tools.tailwindCss.name,
-                href: `/${locale}/tools/tailwind-css`,
-            },
-            {
-                name: t.tools.regexTester.name,
-                href: `/${locale}/tools/regex-tester`,
-            },
+        design: [
+            { name: getToolName("cssUnitConverter", "CSS Unit Converter"), href: `/${locale}/tools/css-unit-converter` },
+            { name: getToolName("boxShadowGenerator", "Box Shadow"), href: `/${locale}/tools/box-shadow-generator` },
+            { name: getToolName("colorPicker", "Color Picker"), href: `/${locale}/tools/color-picker` },
+            { name: getToolName("tailwindCss", "Tailwind CSS"), href: `/${locale}/tools/tailwind-css` },
+        ],
+        text: [
+            { name: getToolName("wordCounter", "Word Counter"), href: `/${locale}/tools/word-counter` },
+            { name: getToolName("diffChecker", "Diff Checker"), href: `/${locale}/tools/diff-checker` },
+            { name: getToolName("textCase", "Text Case"), href: `/${locale}/tools/text-case` },
+            { name: getToolName("markdownEditor", "Markdown Editor"), href: `/${locale}/tools/markdown-editor` },
         ],
     };
 
@@ -54,18 +60,18 @@ export function Footer() {
                         </ul>
                     </div>
 
-                    {/* Other Tools */}
+                    {/* Design & Text Tools */}
                     <div>
-                        <h4 className='font-semibold mb-4 text-gray-900 dark:text-gray-100'>{locale === "en" ? "Other Tools" : "Công Cụ Khác"}</h4>
+                        <h4 className='font-semibold mb-4 text-gray-900 dark:text-gray-100'>{locale === "en" ? "Design & Text" : "Thiết Kế & Văn Bản"}</h4>
                         <ul className='space-y-2'>
-                            {toolCategories.text.map((tool) => (
+                            {toolCategories.design.map((tool) => (
                                 <li key={tool.href}>
                                     <Link href={tool.href} className='text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors'>
                                         {tool.name}
                                     </Link>
                                 </li>
                             ))}
-                            {toolCategories.other.map((tool) => (
+                            {toolCategories.text.map((tool) => (
                                 <li key={tool.href}>
                                     <Link href={tool.href} className='text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors'>
                                         {tool.name}

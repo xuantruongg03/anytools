@@ -10,7 +10,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
 
-    const title = isVi ? "AnyTools - Công Cụ Online Miễn Phí Cho Lập Trình Viên 2025" : "AnyTools - Free Online Tools for Developers & Creators 2025";
+    const currentYear = new Date().getFullYear();
+    const title = isVi ? `AnyTools - Công Cụ Online Miễn Phí Cho Lập Trình Viên ${currentYear}` : `AnyTools - Free Online Tools for Developers & Creators ${currentYear}`;
 
     const description = isVi ? "Công cụ online miễn phí cho lập trình viên và designer. JSON formatter, Base64 encoder, Color picker, Hash generator và nhiều hơn nữa." : "Free online tools for developers and designers. JSON formatter, Base64 encoder, Color picker, Hash generator, and more.";
 

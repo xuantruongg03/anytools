@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { toolsConfig } from "@/config/tools";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getTranslation } from "@/lib/i18n";
 import { categoryTranslations } from "@/constants";
 
 interface ToolsSidebarProps {
@@ -15,6 +16,7 @@ interface ToolsSidebarProps {
 export default function ToolsSidebar({ isOpen, onClose }: ToolsSidebarProps) {
     const pathname = usePathname();
     const { locale } = useLanguage();
+    const t = getTranslation(locale);
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -43,13 +45,15 @@ export default function ToolsSidebar({ isOpen, onClose }: ToolsSidebarProps) {
     };
 
     const getToolLabel = (key: string) => {
+        const toolData = t.tools[key as keyof typeof t.tools] as { name?: string };
+        if (toolData?.name) return toolData.name;
         return key
             .split(/(?=[A-Z])/)
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(" ");
     };
 
-    // Filter tools based on search query
+    // Filter tools based on search query (matching both name and description)
     const filteredCategories = useMemo(() => {
         if (!searchQuery.trim()) return toolsConfig;
 
@@ -59,11 +63,13 @@ export default function ToolsSidebar({ isOpen, onClose }: ToolsSidebarProps) {
                 ...category,
                 tools: category.tools.filter((tool) => {
                     const label = getToolLabel(tool.key).toLowerCase();
-                    return label.includes(query);
+                    const toolData = t.tools[tool.key as keyof typeof t.tools] as { description?: string };
+                    const desc = toolData?.description?.toLowerCase() || "";
+                    return label.includes(query) || desc.includes(query);
                 }),
             }))
             .filter((category) => category.tools.length > 0);
-    }, [searchQuery, locale]);
+    }, [searchQuery, locale, t]);
 
     // Auto-expand categories when searching
     useEffect(() => {

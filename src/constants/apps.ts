@@ -71,6 +71,33 @@ export const apps: App[] = [
             },
         },
     },
+    {
+        id: "mika",
+        name: "Mika - Block Scam Calls & Spam Messages",
+        description: {
+            en: "Mika is an Android application that helps you block calls and SMS.",
+            vi: "Ứng dụng android giúp chặn cuộc gọi và tin nhắn hoàn toàn miễn phí.",
+        },
+        category: "utility",
+        iosUrl: "https://apkpure.com/group/com.simple.mika",
+        author: "xuantruongg03",
+        tags: ["block calls", "block sms", "block scam calls", "block spam messages"],
+        isFree: true,
+        seo: {
+            en: {
+                title: "Mika - Block Scam Calls & Spam Messages",
+                description: "Mika is an Android application that helps you block calls and SMS.",
+                features: ["Block spam calls", "Block spam messages", "Block calls from unknown numbers", "Block messages from unknown numbers", "Block calls from numbers not in contacts", "Block messages from numbers not in contacts"],
+                useCases: ["Block annoying calls", "Block spam messages", "Block calls from unknown numbers", "Block messages from unknown numbers", "Block calls from numbers not in contacts", "Block messages from numbers not in contacts"],
+            },
+            vi: {
+                title: "Mika - Chặn cuộc gọi lừa đảo & Tin nhắn rác",
+                description: "Bạn thường xuyên bị quấy rầy bởi các cuộc gọi đòi nợ, mạo danh ngân hàng, chứng khoán, hay các tin nhắn rác quảng cáo game, bất động sản? mika ra đời để giúp bạn lấy lại sự yên bình cho điện thoại với công nghệ nhận diện và chặn tự động thông minh.",
+                features: ["Chặn cuộc gọi rác", "Chặn tin nhắn rác", "Chặn cuộc gọi từ số lạ", "Chặn tin nhắn từ số lạ", "Chặn cuộc gọi từ số không có trong danh bạ", "Chặn tin nhắn từ số không có trong danh bạ"],
+                useCases: ["Chặn các cuộc gọi làm phiền", "Chặn các tin nhắn rác", "Chặn các cuộc gọi từ số lạ", "Chặn các tin nhắn từ số lạ", "Chặn các cuộc gọi từ số không có trong danh bạ", "Chặn các tin nhắn từ số không có trong danh bạ"],
+            },
+        },
+    },
 ];
 
 // Helper function to get apps by category

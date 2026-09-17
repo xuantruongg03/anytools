@@ -1,5 +1,7 @@
 import { FloatingButtons } from "@/components/FloatingButtons";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { CommandPalette } from "@/components/CommandPalette";
 import QueryProvider from "@/components/QueryProvider";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import type { Metadata } from "next";
@@ -82,8 +84,9 @@ export default function RootLayout({
                     <LanguageProvider>
                         <Header />
                         <main className='flex-1'>{children}</main>
-                        {/* <Footer /> */}
+                        <Footer />
                         <FloatingButtons />
+                        <CommandPalette />
                     </LanguageProvider>
                 </QueryProvider>
             </body>
