@@ -3,12 +3,30 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useDeferredValue } from "react";
 import { allTools, toolsConfig } from "@/config/tools";
 import { categoryTranslations } from "@/constants";
 import Button from "@/components/ui/Button";
 import { getCurrentYear } from "@/lib/utils/date";
 import SuggestToolBanner from "@/components/SuggestToolBanner";
+
+// Pre-computed static lookups to eliminate O(N*M) iteration during renders
+const TOOL_CATEGORY_MAP = new Map<string, string>(
+    toolsConfig.flatMap((cat) => cat.tools.map((t) => [t.key, cat.key]))
+);
+
+const NEW_TOOL_KEYS = new Set([
+    "scribdDownloader", "boxShadowGenerator", "cssUnitConverter", "wordCounter",
+    "cronGenerator", "jsonToTypes", "chmodCalculator", "randomWheel", "countdown",
+    "latexEditor", "teamGenerator", "examShuffler"
+]);
+
+const FEATURED_TOOL_KEYS = new Set([
+    "jsonFormatter", "cssUnitConverter", "wordCounter", "boxShadowGenerator",
+    "cronGenerator", "jsonToTypes", "base64", "colorPicker", "hashGenerator",
+    "chmodCalculator", "qrCodeGenerator", "passwordGenerator", "examShuffler",
+    "randomWheel", "latexEditor"
+]);
 
 interface HomeContentProps {
     locale: "en" | "vi";
@@ -28,6 +46,8 @@ export default function HomeContent({ locale }: HomeContentProps) {
 
     const t = getTranslation(locale);
     const [searchQuery, setSearchQuery] = useState("");
+    const deferredSearchQuery = useDeferredValue(searchQuery);
+
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"all" | "featured" | "favorites">("all");
     const [favorites, setFavorites] = useState<string[]>([]);
@@ -75,22 +95,6 @@ export default function HomeContent({ locale }: HomeContentProps) {
         });
     };
 
-    // Featured tool keys
-    const featuredToolKeys = [
-        "jsonFormatter",
-        "cssUnitConverter",
-        "wordCounter",
-        "boxShadowGenerator",
-        "cronGenerator",
-        "jsonToTypes",
-        "base64",
-        "colorPicker",
-        "hashGenerator",
-        "chmodCalculator",
-        "qrCodeGenerator",
-        "passwordGenerator",
-    ];
-
     // Build categories list directly from toolsConfig to prevent broken filters
     const categories = useMemo(() => {
         return toolsConfig.map((cat) => ({
@@ -101,36 +105,40 @@ export default function HomeContent({ locale }: HomeContentProps) {
         }));
     }, [locale]);
 
-    // Filter tools based on search, category, and view mode
+    // High-performance filter tools based on search, category, and view mode
     const filteredTools = useMemo(() => {
+        const query = deferredSearchQuery.toLowerCase().trim();
+
         return allTools.filter((tool) => {
             const toolData = t.tools[tool.key as keyof typeof t.tools] as {
                 name?: string;
                 description?: string;
             };
 
-            const query = searchQuery.toLowerCase().trim();
             const matchesSearch =
                 !query ||
                 toolData?.name?.toLowerCase().includes(query) ||
                 toolData?.description?.toLowerCase().includes(query) ||
                 tool.key.toLowerCase().includes(query);
 
-            // Find category
-            const toolCategory = toolsConfig.find((cat) => cat.tools.some((t) => t.key === tool.key));
-            const matchesCategory = !selectedCategory || toolCategory?.key === selectedCategory;
+            if (!matchesSearch) return false;
+
+            // O(1) category lookup
+            const catKey = TOOL_CATEGORY_MAP.get(tool.key);
+            const matchesCategory = !selectedCategory || catKey === selectedCategory;
+            if (!matchesCategory) return false;
 
             // View mode filter
             if (viewMode === "favorites") {
-                return matchesSearch && matchesCategory && favorites.includes(tool.key);
+                return favorites.includes(tool.key);
             }
-            if (viewMode === "featured" && !selectedCategory && !searchQuery) {
-                return featuredToolKeys.includes(tool.key);
+            if (viewMode === "featured" && !selectedCategory && !query) {
+                return FEATURED_TOOL_KEYS.has(tool.key);
             }
 
-            return matchesSearch && matchesCategory;
+            return true;
         });
-    }, [searchQuery, selectedCategory, viewMode, favorites, t]);
+    }, [deferredSearchQuery, selectedCategory, viewMode, favorites, t]);
 
     const openCommandPalette = () => {
         window.dispatchEvent(new CustomEvent("toggle-command-palette"));
@@ -205,7 +213,7 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                         href={`/${locale}${tool.href}`}
                                         className='inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/70 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition-colors shadow-2xs hover:border-blue-500/50'
                                     >
-                                        <span>{tool.icon}</span>
+                                        <span className='shrink-0 font-bold text-blue-600 dark:text-blue-400 font-mono'>{tool.icon}</span>
                                         <span className='font-medium truncate max-w-[140px]'>{toolData.name}</span>
                                     </Link>
                                 );
@@ -246,11 +254,11 @@ export default function HomeContent({ locale }: HomeContentProps) {
             </section>
 
             {/* Tools Catalog Main Section */}
-            <main id='tools' className='container mx-auto px-4 py-8 max-w-6xl'>
+            <main id='tools' className='w-full max-w-[1600px] mx-auto px-3.5 sm:px-6 lg:px-8 py-6 sm:py-8'>
                 {/* View Tabs & Header */}
-                <div className='flex items-center justify-between mb-8 pb-4 border-b border-gray-100 dark:border-gray-800 flex-wrap gap-4'>
+                <div className='flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex-wrap gap-4'>
                     <div className='flex items-center gap-2'>
-                        <h2 className='text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2'>
+                        <h2 className='text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2'>
                             {selectedCategory
                                 ? `${categoryTranslations[selectedCategory as keyof typeof categoryTranslations]?.[locale] || selectedCategory} (${filteredTools.length})`
                                 : searchQuery
@@ -270,10 +278,10 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                 setViewMode("all");
                                 setSelectedCategory(null);
                             }}
-                            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                                viewMode === "all" && !selectedCategory
-                                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-xs"
-                                    : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                                viewMode === "all" && selectedCategory === null
+                                    ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-2xs"
+                                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             }`}
                         >
                             {locale === "vi" ? "Tất cả" : "All"}
@@ -283,34 +291,62 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                 setViewMode("featured");
                                 setSelectedCategory(null);
                             }}
-                            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                                viewMode === "featured" && !selectedCategory
-                                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-xs"
-                                    : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                                viewMode === "featured"
+                                    ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-2xs"
+                                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             }`}
                         >
-                            ⚡ {locale === "vi" ? "Nổi bật" : "Featured"}
+                            <span>🔥</span>
+                            <span>{locale === "vi" ? "Nổi bật" : "Featured"}</span>
                         </button>
                         <button
                             onClick={() => {
                                 setViewMode("favorites");
                                 setSelectedCategory(null);
                             }}
-                            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
                                 viewMode === "favorites"
-                                    ? "bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-xs"
-                                    : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                                    ? "bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-2xs"
+                                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             }`}
                         >
-                            ⭐ {locale === "vi" ? "Yêu thích" : "Favorites"} ({favorites.length})
+                            <span>★</span>
+                            <span>
+                                {locale === "vi" ? "Yêu thích" : "Favorites"}
+                                {favorites.length > 0 && <span className='ml-1 text-[11px] opacity-75'>({favorites.length})</span>}
+                            </span>
                         </button>
                     </div>
+                </div>
 
-                    {(searchQuery || selectedCategory) && (
+                {/* Active Filter Indicator */}
+                <div className='flex items-center justify-between mb-6 flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400'>
+                    <div className='flex items-center gap-2'>
+                        {selectedCategory && (
+                            <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-semibold'>
+                                {categories.find((c) => c.key === selectedCategory)?.icon}{" "}
+                                {categoryTranslations[selectedCategory as keyof typeof categoryTranslations]?.[locale] || selectedCategory}
+                                <button onClick={() => setSelectedCategory(null)} className='ml-1 hover:text-blue-900 dark:hover:text-white cursor-pointer'>
+                                    ✕
+                                </button>
+                            </span>
+                        )}
+                        {searchQuery && (
+                            <span className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-semibold'>
+                                &quot;{searchQuery}&quot;
+                                <button onClick={() => setSearchQuery("")} className='ml-1 hover:text-amber-900 dark:hover:text-white cursor-pointer'>
+                                    ✕
+                                </button>
+                            </span>
+                        )}
+                    </div>
+
+                    {(selectedCategory || searchQuery || viewMode !== "all") && (
                         <Button
                             onClick={() => {
-                                setSearchQuery("");
                                 setSelectedCategory(null);
+                                setSearchQuery("");
                                 setViewMode("all");
                             }}
                             variant='secondary'
@@ -321,9 +357,9 @@ export default function HomeContent({ locale }: HomeContentProps) {
                     )}
                 </div>
 
-                {/* Tools Grid */}
+                {/* Tools Grid - 5 columns on large screens, gracefully responsive */}
                 {filteredTools.length > 0 ? (
-                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4'>
                         {filteredTools.map((tool) => {
                             const toolData = t.tools[tool.key as keyof typeof t.tools] as {
                                 name?: string;
@@ -333,31 +369,31 @@ export default function HomeContent({ locale }: HomeContentProps) {
                             if (!toolData) return null;
 
                             const isFav = favorites.includes(tool.key);
-                            const isNew = ["scribdDownloader", "boxShadowGenerator", "cssUnitConverter", "wordCounter", "cronGenerator", "jsonToTypes", "chmodCalculator"].includes(tool.key);
+                            const isNew = NEW_TOOL_KEYS.has(tool.key);
 
                             return (
                                 <Link
                                     key={tool.href}
                                     href={`/${locale}${tool.href}`}
                                     onClick={() => addRecent(tool.key)}
-                                    className='group relative block p-5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700/80 rounded-2xl hover:border-blue-500/60 dark:hover:border-blue-500/60 shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200'
+                                    className='group relative flex flex-col p-3.5 sm:p-4 bg-white dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-2xl hover:border-blue-500/60 dark:hover:border-blue-500/60 shadow-2xs hover:shadow-lg hover:-translate-y-0.5 transition-transform transition-shadow duration-150 will-change-transform'
                                 >
-                                    <div className='flex items-start gap-4'>
-                                        {/* Icon */}
-                                        <div className='text-2xl shrink-0 w-12 h-12 flex items-center justify-center bg-blue-50 dark:bg-blue-900/30 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 rounded-xl transition-colors'>
+                                    <div className='flex items-start gap-3.5 mb-2.5'>
+                                        {/* Tool Icon with high dark-mode contrast */}
+                                        <div className='text-xl sm:text-2xl shrink-0 w-11 h-11 flex items-center justify-center bg-blue-50 dark:bg-blue-900/40 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/60 rounded-xl transition-colors font-bold text-blue-600 dark:text-blue-400 font-mono'>
                                             {tool.icon}
                                         </div>
 
-                                        {/* Content */}
-                                        <div className='flex-1 min-w-0'>
-                                            <div className='flex items-center justify-between gap-1 mb-1'>
-                                                <span className='text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate'>
+                                        {/* Category & Badges */}
+                                        <div className='flex-1 min-w-0 pt-0.5'>
+                                            <div className='flex items-center justify-between gap-1'>
+                                                <span className='text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate'>
                                                     {toolData.category}
                                                 </span>
 
-                                                <div className='flex items-center gap-1.5'>
+                                                <div className='flex items-center gap-1 shrink-0'>
                                                     {isNew && (
-                                                        <span className='px-1.5 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-md uppercase'>
+                                                        <span className='px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-md uppercase'>
                                                             {locale === "vi" ? "Mới" : "New"}
                                                         </span>
                                                     )}
@@ -365,7 +401,7 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                                     {/* Favorite Star Button */}
                                                     <button
                                                         onClick={(e) => toggleFavorite(tool.key, e)}
-                                                        className={`p-1 rounded-md transition-colors cursor-pointer ${
+                                                        className={`p-0.5 rounded-md transition-colors cursor-pointer ${
                                                             isFav
                                                                 ? "text-amber-500 hover:text-amber-600"
                                                                 : "text-gray-300 dark:text-gray-600 hover:text-amber-400"
@@ -385,15 +421,16 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                                 </div>
                                             </div>
 
-                                            <h3 className='text-base font-bold text-gray-900 dark:text-white mb-1.5 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                                            <h3 className='text-sm sm:text-[15px] font-bold text-gray-900 dark:text-white mt-1 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
                                                 {toolData.name}
                                             </h3>
-
-                                            <p className='text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed'>
-                                                {toolData.description}
-                                            </p>
                                         </div>
                                     </div>
+
+                                    {/* Tool Description */}
+                                    <p className='text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed mt-auto'>
+                                        {toolData.description}
+                                    </p>
                                 </Link>
                             );
                         })}

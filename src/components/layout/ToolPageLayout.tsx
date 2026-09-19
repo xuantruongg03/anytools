@@ -223,7 +223,7 @@ export default function ToolPageLayout({ title, description, children }: ToolPag
                     <header className='text-center mb-8 pt-2'>
                         {/* Tool Icon & Badge */}
                         {currentTool && (
-                            <div className='inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600/10 via-purple-600/10 to-pink-600/10 dark:from-blue-500/20 dark:via-purple-500/20 dark:to-pink-500/20 border border-blue-500/20 dark:border-blue-400/30 text-3xl mb-4 shadow-sm'>
+                            <div className='inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600/10 via-purple-600/10 to-pink-600/10 dark:from-blue-500/20 dark:via-purple-500/20 dark:to-pink-500/20 border border-blue-500/20 dark:border-blue-400/30 text-3xl mb-4 shadow-sm font-bold text-blue-600 dark:text-blue-400 font-mono'>
                                 <span>{currentTool.icon}</span>
                             </div>
                         )}

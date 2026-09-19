@@ -30,6 +30,8 @@ import { ipLookupTranslations } from "./ip-lookup";
 import { fiveNewToolsTranslations } from "./five-new-tools";
 import { autoBingSearch } from "./auto-bing-search";
 import { sixNewToolsTranslations } from "./six-new-tools";
+import { teamGeneratorTranslations } from "./team-generator";
+import { examShufflerTranslations } from "./exam-shuffler";
 
 export const toolsTranslations = {
     en: {
@@ -65,6 +67,8 @@ export const toolsTranslations = {
         mockApiGenerator: mockApiGeneratorTranslations.en.mockApiGenerator,
         placeholderImage: placeholderImageTranslations.en.placeholderImage,
         ipLookup: ipLookupTranslations.en.ipLookup,
+        teamGenerator: teamGeneratorTranslations.en,
+        examShuffler: examShufflerTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -99,5 +103,7 @@ export const toolsTranslations = {
         mockApiGenerator: mockApiGeneratorTranslations.vi.mockApiGenerator,
         placeholderImage: placeholderImageTranslations.vi.placeholderImage,
         ipLookup: ipLookupTranslations.vi.ipLookup,
+        teamGenerator: teamGeneratorTranslations.vi,
+        examShuffler: examShufflerTranslations.vi,
     },
 };

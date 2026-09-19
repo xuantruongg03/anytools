@@ -192,7 +192,7 @@ export default function ToolsSidebar({ isOpen, onClose }: ToolsSidebarProps) {
                                                         ${isActive ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300" : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"}
                                                     `}
                                                 >
-                                                    <span className='text-base shrink-0'>{tool.icon}</span>
+                                                    <span className='text-base shrink-0 font-bold text-blue-600 dark:text-blue-400 font-mono'>{tool.icon}</span>
                                                     <div className='flex-1 min-w-0'>
                                                         <div className={`text-sm font-medium ${isActive ? "text-blue-700 dark:text-blue-300" : "text-gray-900 dark:text-gray-100"}`}>{getToolLabel(tool.key)}</div>
                                                     </div>

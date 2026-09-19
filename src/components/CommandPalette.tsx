@@ -172,7 +172,7 @@ export function CommandPalette({ isOpen: controlledOpen, onClose }: CommandPalet
                                     }`}
                                 >
                                     <div className='flex items-center gap-3 min-w-0'>
-                                        <span className='text-2xl shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5'>
+                                        <span className={`text-2xl shrink-0 w-8 h-8 flex items-center justify-center rounded-lg font-bold font-mono ${isSelected ? "bg-white/20 text-white" : "bg-black/5 dark:bg-white/10 text-blue-600 dark:text-blue-400"}`}>
                                             {tool.icon}
                                         </span>
                                         <div className='min-w-0'>

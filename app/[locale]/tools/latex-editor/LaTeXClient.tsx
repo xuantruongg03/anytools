@@ -6,6 +6,7 @@ import { getTranslation } from "@/lib/i18n/translations";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import "./latex-styles.css";
+import { toast } from "@/components/ui/Toast";
 
 // Symbol categories
 const LATEX_SYMBOLS = {
@@ -183,6 +184,16 @@ const LATEX_TEMPLATES = {
 };
 
 const EXAMPLE_EQUATIONS = {
+    exam: [
+        { name: "Công thức nghiệm bậc 2 (Quadratic)", latex: "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", desc: "Phương trình ax² + bx + c = 0" },
+        { name: "Tích phân từng phần (By Parts)", latex: "\\int u \\, dv = uv - \\int v \\, du", desc: "Tích phân nâng cao" },
+        { name: "Định thức ma trận cấp 3 (3x3 Det)", latex: "\\det(A) = \\begin{vmatrix} a_1 & b_1 & c_1 \\\\ a_2 & b_2 & c_2 \\\\ a_3 & b_3 & c_3 \\end{vmatrix}", desc: "Đại số tuyến tính" },
+        { name: "Định lý Bayes (Bayes' Theorem)", latex: "P(A|B) = \\frac{P(B|A) \\cdot P(A)}{P(B)}", desc: "Xác suất thống kê" },
+        { name: "Phân phối Gauss (Normal Dist)", latex: "f(x) = \\frac{1}{\\sigma \\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}", desc: "Hàm mật độ Gauss" },
+        { name: "Định nghĩa đạo hàm (Derivative)", latex: "f'(x_0) = \\lim_{\\Delta x \\to 0} \\frac{f(x_0 + \\Delta x) - f(x_0)}{\\Delta x}", desc: "Giới hạn đạo hàm" },
+        { name: "Hệ 3 phương trình 3 ẩn (3 Equations)", latex: "\\begin{cases} a_1 x + b_1 y + c_1 z = d_1 \\\\ a_2 x + b_2 y + c_2 z = d_2 \\\\ a_3 x + b_3 y + c_3 z = d_3 \\end{cases}", desc: "Hệ phương trình bậc nhất" },
+        { name: "Tổng cấp số nhân lùi vô hạn", latex: "S = \\sum_{n=1}^{\\infty} u_1 q^{n-1} = \\frac{u_1}{1 - q} \\quad (|q| < 1)", desc: "Dãy số và giới hạn" },
+    ],
     basic: [
         { name: "Phân số / Fraction", latex: "\\frac{a}{b}", desc: "\\frac{tử}{mẫu}" },
         { name: "Lũy thừa / Power", latex: "x^{2}", desc: "x^{số mũ}" },
@@ -327,6 +338,7 @@ const LATEX_GUIDE = {
 
 const EXAMPLE_CATEGORIES = {
     en: [
+        { key: "exam", label: "🎓 School & Exam", desc: "High school & university exam formulas" },
         { key: "basic", label: "📝 Basic", desc: "Fractions, powers, roots" },
         { key: "algebra", label: "🔢 Algebra", desc: "Equations, formulas" },
         { key: "calculus", label: "📈 Calculus", desc: "Limits, derivatives, integrals" },
@@ -340,6 +352,7 @@ const EXAMPLE_CATEGORIES = {
         { key: "famous", label: "⭐ Famous", desc: "Famous equations" },
     ],
     vi: [
+        { key: "exam", label: "🎓 Đề thi & Phổ thông", desc: "Công thức thi cử & đại học phổ biến" },
         { key: "basic", label: "📝 Cơ bản", desc: "Phân số, lũy thừa, căn" },
         { key: "algebra", label: "🔢 Đại số", desc: "Phương trình, công thức" },
         { key: "calculus", label: "📈 Giải tích", desc: "Giới hạn, đạo hàm, tích phân" },
@@ -356,11 +369,13 @@ const EXAMPLE_CATEGORIES = {
 
 export default function LaTeXClient() {
     const { locale } = useLanguage();
+    const isVi = locale === "vi";
     const t = getTranslation(locale);
     const tool_t = t.tools.latexEditor;
 
     // Textarea ref for cursor position
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const previewContainerRef = useRef<HTMLDivElement>(null);
 
     const [latex, setLatex] = useState("\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}");
     const [renderedHtml, setRenderedHtml] = useState("");
@@ -480,6 +495,169 @@ export default function LaTeXClient() {
         }
     };
 
+    // Extract KaTeX stylesheet styles for standalone SVG / Canvas rendering
+    const getKaTeXStyles = useCallback(() => {
+        let css = "";
+        try {
+            for (let i = 0; i < document.styleSheets.length; i++) {
+                const sheet = document.styleSheets[i];
+                try {
+                    const rules = sheet.cssRules || sheet.rules;
+                    for (let j = 0; j < rules.length; j++) {
+                        const rule = rules[j];
+                        if (rule.cssText && (rule.cssText.includes("katex") || rule.cssText.includes("KaTeX"))) {
+                            css += rule.cssText + "\n";
+                        }
+                    }
+                } catch {
+                    // Ignore cross-origin sheet errors
+                }
+            }
+        } catch {
+            // ignore
+        }
+        return css;
+    }, []);
+
+    // Generate standalone SVG string containing the rendered KaTeX
+    const generateSvgString = useCallback(() => {
+        if (!previewContainerRef.current) return null;
+        const rect = previewContainerRef.current.getBoundingClientRect();
+        const width = Math.max(160, Math.ceil(rect.width) + 36);
+        const height = Math.max(70, Math.ceil(rect.height) + 28);
+        const katexStyles = getKaTeXStyles();
+        const content = previewContainerRef.current.innerHTML;
+
+        return `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+            <defs>
+                <style type="text/css">
+                    ${katexStyles}
+                    .latex-container {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 100%;
+                        background-color: #ffffff;
+                        color: #111827;
+                        font-family: KaTeX_Main, "Times New Roman", serif;
+                        padding: 14px;
+                        box-sizing: border-box;
+                    }
+                </style>
+            </defs>
+            <rect width="100%" height="100%" fill="#ffffff" rx="10" />
+            <foreignObject width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml" class="latex-container">
+                    ${content}
+                </div>
+            </foreignObject>
+        </svg>`.trim();
+    }, [getKaTeXStyles]);
+
+    // Render SVG into HTML Canvas
+    const renderToCanvas = useCallback(
+        async (scale = 2): Promise<HTMLCanvasElement | null> => {
+            const svgStr = generateSvgString();
+            if (!svgStr || !previewContainerRef.current) return null;
+            const rect = previewContainerRef.current.getBoundingClientRect();
+            const width = Math.max(160, Math.ceil(rect.width) + 36);
+            const height = Math.max(70, Math.ceil(rect.height) + 28);
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return null;
+
+            const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+
+            return new Promise((resolve) => {
+                img.onload = () => {
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(url);
+                    resolve(canvas);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    resolve(null);
+                };
+                img.src = url;
+            });
+        },
+        [generateSvgString]
+    );
+
+    // 1-Click Copy PNG Image to Clipboard
+    const copyImageToClipboard = useCallback(async () => {
+        try {
+            const canvas = await renderToCanvas(2);
+            if (!canvas) throw new Error("Canvas render failed");
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ "image/png": blob }),
+                    ]);
+                    setCopied("image");
+                    setTimeout(() => setCopied(null), 2000);
+                    toast.success(isVi ? "Đã chép ảnh PNG vào bộ nhớ tạm!" : "Copied formula PNG to clipboard!");
+                } catch {
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `latex-formula-${Date.now()}.png`;
+                    a.click();
+                    toast.info(isVi ? "Đã tải ảnh PNG về máy!" : "Downloaded PNG image!");
+                }
+            }, "image/png");
+        } catch {
+            toast.error(isVi ? "Không thể xuất ảnh" : "Failed to export image");
+        }
+    }, [renderToCanvas, isVi]);
+
+    // Download High-Res PNG
+    const downloadPng = useCallback(async () => {
+        try {
+            const canvas = await renderToCanvas(3);
+            if (!canvas) return;
+            canvas.toBlob((blob) => {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `latex-formula-${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+                toast.success(isVi ? "Đã tải ảnh PNG chất lượng cao!" : "High-res PNG downloaded!");
+            }, "image/png");
+        } catch {
+            toast.error(isVi ? "Lỗi tải ảnh PNG" : "PNG download failed");
+        }
+    }, [renderToCanvas, isVi]);
+
+    // Download Vector SVG
+    const downloadSvg = useCallback(() => {
+        try {
+            const svgStr = generateSvgString();
+            if (!svgStr) return;
+            const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `latex-formula-${Date.now()}.svg`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success(isVi ? "Đã tải vector SVG!" : "SVG vector downloaded!");
+        } catch {
+            toast.error(isVi ? "Lỗi tải SVG" : "SVG download failed");
+        }
+    }, [generateSvgString, isVi]);
+
     // Add to history
     const addToHistory = useCallback(() => {
         if (latex.trim() && !error) {
@@ -561,14 +739,24 @@ export default function LaTeXClient() {
                             <option value='large'>{tool_t.large}</option>
                         </select>
                     </div>
-                    <div className='flex gap-2'>
-                        <button onClick={() => copyToClipboard(latex, "latex")} disabled={!latex.trim() || !!error} className='px-3 py-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed'>
+                    <div className='flex flex-wrap items-center gap-2'>
+                        <button onClick={() => copyToClipboard(latex, "latex")} disabled={!latex.trim() || !!error} className='px-3 py-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'>
                             {copied === "latex" ? `✅ ${tool_t.copied}` : `📋 ${tool_t.copy}`}
                         </button>
-                        <button onClick={copyMathML} disabled={!latex.trim() || !!error} className='px-3 py-1.5 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed'>
+                        <button onClick={copyMathML} disabled={!latex.trim() || !!error} className='px-3 py-1.5 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'>
                             {copied === "mathml" ? `✅ ${tool_t.copied}` : `📄 ${tool_t.copyMathML}`}
                         </button>
-                        <button onClick={() => setLatex("")} className='px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs rounded-lg transition-colors font-medium'>
+                        <button onClick={copyImageToClipboard} disabled={!latex.trim() || !!error} className='px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1' title={tool_t.copyImage}>
+                            <span>📸</span>
+                            <span>{copied === "image" ? `✅ ${tool_t.copied}` : tool_t.copyImage}</span>
+                        </button>
+                        <button onClick={downloadPng} disabled={!latex.trim() || !!error} className='px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer' title={tool_t.downloadPng}>
+                            💾 PNG
+                        </button>
+                        <button onClick={downloadSvg} disabled={!latex.trim() || !!error} className='px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer' title={tool_t.downloadSvg}>
+                            ⚡ SVG
+                        </button>
+                        <button onClick={() => setLatex("")} className='px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs rounded-lg transition-colors font-medium cursor-pointer'>
                             🗑️ {tool_t.clear}
                         </button>
                     </div>
@@ -611,7 +799,7 @@ export default function LaTeXClient() {
                                     <span className='font-semibold'>Error:</span> {error}
                                 </div>
                             ) : renderedHtml ? (
-                                <div dangerouslySetInnerHTML={{ __html: renderedHtml }} className='overflow-x-auto max-w-full katex-display-wrapper' />
+                                <div ref={previewContainerRef} dangerouslySetInnerHTML={{ __html: renderedHtml }} className='overflow-x-auto max-w-full katex-display-wrapper text-gray-900 dark:text-gray-100' />
                             ) : (
                                 <span className='text-gray-400 dark:text-gray-500 text-sm'>{tool_t.previewHint}</span>
                             )}

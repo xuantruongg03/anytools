@@ -32,7 +32,7 @@ export default function RelatedTools({ tools, currentPath }: RelatedToolsProps) 
                 {filteredTools.map((tool) => (
                     <Link key={tool.href} href={`/${locale}${tool.href}`} className='group block p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all hover:shadow-md border border-transparent hover:border-blue-300 dark:hover:border-blue-700'>
                         <div className='flex items-start gap-4'>
-                            <div className='shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform'>{tool.icon}</div>
+                            <div className='shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform font-bold text-blue-600 dark:text-blue-400 font-mono'>{tool.icon}</div>
                             <div className='flex-1 min-w-0'>
                                 <h3 className='font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>{locale === "vi" ? tool.nameVi : tool.nameEn}</h3>
                                 <p className='text-sm text-gray-600 dark:text-gray-400 line-clamp-2'>{locale === "vi" ? tool.descriptionVi : tool.descriptionEn}</p>
