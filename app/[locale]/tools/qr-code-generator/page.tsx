@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { use } from "react";
 import { ToolPageLayout } from "@/components/layout";
@@ -13,8 +14,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
 
     const titles = {
-        en: "QR Code Generator - Free Custom QR Code with Logo 2026",
-        vi: "Tạo Mã QR Online - Công Cụ Tạo QR Code Có Logo 2026",
+        en: `QR Code Generator - Free Custom QR Code with Logo ${getCurrentYear()}`,
+        vi: `Tạo Mã QR Online - Công Cụ Tạo QR Code Có Logo ${getCurrentYear()}`,
     };
 
     const descriptions = {

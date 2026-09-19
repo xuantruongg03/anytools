@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tải StuDocu PDF Miễn Phí - Công Cụ Tải Nhanh 2026" : "StuDocu Downloader - Free PDF Download Tool 2026";
+    const title = isVi ? `Tải StuDocu PDF Miễn Phí - Công Cụ Tải Nhanh ${getCurrentYear()}` : `StuDocu Downloader - Free PDF Download Tool ${getCurrentYear()}`;
     const description = isVi ? "Tải tài liệu StuDocu thành PDF chất lượng cao ngay lập tức. Miễn phí, nhanh, không cần đăng ký." : "Download StuDocu documents as high-quality PDF instantly. Free, fast, no registration required.";
 
     return {

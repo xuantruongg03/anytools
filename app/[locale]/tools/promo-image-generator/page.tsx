@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tạo Ảnh Promo - Thiết Kế Banner Online Miễn Phí 2026" : "Promo Image Generator - Free Online Banner Design 2026";
+    const title = isVi ? `Tạo Ảnh Promo - Thiết Kế Banner Online Miễn Phí ${getCurrentYear()}` : `Promo Image Generator - Free Online Banner Design ${getCurrentYear()}`;
     const description = isVi ? "Tạo ảnh quảng cáo chuyên nghiệp với kích thước tùy chỉnh. Ghép ảnh vào khung gradient đẹp, xuất PNG/JPEG. Miễn phí." : "Create professional promo images with custom dimensions. Combine images with gradient backgrounds, export PNG/JPEG. Free.";
 
     return {

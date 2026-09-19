@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
+import { getCurrentYear } from "@/lib/utils/date";
 
 export function Footer() {
     const { locale } = useLanguage();
@@ -164,7 +165,7 @@ export function Footer() {
                 {/* Copyright */}
                 <div className='border-t border-gray-200 dark:border-gray-800 pt-8 text-center'>
                     <p className='text-sm text-gray-600 dark:text-gray-400 mb-2'>
-                        © {new Date().getFullYear()} AnyTools. {t.home.footer}
+                        © {getCurrentYear()} AnyTools. {t.home.footer}
                     </p>
                     <p className='text-xs text-gray-500 dark:text-gray-500'>{locale === "en" ? "Made with ❤️ for developers and creators worldwide" : "Được tạo ra với ❤️ cho các lập trình viên và người sáng tạo trên toàn thế giới"}</p>
                 </div>

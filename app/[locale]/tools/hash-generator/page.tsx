@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import HashGeneratorContent from "./HashGeneratorContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tạo Hash & Mã Hóa - MD5, SHA-256, SHA-512, AES 2026" : "Hash Generator - MD5, SHA-256, SHA-512, AES Online 2026";
+    const title = isVi ? `Tạo Hash & Mã Hóa - MD5, SHA-256, SHA-512, AES ${getCurrentYear()}` : `Hash Generator - MD5, SHA-256, SHA-512, AES Online ${getCurrentYear()}`;
     const description = isVi ? "Công cụ tạo hash và mã hóa văn bản miễn phí. Tạo hash SHA-1, SHA-256, SHA-512 hoặc mã hóa AES-256. An toàn và nhanh." : "Free online hash generator and encryptor. Generate SHA-1, SHA-256, SHA-512 hashes or encrypt with AES-256. Secure and fast.";
 
     return {

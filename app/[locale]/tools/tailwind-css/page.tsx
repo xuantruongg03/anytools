@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import TailwindCssContent from "./TailwindCssContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi Tailwind CSS Sang CSS - Công Cụ Miễn Phí 2026" : "Tailwind CSS to CSS Converter - Free Online Tool 2026";
+    const title = isVi ? `Chuyển Đổi Tailwind CSS Sang CSS - Công Cụ Miễn Phí ${getCurrentYear()}` : `Tailwind CSS to CSS Converter - Free Online Tool ${getCurrentYear()}`;
     const description = isVi ? "Chuyển đổi Tailwind CSS sang CSS thuần và ngược lại. Hoàn hảo để học Tailwind, debug và migrate dự án." : "Free online Tailwind CSS to vanilla CSS converter. Convert Tailwind utility classes to CSS styles and vice versa.";
 
     return {

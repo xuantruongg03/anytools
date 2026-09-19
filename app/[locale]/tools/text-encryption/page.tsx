@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import TextEncryptionContent from "./TextEncryptionContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Mã Hóa & Giải Mã Văn Bản - AES Encryption Tool Miễn Phí 2026" : "Text Encryption & Decryption - Free AES Encryption Tool 2026";
+    const title = isVi ? `Mã Hóa & Giải Mã Văn Bản - AES Encryption Tool Miễn Phí ${getCurrentYear()}` : `Text Encryption & Decryption - Free AES Encryption Tool ${getCurrentYear()}`;
     const description = isVi ? "Công cụ mã hóa văn bản miễn phí với AES-256, ROT13, Caesar cipher. Bảo vệ dữ liệu an toàn, xử lý 100% trên trình duyệt." : "Free text encryption tool with AES-256, ROT13, Caesar cipher. Secure your data with strong encryption. 100% browser-based.";
 
     return {

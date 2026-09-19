@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import SlideShareDownloaderContent from "./SlideShareDownloaderContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tải SlideShare PDF Miễn Phí - Công Cụ Tải Nhanh 2026" : "SlideShare to PDF Downloader - Free & Fast 2026";
+    const title = isVi ? `Tải SlideShare PDF Miễn Phí - Công Cụ Tải Nhanh ${getCurrentYear()}` : `SlideShare to PDF Downloader - Free & Fast ${getCurrentYear()}`;
     const description = isVi ? "Tải bài thuyết trình SlideShare thành PDF chất lượng cao ngay lập tức. Miễn phí, nhanh, không cần đăng ký." : "Download SlideShare presentations as high-quality PDF instantly. Free, fast, no registration required.";
 
     return {

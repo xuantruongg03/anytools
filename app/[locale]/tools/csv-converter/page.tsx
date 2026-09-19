@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import CsvConverterContent from "./CsvConverterContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi CSV - Công Cụ Xem & Convert CSV/JSON/Excel Miễn Phí 2026" : "CSV Converter - Free CSV to JSON, Excel Viewer & Editor 2026";
+    const title = isVi ? `Chuyển Đổi CSV - Công Cụ Xem & Convert CSV/JSON/Excel Miễn Phí ${getCurrentYear()}` : `CSV Converter - Free CSV to JSON, Excel Viewer & Editor ${getCurrentYear()}`;
     const description = isVi ? "Công cụ xem, chỉnh sửa và chuyển đổi CSV miễn phí. Chuyển CSV sang JSON, chỉnh sửa bảng online. Nhanh, an toàn." : "Free CSV viewer and converter. Convert CSV to JSON, edit tables online. Download in multiple formats. Fast and secure.";
 
     return {

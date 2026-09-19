@@ -2,21 +2,45 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getTranslation } from "@/lib/i18n";
+import { openSuggestModal } from "@/components/SuggestModal";
 import Link from "next/link";
 import { useState } from "react";
 
 export function FloatingButtons() {
     const { locale } = useLanguage();
+    const isVi = locale === "vi";
     const t = getTranslation(locale);
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
-        <div className='fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3'>
+        <div className='fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3'>
             {/* Expanded Buttons */}
             {isExpanded && (
                 <div className='flex flex-col gap-3 animate-fadeIn'>
+                    {/* Suggest Tool / Dev Collab Button */}
+                    <button
+                        type='button'
+                        onClick={() => {
+                            setIsExpanded(false);
+                            openSuggestModal("suggest");
+                        }}
+                        className='flex items-center gap-2 px-4 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-105 cursor-pointer text-xs sm:text-sm font-semibold'
+                        title={isVi ? "Gợi ý công cụ mới hoặc đóng góp mã nguồn" : "Suggest a new tool or contribute code"}
+                    >
+                        <span>💡</span>
+                        <span className='whitespace-nowrap'>
+                            {isVi ? "Gợi Ý Tool / Đóng Góp" : "Suggest Tool / Dev Collab"}
+                        </span>
+                    </button>
+
                     {/* GitHub Contribute Button */}
-                    <a href={t.github.url} target='_blank' rel='noopener noreferrer' className='flex items-center gap-2 px-4 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-full shadow-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-all hover:scale-105' title={t.github.contribute}>
+                    <a
+                        href={t?.github?.url || "https://github.com/xuantruongg03/anytools"}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='flex items-center gap-2 px-4 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-full shadow-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-all hover:scale-105 text-xs sm:text-sm'
+                        title={t?.github?.contribute || (isVi ? "Đóng góp trên GitHub" : "Contribute on GitHub")}
+                    >
                         <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 24 24'>
                             <path
                                 fillRule='evenodd'
@@ -24,21 +48,39 @@ export function FloatingButtons() {
                                 clipRule='evenodd'
                             />
                         </svg>
-                        <span className='font-medium whitespace-nowrap'>{t.github.contribute}</span>
+                        <span className='font-medium whitespace-nowrap'>
+                            {t?.github?.contribute || (isVi ? "Đóng góp trên GitHub" : "Contribute on GitHub")}
+                        </span>
                     </a>
 
                     {/* Donate Button */}
-                    <Link href={t.donate.url} className='flex items-center gap-2 px-4 py-3 bg-linear-to-r from-pink-500 to-rose-500 text-white rounded-full shadow-lg hover:from-pink-600 hover:to-rose-600 transition-all hover:scale-105' title={t.donate.title}>
+                    <Link
+                        href={t?.donate?.url || `/${locale}/donate`}
+                        className='flex items-center gap-2 px-4 py-3 bg-linear-to-r from-pink-500 to-rose-500 text-white rounded-full shadow-lg hover:from-pink-600 hover:to-rose-600 transition-all hover:scale-105 text-xs sm:text-sm'
+                        title={t?.donate?.title || (isVi ? "Ủng hộ dự án" : "Donate to project")}
+                    >
                         <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' />
                         </svg>
-                        <span className='font-medium whitespace-nowrap'>{t.donate.title}</span>
+                        <span className='font-medium whitespace-nowrap'>{t?.donate?.title || "Donate"}</span>
                     </Link>
                 </div>
             )}
 
             {/* Toggle Button */}
-            <button onClick={() => setIsExpanded(!isExpanded)} className='flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110' aria-label='Toggle actions'>
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className='flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer'
+                aria-label={
+                    isExpanded
+                        ? isVi
+                            ? "Đóng menu thao tác nhanh"
+                            : "Close quick action menu"
+                        : isVi
+                        ? "Mở menu thao tác nhanh"
+                        : "Open quick action menu"
+                }
+            >
                 {isExpanded ? (
                     <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />

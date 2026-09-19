@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RandomWheelContent from "./RandomWheelContent";
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const toolData = t.tools.randomWheel;
 
     const isVi = locale === "vi";
-    const title = isVi ? "Vòng Quay May Mắn - Quay Số Ngẫu Nhiên Online 2026" : "Random Wheel Spinner - Free Lucky Wheel Online 2026";
+    const title = isVi ? `Vòng Quay May Mắn - Quay Số Ngẫu Nhiên Online ${getCurrentYear()}` : `Random Wheel Spinner - Free Lucky Wheel Online ${getCurrentYear()}`;
     const description = isVi ? "Vòng quay may mắn miễn phí - Quay vòng chọn ngẫu nhiên, ra quyết định, chọn người thắng. Tùy chỉnh vô hạn, kết quả tức thì. 100% miễn phí!" : "Free random wheel spinner - Spin to pick random choices, make decisions, choose winners. Customize options, get instant results. 100% free!";
 
     return {

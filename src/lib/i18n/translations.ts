@@ -74,6 +74,16 @@ export const translations = {
                 description: "Format and beautify code in JavaScript, CSS, HTML, SQL, Python, and more",
                 category: "Developer",
             },
+            curlConverter: {
+                name: "cURL to Code",
+                description: "Convert cURL commands to JavaScript Fetch, Axios, Python Requests, Go, and PHP",
+                category: "Developer",
+            },
+            sqlFormatter: {
+                name: "SQL Formatter",
+                description: "Format, beautify, indent and minify SQL queries for PostgreSQL, MySQL, SQLite, BigQuery",
+                category: "Developer",
+            },
             imageCompressor: {
                 name: "Image Compressor",
                 description: "Compress PNG, JPG, WebP images without losing quality",
@@ -1016,6 +1026,16 @@ export const translations = {
             codeFormatter: {
                 name: "Format Code",
                 description: "Format và beautify code JavaScript, CSS, HTML, SQL, Python và nhiều hơn nữa",
+                category: "Lập Trình",
+            },
+            curlConverter: {
+                name: "Chuyển cURL Sang Code",
+                description: "Chuyển lệnh cURL sang JavaScript Fetch, Axios, Python Requests, Go, PHP",
+                category: "Lập Trình",
+            },
+            sqlFormatter: {
+                name: "Format Câu Lệnh SQL",
+                description: "Format, làm đẹp, thụt lề và nén câu lệnh SQL cho PostgreSQL, MySQL, SQLite, BigQuery",
                 category: "Lập Trình",
             },
             imageCompressor: {

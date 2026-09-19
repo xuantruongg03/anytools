@@ -90,7 +90,7 @@ export const extensions: Extension[] = [
         },
         category: "utility",
         githubUrl: "https://github.com/xuantruongg03/studocu-downloader",
-        edgeUrl: "",
+        edgeUrl: "https://microsoftedge.microsoft.com/addons/detail/smartdoc-document-reade/ebgmdonkmcfmfpnafihgppnnbeljgegd",
         privacyPolicyUrl: "/privacy/studocu-downloader",
         author: "xuantruongg03",
         tags: ["studocu", "downloader"],

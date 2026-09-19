@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import ImageCompressorContent from "./ImageCompressorContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Nén Ảnh Online - Giảm Dung Lượng Ảnh Miễn Phí 2026" : "Image Compressor - Compress Images Online Free 2026";
+    const title = isVi ? `Nén Ảnh Online - Giảm Dung Lượng Ảnh Miễn Phí ${getCurrentYear()}` : `Image Compressor - Compress Images Online Free ${getCurrentYear()}`;
     const description = isVi ? "Nén ảnh PNG, JPG, WebP online miễn phí. Giảm dung lượng ảnh mà không mất chất lượng. Hỗ trợ dán ảnh từ clipboard. Nhanh, bảo mật." : "Compress PNG, JPG, WebP images online for free. Reduce image file size without losing quality. Supports clipboard paste. Fast, secure.";
 
     return {

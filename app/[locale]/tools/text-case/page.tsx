@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import TextCaseContent from "./TextCaseContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi Kiểu Chữ - Đổi Chữ Hoa Thường Miễn Phí 2026" : "Text Case Converter - Uppercase, Lowercase, Title Case 2026";
+    const title = isVi ? `Chuyển Đổi Kiểu Chữ - Đổi Chữ Hoa Thường Miễn Phí ${getCurrentYear()}` : `Text Case Converter - Uppercase, Lowercase, Title Case ${getCurrentYear()}`;
     const description = isVi ? "Chuyển đổi văn bản sang CHỮ HOA, chữ thường, Kiểu Tiêu Đề, camelCase, snake_case và kebab-case ngay lập tức." : "Free online text case converter. Convert text to UPPERCASE, lowercase, Title Case, camelCase, snake_case, and kebab-case instantly.";
 
     return {

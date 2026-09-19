@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import SvgPreviewContent from "./SvgPreviewContent";
@@ -13,12 +14,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "SVG Preview - Online SVG Viewer & Editor 2026",
+            title: `SVG Preview - Online SVG Viewer & Editor ${getCurrentYear()}`,
             description: "Free online SVG preview tool. View, edit, format, minify and convert SVG files. Real-time preview with zoom and PNG export.",
             keywords: "svg preview, svg viewer, svg editor online, svg formatter, svg minifier, svg to png, svg validator, view svg online, svg code editor, svg optimizer, free svg tool, scalable vector graphics, svg converter",
         },
         vi: {
-            title: "Xem Trước SVG - Xem & Chỉnh Sửa Online 2026",
+            title: `Xem Trước SVG - Xem & Chỉnh Sửa Online ${getCurrentYear()}`,
             description: "Công cụ xem trước SVG trực tuyến miễn phí. Xem, chỉnh sửa, định dạng, nén và chuyển đổi file SVG. Xem trước real-time với zoom và xuất PNG.",
             keywords: "xem trước svg, svg viewer, chỉnh sửa svg online, định dạng svg, nén svg, svg sang png, xác thực svg, xem svg trực tuyến, trình soạn svg, tối ưu svg, công cụ svg miễn phí, đồ họa vector",
         },

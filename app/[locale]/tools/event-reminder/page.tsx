@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RelatedTools from "@/components/RelatedTools";
@@ -12,7 +13,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Nhắc Nhở Sự Kiện - Đặt Lịch Hẹn & Email Nhắc Nhở 2026" : "Event Reminder - Schedule Events & Email Reminders 2026";
+    const title = isVi ? `Nhắc Nhở Sự Kiện - Đặt Lịch Hẹn & Email Nhắc Nhở ${getCurrentYear()}` : `Event Reminder - Schedule Events & Email Reminders ${getCurrentYear()}`;
     const description = isVi ? "Đặt lịch nhắc nhở sự kiện với thông báo email. Tùy chọn số lần nhắc nhở, thông báo sắp đến giờ, và nhiều tính năng hữu ích khác." : "Schedule event reminders with email notifications. Customize reminder frequency, get alerts before events, and more.";
 
     return {

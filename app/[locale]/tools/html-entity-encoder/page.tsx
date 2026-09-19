@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import HtmlEntityContent from "./HtmlEntityContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Mã Hóa/Giải Mã HTML Entity - Ký Tự Đặc Biệt 2026" : "HTML Entity Encoder/Decoder - Convert Special Characters 2026";
+    const title = isVi ? `Mã Hóa/Giải Mã HTML Entity - Ký Tự Đặc Biệt ${getCurrentYear()}` : `HTML Entity Encoder/Decoder - Convert Special Characters ${getCurrentYear()}`;
     const description = isVi ? "Công cụ mã hóa và giải mã HTML entity miễn phí. Chuyển đổi ký tự đặc biệt thành HTML entities. Ngăn chặn XSS." : "Free HTML entity encoder and decoder. Convert special characters to HTML entities for security. Prevent XSS attacks.";
 
     return {

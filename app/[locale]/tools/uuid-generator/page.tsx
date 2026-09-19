@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import UuidGeneratorContent from "./UuidGeneratorContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Tạo UUID/GUID - Công Cụ Tạo UUID v1, v4 Miễn Phí 2026" : "UUID Generator Online - Free UUID v1, v4 Generator 2026";
+    const title = isVi ? `Tạo UUID/GUID - Công Cụ Tạo UUID v1, v4 Miễn Phí ${getCurrentYear()}` : `UUID Generator Online - Free UUID v1, v4 Generator ${getCurrentYear()}`;
     const description = isVi ? "Tạo UUID/GUID trực tuyến ngay lập tức. Tạo UUID v4 (ngẫu nhiên) và UUID v1 (timestamp-based) với hỗ trợ bulk. Miễn phí, nhanh và an toàn." : "Generate UUID/GUID online instantly. Create UUID v4 (random) and UUID v1 (timestamp-based) with bulk support. Free and secure.";
 
     return {

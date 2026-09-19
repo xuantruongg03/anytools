@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import PasswordGeneratorClient from "./PasswordGeneratorClient";
@@ -14,11 +15,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "Password Generator - Strong Passwords 2026",
+            title: `Password Generator - Strong Passwords ${getCurrentYear()}`,
             description: "Generate strong random passwords, create memorable passphrases. Free tool with entropy calculation and security analysis.",
         },
         vi: {
-            title: "Tạo Mật Khẩu Mạnh - An Toàn & Bảo Mật 2026",
+            title: `Tạo Mật Khẩu Mạnh - An Toàn & Bảo Mật ${getCurrentYear()}`,
             description: "Tạo mật khẩu ngẫu nhiên mạnh mẽ, cụm mật khẩu dễ nhớ. Công cụ miễn phí với tính toán entropy và phân tích bảo mật.",
         },
     };

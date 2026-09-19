@@ -14,3 +14,6 @@ export const CURL_DATA_RAW_PATTERN = /(?:--data(?:-raw)?)\s+'([\s\S]*?)'(?:\s|$)
 
 // SlideShare URL validation
 export const SLIDESHARE_URL_PATTERN = /^https?:\/\/(www\.)?(slideshare\.net|linkedin\.com\/posts)\/.+/i;
+
+// Scribd URL validation
+export const SCRIBD_URL_PATTERN = /^https?:\/\/(www\.)?scribd\.com\/(document|doc|presentation)\/.+/i;

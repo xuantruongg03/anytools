@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { regexTesterTranslations } from "@/lib/i18n/tools/regex-tester";
 import Button from "@/components/ui/Button";
+import { toast } from "@/components/ui/Toast";
 
 interface CommonPattern {
     name: string;
@@ -13,120 +14,348 @@ interface CommonPattern {
     category: string;
 }
 
-interface RegexFlavor {
-    language: string;
-    description: string;
-    differences: string[];
-}
-
-interface MatchResult {
-    line: number;
+interface MatchDetail {
+    matchIndex: number;
     text: string;
-    matched: boolean;
+    start: number;
+    end: number;
+    groups: { index: number; text: string }[];
 }
 
-const commonPatterns: CommonPattern[] = [
-    { name: "Email Address", pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", example: "user@example.com", description: "Standard email validation", category: "Validation" },
-    { name: "URL/Website", pattern: "https?://([\\w\\-]+\\.)+[\\w\\-]+(/[\\w\\-\\./?%&=]*)?", example: "https://example.com/path", description: "Match HTTP/HTTPS URLs", category: "Web" },
-    { name: "Phone (US)", pattern: "^\\+?1?\\s*\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$", example: "(123) 456-7890", description: "US phone number format", category: "Validation" },
-    { name: "Phone (International)", pattern: "^\\+?[1-9]\\d{1,14}$", example: "+1234567890", description: "E.164 international format", category: "Validation" },
-    { name: "IPv4 Address", pattern: "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", example: "192.168.1.1", description: "Valid IPv4 address", category: "Network" },
-    { name: "IPv6 Address", pattern: "^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$", example: "2001:0db8:85a3:0000:0000:8a2e:0370:7334", description: "Full IPv6 address", category: "Network" },
-    { name: "Date (YYYY-MM-DD)", pattern: "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$", example: "2025-11-15", description: "ISO date format", category: "Date/Time" },
-    { name: "Date (DD/MM/YYYY)", pattern: "^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\\d{4}$", example: "15/11/2025", description: "European date format", category: "Date/Time" },
-    { name: "Date (MM/DD/YYYY)", pattern: "^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\\d{4}$", example: "11/15/2025", description: "US date format", category: "Date/Time" },
-    { name: "Time (24-hour)", pattern: "^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$", example: "14:30:00", description: "24-hour time format", category: "Date/Time" },
-    { name: "Time (12-hour)", pattern: "^(0?[1-9]|1[0-2]):[0-5][0-9]\\s?(AM|PM|am|pm)$", example: "2:30 PM", description: "12-hour time with AM/PM", category: "Date/Time" },
-    { name: "Hex Color", pattern: "^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$", example: "#FF5733 or #F57", description: "CSS hex color code", category: "Web" },
-    { name: "RGB Color", pattern: "^rgb\\(\\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\s*,\\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\s*,\\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\s*\\)$", example: "rgb(255, 87, 51)", description: "CSS RGB color", category: "Web" },
-    { name: "Username", pattern: "^[a-zA-Z0-9_-]{3,16}$", example: "user_name-123", description: "Alphanumeric username 3-16 chars", category: "Validation" },
-    { name: "Strong Password", pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", example: "Pass123!word", description: "Min 8 chars, uppercase, lowercase, digit, special", category: "Security" },
-    { name: "Credit Card (Visa)", pattern: "^4[0-9]{12}(?:[0-9]{3})?$", example: "4111111111111111", description: "Visa card number", category: "Finance" },
-    { name: "Credit Card (Mastercard)", pattern: "^5[1-5][0-9]{14}$", example: "5500000000000004", description: "Mastercard number", category: "Finance" },
-    { name: "SSN (US)", pattern: "^\\d{3}-\\d{2}-\\d{4}$", example: "123-45-6789", description: "US Social Security Number", category: "Validation" },
-    { name: "ZIP Code (US)", pattern: "^\\d{5}(-\\d{4})?$", example: "12345 or 12345-6789", description: "US ZIP code", category: "Address" },
-    { name: "Postal Code (UK)", pattern: "^[A-Z]{1,2}\\d[A-Z\\d]?\\s?\\d[A-Z]{2}$", example: "SW1A 1AA", description: "UK postcode", category: "Address" },
-    { name: "MAC Address", pattern: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", example: "00:1B:44:11:3A:B7", description: "Network MAC address", category: "Network" },
-    { name: "HTML Tag", pattern: "<([a-z]+)([^<]+)*(?:>(.*)<\\/\\1>|\\s+\\/>)", example: "<div>content</div>", description: "Match HTML tags", category: "Web" },
-    { name: "Slug/URL Path", pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", example: "my-awesome-post", description: "URL-friendly slug", category: "Web" },
-    { name: "Integer Number", pattern: "^-?\\d+$", example: "-123 or 456", description: "Positive or negative integer", category: "Numbers" },
-    { name: "Decimal Number", pattern: "^-?\\d+\\.\\d+$", example: "123.45 or -67.89", description: "Decimal with fraction", category: "Numbers" },
-    { name: "Currency (USD)", pattern: "^\\$?[0-9]{1,3}(,[0-9]{3})*\\.?[0-9]{0,2}$", example: "$1,234.56", description: "US dollar amount", category: "Finance" },
-    { name: "File Extension", pattern: "\\.[a-zA-Z0-9]+$", example: ".jpg, .pdf, .txt", description: "Extract file extension", category: "Files" },
-    { name: "Git Repository", pattern: "((git|ssh|http(s)?)|(git@[\\w\\.]+))(:(//)?)([\\w\\.@\\:/\\-~]+)(\\.git)(/)?", example: "https://github.com/user/repo.git", description: "Git repository URL", category: "Development" },
-    { name: "Semantic Version", pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$", example: "1.2.3 or 1.0.0-alpha+001", description: "Semver format", category: "Development" },
-    { name: "UUID v4", pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", example: "123e4567-e89b-42d3-a456-426614174000", description: "UUID version 4", category: "Development" },
-    { name: "JWT Token", pattern: "^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_.+/]*$", example: "eyJhbGc...eyJzdWI...SflKxwRJ", description: "JSON Web Token", category: "Security" },
+interface CheatsheetItem {
+    token: string;
+    descEn: string;
+    descVi: string;
+    example: string;
+}
+
+export type SupportedLang =
+    | "python"
+    | "java"
+    | "csharp"
+    | "javascript"
+    | "rust"
+    | "go"
+    | "kotlin"
+    | "php"
+    | "ruby"
+    | "swift"
+    | "dart";
+
+export interface LanguageSpec {
+    id: SupportedLang;
+    name: string;
+    icon: string;
+    badge: string;
+    tipVi: string;
+    tipEn: string;
+    getPatternLiteral: (p: string, f: string) => string;
+    getDeclaration: (p: string, f: string) => string;
+    getCodeSnippet: (p: string, f: string, text: string) => string;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageSpec[] = [
+    {
+        id: "python",
+        name: "Python",
+        icon: "🐍",
+        badge: "re module",
+        tipVi: "Python dùng raw string r'...' nên giữ nguyên toàn bộ ký tự \\ (\\d, \\w) mà không cần escape.",
+        tipEn: "Uses Python raw string r'...' preserving backslashes (\\d, \\w) without double escaping.",
+        getPatternLiteral: (p) => {
+            const pyNamed = p.replace(/\(\?<([a-zA-Z0-9_]+)>/g, "(?P<$1>");
+            return `r"${pyNamed.replace(/"/g, '\\"')}"`;
+        },
+        getDeclaration: (p, f) => {
+            const pyNamed = p.replace(/\(\?<([a-zA-Z0-9_]+)>/g, "(?P<$1>");
+            const flagsList: string[] = [];
+            if (f.includes("i")) flagsList.push("re.IGNORECASE");
+            if (f.includes("m")) flagsList.push("re.MULTILINE");
+            if (f.includes("s")) flagsList.push("re.DOTALL");
+            const fStr = flagsList.length > 0 ? `, ${flagsList.join(" | ")}` : "";
+            return `pattern = re.compile(r"${pyNamed.replace(/"/g, '\\"')}"${fStr})`;
+        },
+        getCodeSnippet: (p, f, text) => {
+            const pyNamed = p.replace(/\(\?<([a-zA-Z0-9_]+)>/g, "(?P<$1>");
+            const flagsList: string[] = [];
+            if (f.includes("i")) flagsList.push("re.IGNORECASE");
+            if (f.includes("m")) flagsList.push("re.MULTILINE");
+            if (f.includes("s")) flagsList.push("re.DOTALL");
+            const fStr = flagsList.length > 0 ? `, ${flagsList.join(" | ")}` : "";
+            return `# Python 3 (re module)\nimport re\n\npattern = r"${pyNamed.replace(/"/g, '\\"')}"\ntext = """${text}"""\n\n# Tìm tất cả kết quả khớp (finditer)\nmatches = re.finditer(pattern, text${fStr})\nfor m in matches:\n    print(f"Match: {m.group()} (Span: {m.span()}), Groups: {m.groups()}")`;
+        },
+    },
+    {
+        id: "java",
+        name: "Java",
+        icon: "☕",
+        badge: "java.util.regex",
+        tipVi: "Trong chuỗi String Literal của Java, mọi dấu gạch chéo ngược bắt buộc phải nhân đôi (ví dụ: \\\\d, \\\\w, \\\\s).",
+        tipEn: "In Java string literals, every backslash must be doubled (e.g. \\\\d, \\\\w instead of \\d).",
+        getPatternLiteral: (p) => {
+            const escaped = p.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+            return `"${escaped}"`;
+        },
+        getDeclaration: (p, f) => {
+            const escaped = p.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+            const flagsList: string[] = [];
+            if (f.includes("i")) flagsList.push("Pattern.CASE_INSENSITIVE");
+            if (f.includes("m")) flagsList.push("Pattern.MULTILINE");
+            if (f.includes("s")) flagsList.push("Pattern.DOTALL");
+            const fStr = flagsList.length > 0 ? `, ${flagsList.join(" | ")}` : "";
+            return `Pattern pattern = Pattern.compile("${escaped}"${fStr});`;
+        },
+        getCodeSnippet: (p, f, text) => {
+            const escaped = p.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+            const flagsList: string[] = [];
+            if (f.includes("i")) flagsList.push("Pattern.CASE_INSENSITIVE");
+            if (f.includes("m")) flagsList.push("Pattern.MULTILINE");
+            if (f.includes("s")) flagsList.push("Pattern.DOTALL");
+            const fStr = flagsList.length > 0 ? `, ${flagsList.join(" | ")}` : "";
+            return `// Java (java.util.regex)\nimport java.util.regex.Pattern;\nimport java.util.regex.Matcher;\n\npublic class RegexDemo {\n    public static void main(String[] args) {\n        String text = ${JSON.stringify(text)};\n        Pattern pattern = Pattern.compile("${escaped}"${fStr});\n        Matcher matcher = pattern.matcher(text);\n\n        while (matcher.find()) {\n            System.out.println("Match: " + matcher.group() + " at [" + matcher.start() + ", " + matcher.end() + "]");\n        }\n    }\n}`;
+        },
+    },
+    {
+        id: "csharp",
+        name: "C# (.NET)",
+        icon: "🟣",
+        badge: "System.Text.RegularExpressions",
+        tipVi: "C# dùng Verbatim String @\"...\" nên giữ nguyên dấu \\, chỉ cần nhân đôi dấu ngoặc kép \"\".",
+        tipEn: "C# uses verbatim string @\"...\" preserving backslashes naturally, only quotes are doubled.",
+        getPatternLiteral: (p) => {
+            return `@"` + p.replace(/"/g, '""') + `"`;
+        },
+        getDeclaration: (p, f) => {
+            const csFlags: string[] = [];
+            if (f.includes("i")) csFlags.push("RegexOptions.IgnoreCase");
+            if (f.includes("m")) csFlags.push("RegexOptions.Multiline");
+            if (f.includes("s")) csFlags.push("RegexOptions.Singleline");
+            const fStr = csFlags.length > 0 ? `, ${csFlags.join(" | ")}` : "";
+            return `Regex regex = new Regex(@"${p.replace(/"/g, '""')}"${fStr});`;
+        },
+        getCodeSnippet: (p, f, text) => {
+            const csFlags: string[] = [];
+            if (f.includes("i")) csFlags.push("RegexOptions.IgnoreCase");
+            if (f.includes("m")) csFlags.push("RegexOptions.Multiline");
+            if (f.includes("s")) csFlags.push("RegexOptions.Singleline");
+            const fStr = csFlags.length > 0 ? `, ${csFlags.join(" | ")}` : "";
+            return `// C# (.NET 8/9 / .NET Core)\nusing System;\nusing System.Text.RegularExpressions;\n\nclass Program {\n    static void Main() {\n        string text = ${JSON.stringify(text)};\n        Regex regex = new Regex(@"${p.replace(/"/g, '""')}"${fStr});\n\n        MatchCollection matches = regex.Matches(text);\n        foreach (Match match in matches) {\n            Console.WriteLine($"Match: {match.Value} at index {match.Index}");\n        }\n    }\n}`;
+        },
+    },
+    {
+        id: "javascript",
+        name: "JavaScript / TS",
+        icon: "🟨",
+        badge: "ECMAScript RegExp",
+        tipVi: "Cú pháp RegExp chuẩn /pattern/flags dùng phổ biến trong trình duyệt và Node.js/Bun.",
+        tipEn: "Standard ECMAScript RegExp literal syntax for Web Browsers and Node.js.",
+        getPatternLiteral: (p, f) => `/${p}/${f}`,
+        getDeclaration: (p, f) => `const regex = /${p}/${f};`,
+        getCodeSnippet: (p, f, text) =>
+            `// JavaScript / TypeScript\nconst regex = /${p}/${f};\nconst text = ${JSON.stringify(text)};\n\n// 1. Kiểm tra khớp boolean\nconst isMatch = regex.test(text);\nconsole.log("Is Match:", isMatch);\n\n// 2. Trích xuất toàn bộ kết quả\nconst matches = [...text.matchAll(regex)];\nfor (const match of matches) {\n    console.log("Match:", match[0], "Index:", match.index);\n    console.log("Groups:", match.slice(1));\n}`,
+    },
+    {
+        id: "rust",
+        name: "Rust",
+        icon: "🦀",
+        badge: "regex crate",
+        tipVi: "Rust dùng raw string r#\"...\"# của crate regex, bảo đảm an toàn bộ nhớ và không ReDoS.",
+        tipEn: "Rust uses raw string r#\"...\"# with the official regex crate (linear-time matching).",
+        getPatternLiteral: (p) => `r#"${p}"#`,
+        getDeclaration: (p) => `let re = Regex::new(r#"${p}"#).unwrap();`,
+        getCodeSnippet: (p, f, text) => {
+            const caseInsensitive = f.includes("i");
+            return `// Rust (Cargo dependency: regex = "1")\nuse regex::${caseInsensitive ? "RegexBuilder" : "Regex"};\n\nfn main() {\n    let text = ${JSON.stringify(text)};\n    ${
+                caseInsensitive
+                    ? `let re = RegexBuilder::new(r#"${p}"#).case_insensitive(true).build().unwrap();`
+                    : `let re = Regex::new(r#"${p}"#).unwrap();`
+            }\n\n    for cap in re.captures_iter(text) {\n        println!("Match: {} at [{}, {}]", &cap[0], cap.get(0).unwrap().start(), cap.get(0).unwrap().end());\n    }\n}`;
+        },
+    },
+    {
+        id: "go",
+        name: "Go",
+        icon: "🔷",
+        badge: "regexp package",
+        tipVi: "Go dùng raw string backticks `...` và thư viện regexp RE2 (không hỗ trợ Lookaround).",
+        tipEn: "Go uses raw string backticks `...` with the safe RE2 engine (no lookaround).",
+        getPatternLiteral: (p) => "`" + p.replace(/`/g, "` + \"`\" + `") + "`",
+        getDeclaration: (p) => `var re = regexp.MustCompile(\`${p}\`)`,
+        getCodeSnippet: (p, f, text) =>
+            `// Go (regexp package)\npackage main\n\nimport (\n\t"fmt"\n\t"regexp"\n)\n\nfunc main() {\n\tre := regexp.MustCompile(\`${p}\`)\n\ttext := \`${text}\`\n\n\tmatches := re.FindAllStringSubmatch(text, -1)\n\tfor i, m := range matches {\n\t\tfmt.Printf("Match #%d: %s, Groups: %v\\n", i+1, m[0], m[1:])\n\t}\n}`,
+    },
+    {
+        id: "kotlin",
+        name: "Kotlin",
+        icon: "🎯",
+        badge: "kotlin.text.Regex",
+        tipVi: "Kotlin dùng chuỗi 3 nháy \"\"\"...\"\"\" (multiline raw string) không cần escape bất kỳ dấu \\ nào.",
+        tipEn: "Kotlin uses triple-quoted raw string \"\"\"...\"\"\" so no backslashes need escaping.",
+        getPatternLiteral: (p) => `"""${p}""".toRegex()`,
+        getDeclaration: (p, f) => {
+            const kOptions: string[] = [];
+            if (f.includes("i")) kOptions.push("RegexOption.IGNORE_CASE");
+            if (f.includes("m")) kOptions.push("RegexOption.MULTILINE");
+            const optStr = kOptions.length > 0 ? `setOf(${kOptions.join(", ")})` : "";
+            return optStr ? `val regex = """${p}""".toRegex(${optStr})` : `val regex = """${p}""".toRegex()`;
+        },
+        getCodeSnippet: (p, f, text) => {
+            const kOptions: string[] = [];
+            if (f.includes("i")) kOptions.push("RegexOption.IGNORE_CASE");
+            if (f.includes("m")) kOptions.push("RegexOption.MULTILINE");
+            const optStr = kOptions.length > 0 ? `setOf(${kOptions.join(", ")})` : "";
+            return `// Kotlin\nfun main() {\n    val text = ${JSON.stringify(text)}\n    val regex = ${
+                optStr ? `"""${p}""".toRegex(${optStr})` : `"""${p}""".toRegex()`
+            }\n\n    regex.findAll(text).forEach { match ->\n        println("Match: \${match.value} at range \${match.range}")\n    }\n}`;
+        },
+    },
+    {
+        id: "php",
+        name: "PHP",
+        icon: "🐘",
+        badge: "PCRE preg_*",
+        tipVi: "Cú pháp delimiter '/' . $pattern . '/flags' dùng trực tiếp cho preg_match, preg_match_all.",
+        tipEn: "PCRE delimiter syntax for preg_match and preg_match_all functions in PHP.",
+        getPatternLiteral: (p, f) => `'/' . ${JSON.stringify(p)} . '/${f}'`,
+        getDeclaration: (p, f) => `$pattern = '/${p.replace(/'/g, "\\'")}/${f}';`,
+        getCodeSnippet: (p, f, text) =>
+            `<?php\n// PHP PCRE preg_match_all\n$pattern = '/${p.replace(/'/g, "\\'")}/${f}';\n$text = <<<'TEXT'\n${text}\nTEXT;\n\n$matches = [];\n$count = preg_match_all($pattern, $text, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);\n\necho "Tổng số kết quả: " . $count . "\\n";\nforeach ($matches as $i => $m) {\n    echo "Match #" . ($i + 1) . ": " . $m[0][0] . " tại vị trí " . $m[0][1] . "\\n";\n}`,
+    },
+    {
+        id: "ruby",
+        name: "Ruby",
+        icon: "💎",
+        badge: "Oniguruma Engine",
+        tipVi: "Ruby dùng cú pháp literal /pattern/flags hoặc Regexp.new với phương thức text.scan.",
+        tipEn: "Ruby uses Oniguruma regex literal /.../ with text.scan and match methods.",
+        getPatternLiteral: (p, f) => `/${p}/${f.replace(/[^imx]/g, "")}`,
+        getDeclaration: (p, f) => `regex = /${p}/${f.replace(/[^imx]/g, "")}`,
+        getCodeSnippet: (p, f, text) =>
+            `# Ruby (Oniguruma)\ntext = ${JSON.stringify(text)}\nregex = /${p}/${f.replace(/[^imx]/g, "")}\n\ntext.scan(regex) do |match|\n  puts "Match: #{match}"\nend`,
+    },
+    {
+        id: "swift",
+        name: "Swift",
+        icon: "🍏",
+        badge: "NSRegularExpression",
+        tipVi: "Swift dùng extended string delimiter #\"...\"# giúp viết regex sạch sẽ không cần escape.",
+        tipEn: "Swift uses extended string delimiter #\"...\"# for clean unescaped regex strings.",
+        getPatternLiteral: (p) => `#"${p}"#`,
+        getDeclaration: (p) => `let regex = try! NSRegularExpression(pattern: #"${p}"#)`,
+        getCodeSnippet: (p, f, text) =>
+            `// Swift\nimport Foundation\n\nlet text = ${JSON.stringify(text)}\nlet regex = try! NSRegularExpression(pattern: #"${p}"#${
+                f.includes("i") ? ", options: [.caseInsensitive]" : ""
+            })\n\nlet matches = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))\nfor match in matches {\n    if let range = Range(match.range, in: text) {\n        print("Match: \\(text[range])")\n    }\n}`,
+    },
+    {
+        id: "dart",
+        name: "Dart / Flutter",
+        icon: "💙",
+        badge: "dart:core RegExp",
+        tipVi: "Dart dùng raw string r'...' với lớp RegExp trong Flutter và ứng dụng Dart.",
+        tipEn: "Dart uses raw string r'...' with the standard RegExp class in Flutter.",
+        getPatternLiteral: (p) => `r'${p.replace(/'/g, "\\'")}'`,
+        getDeclaration: (p, f) =>
+            `final regex = RegExp(r'${p.replace(/'/g, "\\'")}'${f.includes("i") ? ", caseSensitive: false" : ""}${
+                f.includes("m") ? ", multiLine: true" : ""
+            });`,
+        getCodeSnippet: (p, f, text) =>
+            `// Dart / Flutter\nvoid main() {\n  final text = ${JSON.stringify(text)};\n  final regex = RegExp(r'${p.replace(/'/g, "\\'")}'${
+                f.includes("i") ? ", caseSensitive: false" : ""
+            }${f.includes("m") ? ", multiLine: true" : ""});\n\n  final matches = regex.allMatches(text);\n  for (final match in matches) {\n    print("Match: \${match.group(0)} at [\${match.start}, \${match.end}]");\n  }\n}`,
+    },
+];
+
+const CHEATSHEET: { categoryEn: string; categoryVi: string; items: CheatsheetItem[] }[] = [
+    {
+        categoryEn: "Character Classes",
+        categoryVi: "Lớp Ký Tự",
+        items: [
+            { token: ".", descEn: "Any character (except newline)", descVi: "Bất kỳ ký tự nào (trừ xuống dòng)", example: "a.c matches abc" },
+            { token: "\\d", descEn: "Any digit [0-9]", descVi: "Bất kỳ chữ số nào [0-9]", example: "\\d+ matches 123" },
+            { token: "\\D", descEn: "Not a digit [^0-9]", descVi: "Không phải chữ số [^0-9]", example: "\\D+ matches abc" },
+            { token: "\\w", descEn: "Word character [a-zA-Z0-9_]", descVi: "Ký tự từ [a-zA-Z0-9_]", example: "\\w+ matches user_1" },
+            { token: "\\W", descEn: "Non-word character", descVi: "Không phải ký tự từ", example: "\\W matches @" },
+            { token: "\\s", descEn: "Whitespace (space, tab, newline)", descVi: "Khoảng trắng, tab, xuống dòng", example: "\\s+ matches spaces" },
+            { token: "\\S", descEn: "Non-whitespace", descVi: "Không phải khoảng trắng", example: "\\S+ matches text" },
+        ],
+    },
+    {
+        categoryEn: "Anchors & Boundaries",
+        categoryVi: "Neo & Biên Giới Hạn",
+        items: [
+            { token: "^", descEn: "Start of string / line", descVi: "Bắt đầu chuỗi hoặc dòng", example: "^Hello" },
+            { token: "$", descEn: "End of string / line", descVi: "Kết thúc chuỗi hoặc dòng", example: "World$" },
+            { token: "\\b", descEn: "Word boundary", descVi: "Ranh giới từ", example: "\\bcat\\b" },
+            { token: "\\B", descEn: "Non-word boundary", descVi: "Không phải ranh giới từ", example: "\\Bcat\\B" },
+        ],
+    },
+    {
+        categoryEn: "Quantifiers",
+        categoryVi: "Bộ Lượng Hóa",
+        items: [
+            { token: "*", descEn: "0 or more times", descVi: "0 hoặc nhiều lần", example: "ab*c matches ac, abc, abbc" },
+            { token: "+", descEn: "1 or more times", descVi: "1 hoặc nhiều lần", example: "ab+c matches abc, abbc" },
+            { token: "?", descEn: "0 or 1 time (optional)", descVi: "0 hoặc 1 lần (tùy chọn)", example: "colou?r" },
+            { token: "{n}", descEn: "Exactly n times", descVi: "Chính xác n lần", example: "\\d{4}" },
+            { token: "{n,}", descEn: "At least n times", descVi: "Ít nhất n lần", example: "\\d{2,}" },
+            { token: "{n,m}", descEn: "Between n and m times", descVi: "Từ n đến m lần", example: "\\d{2,4}" },
+        ],
+    },
+    {
+        categoryEn: "Groups & Lookaround",
+        categoryVi: "Nhóm & Điều Kiện Nhìn",
+        items: [
+            { token: "(abc)", descEn: "Capturing group", descVi: "Nhóm bắt giữ (Capture)", example: "(ha)+" },
+            { token: "(?:abc)", descEn: "Non-capturing group", descVi: "Nhóm không bắt giữ", example: "(?:abc)+" },
+            { token: "(?=abc)", descEn: "Positive lookahead", descVi: "Nhìn trước khẳng định", example: "\\d(?=px)" },
+            { token: "(?!abc)", descEn: "Negative lookahead", descVi: "Nhìn trước phủ định", example: "\\d(?!px)" },
+            { token: "(?<=abc)", descEn: "Positive lookbehind", descVi: "Nhìn sau khẳng định", example: "(?<=\\$)\\d+" },
+            { token: "(?<!abc)", descEn: "Negative lookbehind", descVi: "Nhìn sau phủ định", example: "(?<!\\$)\\d+" },
+        ],
+    },
 ];
 
 export default function RegexTesterClient() {
     const { locale } = useLanguage();
+    const isVi = locale === "vi";
     const t = regexTesterTranslations[locale];
     const ui = t.regexTester.ui;
 
-    // Get translated regex flavors
-    const getRegexFlavors = (): RegexFlavor[] => {
-        return [
-            { language: "JavaScript", description: ui.regexFlavors.javascript.description, differences: ui.regexFlavors.javascript.differences },
-            { language: "Python", description: ui.regexFlavors.python.description, differences: ui.regexFlavors.python.differences },
-            { language: "Java", description: ui.regexFlavors.java.description, differences: ui.regexFlavors.java.differences },
-            { language: "PHP (PCRE)", description: ui.regexFlavors.php.description, differences: ui.regexFlavors.php.differences },
-            { language: "C# (.NET)", description: ui.regexFlavors.csharp.description, differences: ui.regexFlavors.csharp.differences },
-            { language: "Ruby", description: ui.regexFlavors.ruby.description, differences: ui.regexFlavors.ruby.differences },
-            { language: "Go", description: ui.regexFlavors.go.description, differences: ui.regexFlavors.go.differences },
-            { language: "Perl", description: ui.regexFlavors.perl.description, differences: ui.regexFlavors.perl.differences },
-        ];
-    };
-
-    const regexFlavors = getRegexFlavors();
-
-    const [pattern, setPattern] = useState("");
+    const [pattern, setPattern] = useState("([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})");
     const [flags, setFlags] = useState("g");
-    const [testString, setTestString] = useState("");
-    const [results, setResults] = useState<MatchResult[]>([]);
-    const [error, setError] = useState("");
+    const [testString, setTestString] = useState(
+        "Welcome to AnyTools!\nContact our support at lexuantruong0981@gmail.com for inquiries.\nInvalid email: user@domain without tld or invalid#email.com"
+    );
+    const [viewMode, setViewMode] = useState<"highlight" | "matches" | "code" | "matrix" | "cheatsheet">("highlight");
+    const [selectedLanguage, setSelectedLanguage] = useState<SupportedLang>("java");
     const [selectedCategory, setSelectedCategory] = useState<string>("All");
-    const [selectedFlavor, setSelectedFlavor] = useState<string>("JavaScript");
+    const [error, setError] = useState("");
 
-    // Get translated common patterns
-    const getCommonPatterns = (): CommonPattern[] => {
+    const patternInputRef = useRef<HTMLInputElement>(null);
+
+    // Active language specification
+    const currentLangSpec = useMemo(() => {
+        return SUPPORTED_LANGUAGES.find((l) => l.id === selectedLanguage) || SUPPORTED_LANGUAGES[0];
+    }, [selectedLanguage]);
+
+    // Common patterns
+    const commonPatterns: CommonPattern[] = useMemo(() => {
         const patternKeys = [
-            { key: "emailAddress", pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", example: "user@example.com", category: "Validation" },
-            { key: "urlWebsite", pattern: "https?://([\\w\\-]+\\.)+[\\w\\-]+(/[\\w\\-\\./?%&=]*)?", example: "https://example.com/path", category: "Web" },
-            { key: "phoneUS", pattern: "^\\+?1?\\s*\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$", example: "(123) 456-7890", category: "Validation" },
-            { key: "phoneVN", pattern: "^(\\+84|0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$", example: "0901234567 or +84901234567", category: "Validation" },
-            { key: "phoneInternational", pattern: "^\\+?[1-9]\\d{1,14}$", example: "+1234567890", category: "Validation" },
-            { key: "ipv4", pattern: "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", example: "192.168.1.1", category: "Network" },
-            { key: "ipv6", pattern: "^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$", example: "2001:0db8:85a3:0000:0000:8a2e:0370:7334", category: "Network" },
-            { key: "dateYMD", pattern: "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$", example: "2025-11-15", category: "Date/Time" },
-            { key: "dateDMY", pattern: "^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\\d{4}$", example: "15/11/2025", category: "Date/Time" },
-            { key: "dateMDY", pattern: "^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\\d{4}$", example: "11/15/2025", category: "Date/Time" },
-            { key: "time24", pattern: "^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$", example: "14:30:00", category: "Date/Time" },
-            { key: "time12", pattern: "^(0?[1-9]|1[0-2]):[0-5][0-9]\\s?(AM|PM|am|pm)$", example: "2:30 PM", category: "Date/Time" },
-            { key: "hexColor", pattern: "^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$", example: "#FF5733 or #F57", category: "Web" },
-            { key: "rgbColor", pattern: "^rgb\\(\\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\s*,\\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\s*,\\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\s*\\)$", example: "rgb(255, 87, 51)", category: "Web" },
-            { key: "username", pattern: "^[a-zA-Z0-9_-]{3,16}$", example: "user_name-123", category: "Validation" },
-            { key: "strongPassword", pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", example: "Pass123!word", category: "Security" },
-            { key: "creditCardVisa", pattern: "^4[0-9]{12}(?:[0-9]{3})?$", example: "4111111111111111", category: "Finance" },
-            { key: "creditCardMastercard", pattern: "^5[1-5][0-9]{14}$", example: "5500000000000004", category: "Finance" },
-            { key: "ssnUS", pattern: "^\\d{3}-\\d{2}-\\d{4}$", example: "123-45-6789", category: "Validation" },
-            { key: "zipCodeUS", pattern: "^\\d{5}(-\\d{4})?$", example: "12345 or 12345-6789", category: "Address" },
-            { key: "postalCodeUK", pattern: "^[A-Z]{1,2}\\d[A-Z\\d]?\\s?\\d[A-Z]{2}$", example: "SW1A 1AA", category: "Address" },
-            { key: "macAddress", pattern: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", example: "00:1B:44:11:3A:B7", category: "Network" },
-            { key: "htmlTag", pattern: "<([a-z]+)([^<]+)*(?:>(.*)<\\/\\1>|\\s+\\/>)", example: "<div>content</div>", category: "Web" },
-            { key: "slug", pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", example: "my-awesome-post", category: "Web" },
-            { key: "integerNumber", pattern: "^-?\\d+$", example: "-123 or 456", category: "Numbers" },
-            { key: "decimalNumber", pattern: "^-?\\d+\\.\\d+$", example: "123.45 or -67.89", category: "Numbers" },
-            { key: "currencyUSD", pattern: "^\\$?[0-9]{1,3}(,[0-9]{3})*\\.?[0-9]{0,2}$", example: "$1,234.56", category: "Finance" },
-            { key: "fileExtension", pattern: "\\.[a-zA-Z0-9]+$", example: ".jpg, .pdf, .txt", category: "Files" },
-            { key: "gitRepository", pattern: "((git|ssh|http(s)?)|(git@[\\w\\.]+))(:(//)?)([\\w\\.@\\:/\\-~]+)(\\.git)(/)?", example: "https://github.com/user/repo.git", category: "Development" },
-            { key: "semanticVersion", pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$", example: "1.2.3 or 1.0.0-alpha+001", category: "Development" },
-            { key: "uuidV4", pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", example: "123e4567-e89b-42d3-a456-426614174000", category: "Development" },
-            { key: "jwtToken", pattern: "^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_.+/]*$", example: "eyJhbGc...eyJzdWI...SflKxwRJ", category: "Security" },
+            { key: "emailAddress", pattern: "([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})", example: "user@example.com, test.dev@domain.org", category: "Validation" },
+            { key: "urlWebsite", pattern: "https?://([\\w\\-]+\\.)+[\\w\\-]+(/[\\w\\-\\./?%&=]*)?", example: "Visit https://anytools.online/tools/regex-tester today!", category: "Web" },
+            { key: "phoneVN", pattern: "(0|\\+84)(3[2-9]|5[689]|7[06-9]|8[1-9]|9[0-9])[0-9]{7}", example: "Call 0981234567 or +84912345678 now", category: "Validation" },
+            { key: "phoneUS", pattern: "\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}", example: "Support: (123) 456-7890 or 800-555-0199", category: "Validation" },
+            { key: "ipv4", pattern: "\\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b", example: "Local IP 127.0.0.1 and Gateway 192.168.1.1", category: "Network" },
+            { key: "hexColor", pattern: "#(?:[0-9a-fA-F]{3}){1,2}\\b", example: "Colors: #FF5733, #FFF, #2563EB", category: "Web" },
+            { key: "dateYMD", pattern: "\\b\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\\b", example: "Release date: 2026-09-19 and deadline: 2026-12-31", category: "Date/Time" },
+            { key: "uuidV4", pattern: "\\b[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b", example: "Session: 123e4567-e89b-42d3-a456-426614174000", category: "Development" },
+            { key: "jwtToken", pattern: "eyJ[a-zA-Z0-9_-]+\\.eyJ[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+", example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.doNotShareSignature", category: "Security" },
+            { key: "slug", pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", example: "best-developer-tools-online", category: "Web" },
         ];
 
         return patternKeys.map(({ key, pattern, example, category }) => {
-            const translation = ui.patterns[key as keyof typeof ui.patterns];
+            const translation = ui.patterns[key as keyof typeof ui.patterns] || { name: key, description: key };
             return {
                 name: translation.name,
                 pattern,
@@ -135,277 +364,599 @@ export default function RegexTesterClient() {
                 category,
             };
         });
-    };
-
-    const commonPatterns = getCommonPatterns();
+    }, [ui.patterns]);
 
     const categories = ["All", ...Array.from(new Set(commonPatterns.map((p) => p.category)))];
-
     const filteredPatterns = selectedCategory === "All" ? commonPatterns : commonPatterns.filter((p) => p.category === selectedCategory);
 
-    // Map category names to translations
-    const getCategoryLabel = (cat: string) => {
-        const categoryMap: { [key: string]: string } = {
-            All: ui.categories.all,
-            Validation: ui.categories.validation,
-            Web: ui.categories.web,
-            Network: ui.categories.network,
-            "Date/Time": ui.categories.dateTime,
-            Finance: ui.categories.finance,
-            Security: ui.categories.security,
-            Address: ui.categories.address,
-            Numbers: ui.categories.numbers,
-            Development: ui.categories.development,
-            Files: ui.categories.files,
-        };
-        return categoryMap[cat] || cat;
-    };
+    // Calculate match details and segments
+    const { matchDetails, highlightedSegments, totalMatches, executionTime } = useMemo(() => {
+        if (!pattern.trim()) {
+            return {
+                matchDetails: [],
+                highlightedSegments: [{ text: testString, isMatch: false, matchIndex: -1 }],
+                totalMatches: 0,
+                executionTime: 0,
+            };
+        }
 
-    const testRegex = () => {
+        const t0 = performance.now();
         try {
             setError("");
-            const regex = new RegExp(pattern, flags);
-            const lines = testString.split("\n");
+            const effectiveFlags = flags.includes("g") ? flags : flags + "g";
+            const regex = new RegExp(pattern, effectiveFlags);
 
-            const matchResults: MatchResult[] = lines.map((line, index) => {
-                const matched = regex.test(line);
-                // Reset regex lastIndex if using 'g' flag
-                regex.lastIndex = 0;
-                return {
-                    line: index + 1,
-                    text: line,
-                    matched,
-                };
-            });
+            const details: MatchDetail[] = [];
+            const segments: { text: string; isMatch: boolean; matchIndex: number }[] = [];
 
-            setResults(matchResults);
-        } catch (err) {
-            setError("Invalid regular expression: " + (err as Error).message);
-            setResults([]);
+            let lastIndex = 0;
+            let match: RegExpExecArray | null;
+            let counter = 0;
+
+            while ((match = regex.exec(testString)) !== null && counter < 500) {
+                counter++;
+                const start = match.index;
+                const matchText = match[0];
+                const end = start + matchText.length;
+
+                if (start > lastIndex) {
+                    segments.push({
+                        text: testString.slice(lastIndex, start),
+                        isMatch: false,
+                        matchIndex: -1,
+                    });
+                }
+
+                if (matchText.length > 0) {
+                    segments.push({
+                        text: matchText,
+                        isMatch: true,
+                        matchIndex: counter,
+                    });
+                }
+
+                const groups = match.slice(1).map((g, idx) => ({
+                    index: idx + 1,
+                    text: g !== undefined ? g : "",
+                }));
+
+                details.push({
+                    matchIndex: counter,
+                    text: matchText,
+                    start,
+                    end,
+                    groups,
+                });
+
+                lastIndex = end;
+
+                if (matchText.length === 0) {
+                    regex.lastIndex++;
+                    if (regex.lastIndex > testString.length) break;
+                }
+            }
+
+            if (lastIndex < testString.length) {
+                segments.push({
+                    text: testString.slice(lastIndex),
+                    isMatch: false,
+                    matchIndex: -1,
+                });
+            }
+
+            const t1 = performance.now();
+            return {
+                matchDetails: details,
+                highlightedSegments: segments,
+                totalMatches: details.length,
+                executionTime: Math.round((t1 - t0) * 100) / 100,
+            };
+        } catch (err: any) {
+            setError(err?.message || (isVi ? "Biểu thức Regular Expression không hợp lệ" : "Invalid Regular Expression"));
+            return {
+                matchDetails: [],
+                highlightedSegments: [{ text: testString, isMatch: false, matchIndex: -1 }],
+                totalMatches: 0,
+                executionTime: 0,
+            };
         }
-    };
+    }, [pattern, flags, testString, isVi]);
 
-    const loadPattern = (p: CommonPattern) => {
+    // Load common pattern
+    const handleLoadPattern = (p: CommonPattern) => {
         setPattern(p.pattern);
         setTestString(p.example);
         setFlags("g");
+        toast.info(isVi ? `Đã nạp mẫu: ${p.name}` : `Loaded pattern: ${p.name}`);
     };
 
-    const matchedCount = results.filter((r) => r.matched).length;
-    const unmatchedCount = results.filter((r) => !r.matched).length;
-
-    // Auto re-test when flags change (if pattern and test string exist)
-    useEffect(() => {
-        if (pattern && testString && results.length > 0) {
-            testRegex();
+    // Insert token from cheatsheet into pattern
+    const handleInsertToken = (token: string) => {
+        if (!patternInputRef.current) {
+            setPattern((prev) => prev + token);
+            return;
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [flags]);
+        const input = patternInputRef.current;
+        const start = input.selectionStart || pattern.length;
+        const end = input.selectionEnd || pattern.length;
+        const nextVal = pattern.substring(0, start) + token + pattern.substring(end);
+        setPattern(nextVal);
+        setTimeout(() => {
+            input.focus();
+            input.setSelectionRange(start + token.length, start + token.length);
+        }, 50);
+        toast.success(isVi ? `Đã chèn ký tự "${token}"` : `Inserted token "${token}"`);
+    };
+
+    // Copy specific string
+    const handleCopyText = async (text: string, label: string) => {
+        if (!text) return;
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success(isVi ? `Đã sao chép ${label}!` : `Copied ${label}!`);
+        } catch {
+            toast.error(isVi ? "Không thể sao chép" : "Failed to copy");
+        }
+    };
+
+    const activeCode = useMemo(() => {
+        return currentLangSpec.getCodeSnippet(pattern, flags, testString);
+    }, [currentLangSpec, pattern, flags, testString]);
 
     return (
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-            {/* Main Testing Area - Left 2 columns */}
+            {/* Left 2 Columns: Main Testing Studio */}
             <div className='lg:col-span-2 space-y-6'>
-                <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
-                    <div className='space-y-4'>
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{ui.patternLabel}</label>
-                            <input type='text' value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder={ui.patternPlaceholder} className='w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 font-mono' />
+                {/* Pattern & Flags Studio Card */}
+                <div className='bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-5'>
+                    <div>
+                        <div className='flex items-center justify-between mb-2'>
+                            <label className='text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2'>
+                                <span className='text-blue-600 dark:text-blue-400'>/</span> {ui.patternLabel} <span className='text-blue-600 dark:text-blue-400'>/{flags}</span>
+                            </label>
+                            {totalMatches > 0 && !error && (
+                                <span className='text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 animate-pulse'>
+                                    {totalMatches} {isVi ? "kết quả khớp" : "matches"} ({executionTime}ms)
+                                </span>
+                            )}
+                        </div>
+                        <div className='flex items-center gap-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all'>
+                            <span className='font-mono font-bold text-gray-400 text-lg'>/</span>
+                            <input
+                                ref={patternInputRef}
+                                type='text'
+                                value={pattern}
+                                onChange={(e) => setPattern(e.target.value)}
+                                placeholder={ui.patternPlaceholder}
+                                className='w-full bg-transparent border-0 text-gray-900 dark:text-gray-100 font-mono text-base focus:outline-none'
+                            />
+                            <span className='font-mono font-bold text-gray-400 text-lg'>/</span>
+                            <span className='font-mono font-bold text-blue-600 dark:text-blue-400 text-base'>{flags}</span>
+                        </div>
+                    </div>
+
+                    {/* Universal Multi-Language Syntax Adapter Bar (11 Languages) */}
+                    <div className='p-4 bg-gradient-to-r from-blue-50/70 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3'>
+                        <div className='flex flex-wrap items-center justify-between gap-2'>
+                            <span className='text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center gap-1.5'>
+                                <span>⚡</span> {isVi ? "Cú Pháp Theo Ngôn Ngữ (Chọn để lấy mã chuẩn):" : "Language Syntax Adapter:"}
+                            </span>
+                            <button
+                                type='button'
+                                onClick={() => setViewMode("matrix")}
+                                className='text-[11px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer font-semibold'
+                            >
+                                📊 {isVi ? "Xem bảng so sánh 11 ngôn ngữ" : "Compare all 11 languages"}
+                            </button>
                         </div>
 
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{ui.flagsLabel}</label>
-                            <div className='flex flex-wrap gap-2 mb-2'>
-                                {(["g", "i", "m", "s", "u", "y"] as const).map((flag) => (
-                                    <label key={flag} className='flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800' title={ui.flagDescriptions[flag]}>
-                                        <input
-                                            type='checkbox'
-                                            checked={flags.includes(flag)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setFlags(flags + flag);
-                                                } else {
-                                                    setFlags(flags.replace(flag, ""));
-                                                }
-                                            }}
-                                            className='rounded'
-                                        />
-                                        <span className='font-mono text-sm text-gray-900 dark:text-gray-100'>{flag}</span>
-                                        <span className='text-xs text-gray-500 dark:text-gray-400'>({ui.flagDescriptions[flag].split(" - ")[0]})</span>
-                                    </label>
+                        {/* Language Switcher Chips: All 11 languages */}
+                        <div className='flex flex-wrap gap-1.5'>
+                            {SUPPORTED_LANGUAGES.map((lang) => (
+                                <button
+                                    key={lang.id}
+                                    type='button'
+                                    onClick={() => setSelectedLanguage(lang.id)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                                        selectedLanguage === lang.id
+                                            ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
+                                            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 border border-gray-200 dark:border-gray-700"
+                                    }`}
+                                >
+                                    <span>{lang.icon}</span>
+                                    <span>{lang.name}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Direct Syntax Display & 1-Click Copy */}
+                        <div className='flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-gray-900 p-3.5 rounded-xl border border-blue-100 dark:border-gray-800'>
+                            <div className='min-w-0 flex-1 space-y-1'>
+                                <div className='flex items-center gap-2'>
+                                    <span className='font-bold text-xs text-blue-600 dark:text-blue-400'>
+                                        {currentLangSpec.icon} {currentLangSpec.name} ({currentLangSpec.badge}):
+                                    </span>
+                                </div>
+                                <div className='font-mono text-xs font-bold text-gray-900 dark:text-gray-100 break-all select-all bg-gray-50 dark:bg-gray-800/80 p-2 rounded-lg border border-gray-100 dark:border-gray-700'>
+                                    {currentLangSpec.getDeclaration(pattern, flags)}
+                                </div>
+                                <div className='text-[11px] text-gray-500 dark:text-gray-400'>
+                                    💡 {isVi ? currentLangSpec.tipVi : currentLangSpec.tipEn}
+                                </div>
+                            </div>
+
+                            <div className='flex items-center gap-2 shrink-0 self-end sm:self-center'>
+                                <button
+                                    type='button'
+                                    onClick={() => handleCopyText(currentLangSpec.getPatternLiteral(pattern, flags), `${currentLangSpec.name} Pattern`)}
+                                    className='px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 font-mono text-xs font-semibold transition-colors cursor-pointer border border-blue-200 dark:border-blue-800'
+                                    title={isVi ? "Sao chép chuỗi pattern đã escape đúng chuẩn" : "Copy escaped pattern string"}
+                                >
+                                    📋 {isVi ? "Copy Pattern" : "Copy Pattern"}
+                                </button>
+                                <button
+                                    type='button'
+                                    onClick={() => handleCopyText(activeCode, `${currentLangSpec.name} Code`)}
+                                    className='px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 text-xs font-semibold transition-colors cursor-pointer border border-gray-200 dark:border-gray-700'
+                                    title={isVi ? "Sao chép mã code hoàn chỉnh" : "Copy full code snippet"}
+                                >
+                                    📄 {isVi ? "Code đầy đủ" : "Full Code"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Flags selector */}
+                    <div>
+                        <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2'>
+                            {ui.flagsLabel} ({isVi ? "Cờ định danh" : "Regex Modifiers"})
+                        </label>
+                        <div className='flex flex-wrap gap-2'>
+                            {[
+                                { flag: "g", titleEn: "Global - find all matches", titleVi: "Toàn cục - tìm tất cả kết quả" },
+                                { flag: "i", titleEn: "Case insensitive - ignore letter casing", titleVi: "Không phân biệt hoa/thường" },
+                                { flag: "m", titleEn: "Multiline - ^ and $ match start/end of line", titleVi: "Nhiều dòng - ^ và $ khớp theo dòng" },
+                                { flag: "s", titleEn: "DotAll - . matches newline \\n", titleVi: "Dấu chấm khớp cả xuống dòng" },
+                                { flag: "u", titleEn: "Unicode - full unicode support", titleVi: "Hỗ trợ đầy đủ Unicode" },
+                            ].map(({ flag, titleEn, titleVi }) => {
+                                const active = flags.includes(flag);
+                                return (
+                                    <button
+                                        key={flag}
+                                        type='button'
+                                        onClick={() => {
+                                            setFlags(active ? flags.replace(flag, "") : flags + flag);
+                                        }}
+                                        title={isVi ? titleVi : titleEn}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
+                                            active
+                                                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
+                                                : "bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                        }`}
+                                    >
+                                        <span className='text-sm'>{active ? "✓" : "+"}</span>
+                                        <span>{flag}</span>
+                                        <span className='opacity-70 text-[11px] font-sans font-normal hidden sm:inline'>
+                                            {flag === "g" ? "global" : flag === "i" ? "case-ins" : flag === "m" ? "multiline" : flag}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className='p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl text-sm flex items-center gap-2'>
+                            <span>⚠️</span>
+                            <span>{error}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Test String Input & Live Highlight View */}
+                <div className='bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4'>
+                    {/* View Switcher Tabs */}
+                    <div className='flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3'>
+                        <div className='flex flex-wrap gap-2'>
+                            {[
+                                { id: "highlight", labelEn: "Visual Highlight", labelVi: "Xem Trực Quan", icon: "🎨" },
+                                { id: "matches", labelEn: `Matches (${totalMatches})`, labelVi: `Khớp (${totalMatches})`, icon: "🎯" },
+                                { id: "code", labelEn: "Code Generator", labelVi: "Sinh Mã Code", icon: "💻" },
+                                { id: "matrix", labelEn: "11 Languages Matrix", labelVi: "Bảng 11 Ngôn Ngữ", icon: "🌐" },
+                                { id: "cheatsheet", labelEn: "Cheatsheet", labelVi: "Tra Cứu Nhanh", icon: "📖" },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setViewMode(tab.id as any)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                                        viewMode === tab.id
+                                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                                            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                                    }`}
+                                >
+                                    <span>{tab.icon}</span>
+                                    <span>{isVi ? tab.labelVi : tab.labelEn}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            type='button'
+                            onClick={() => {
+                                setTestString("");
+                                setPattern("");
+                            }}
+                            className='text-xs text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer'
+                        >
+                            {isVi ? "Xóa hết" : "Clear all"}
+                        </button>
+                    </div>
+
+                    {/* Tab 1: Visual Highlighting */}
+                    {viewMode === "highlight" && (
+                        <div className='space-y-4'>
+                            <div>
+                                <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2'>
+                                    {isVi ? "Văn Bản Kiểm Thử (Nhập hoặc dán văn bản bên dưới)" : "Test String (Edit below)"}
+                                </label>
+                                <textarea
+                                    value={testString}
+                                    onChange={(e) => setTestString(e.target.value)}
+                                    placeholder={ui.testStringsPlaceholder}
+                                    rows={5}
+                                    className='w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none'
+                                />
+                            </div>
+
+                            {/* Render Highlighting Preview Box */}
+                            <div>
+                                <label className='block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2'>
+                                    {isVi ? "Kết Quả Khớp Nổi Bật (Live Highlighting)" : "Visual Match Highlights"}
+                                </label>
+                                <div className='p-4 bg-gray-900 text-gray-100 rounded-xl font-mono text-sm whitespace-pre-wrap break-all min-h-[120px] max-h-[360px] overflow-y-auto border border-gray-800 leading-relaxed'>
+                                    {highlightedSegments.length > 0 ? (
+                                        highlightedSegments.map((seg, idx) =>
+                                            seg.isMatch ? (
+                                                <mark
+                                                    key={idx}
+                                                    title={`Match #${seg.matchIndex}`}
+                                                    className='bg-amber-400/30 text-amber-200 border-b-2 border-amber-400 px-1 py-0.5 rounded mx-0.5 font-bold cursor-help hover:bg-amber-400/50 transition-colors'
+                                                >
+                                                    {seg.text}
+                                                </mark>
+                                            ) : (
+                                                <span key={idx} className='text-gray-300'>
+                                                    {seg.text}
+                                                </span>
+                                            )
+                                        )
+                                    ) : (
+                                        <span className='text-gray-500 italic'>
+                                            {isVi ? "Chưa có văn bản để kiểm thử..." : "No test text provided..."}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tab 2: Detailed Matches List */}
+                    {viewMode === "matches" && (
+                        <div className='space-y-3'>
+                            {matchDetails.length === 0 ? (
+                                <div className='text-center py-10 text-gray-500 dark:text-gray-400'>
+                                    <span className='text-4xl block mb-2'>🔍</span>
+                                    <p className='font-medium'>{isVi ? "Không tìm thấy kết quả khớp nào" : "No matches found"}</p>
+                                    <p className='text-xs mt-1'>{isVi ? "Hãy kiểm tra lại biểu thức Regex hoặc cờ tìm kiếm." : "Check your regex pattern or flags."}</p>
+                                </div>
+                            ) : (
+                                <div className='space-y-3 max-h-[500px] overflow-y-auto pr-1'>
+                                    {matchDetails.map((m) => (
+                                        <div
+                                            key={m.matchIndex}
+                                            className='p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 space-y-2'
+                                        >
+                                            <div className='flex items-center justify-between text-xs'>
+                                                <span className='font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'>
+                                                    Match #{m.matchIndex}
+                                                </span>
+                                                <span className='text-gray-500 dark:text-gray-400 font-mono'>
+                                                    {isVi ? `Vị trí: ${m.start} - ${m.end} (Độ dài: ${m.text.length})` : `Range: ${m.start} - ${m.end} (Length: ${m.text.length})`}
+                                                </span>
+                                            </div>
+                                            <div className='font-mono text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 break-all'>
+                                                {m.text}
+                                            </div>
+                                            {m.groups.length > 0 && (
+                                                <div className='pt-2 border-t border-gray-200 dark:border-gray-800 space-y-1.5'>
+                                                    <span className='text-xs font-semibold text-gray-500 dark:text-gray-400'>
+                                                        {isVi ? "Các nhóm bắt giữ (Capture Groups):" : "Capture Groups:"}
+                                                    </span>
+                                                    {m.groups.map((g) => (
+                                                        <div key={g.index} className='flex items-center gap-2 text-xs font-mono pl-2'>
+                                                            <span className='text-purple-600 dark:text-purple-400 font-bold'>Group {g.index}:</span>
+                                                            <span className='text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded'>
+                                                                {g.text || <em className='text-gray-400'>{isVi ? "(rỗng)" : "(empty)"}</em>}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Tab 3: Code Generator (All 11 Languages) */}
+                    {viewMode === "code" && (
+                        <div className='space-y-4'>
+                            <div className='flex flex-wrap items-center justify-between gap-3'>
+                                <div className='flex flex-wrap gap-1.5'>
+                                    {SUPPORTED_LANGUAGES.map((lang) => (
+                                        <button
+                                            key={lang.id}
+                                            onClick={() => setSelectedLanguage(lang.id)}
+                                            className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                                selectedLanguage === lang.id
+                                                    ? "bg-blue-600 text-white"
+                                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
+                                            }`}
+                                        >
+                                            <span>{lang.icon}</span>
+                                            <span>{lang.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <Button onClick={() => handleCopyText(activeCode, "Code")} variant='secondary' size='sm'>
+                                    📋 {isVi ? "Sao chép code" : "Copy code"}
+                                </Button>
+                            </div>
+
+                            <div className='relative'>
+                                <pre className='p-4 bg-gray-900 text-gray-100 rounded-xl font-mono text-xs overflow-x-auto border border-gray-800 leading-relaxed max-h-[380px]'>
+                                    <code>{activeCode}</code>
+                                </pre>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tab 4: 11 Languages Matrix View */}
+                    {viewMode === "matrix" && (
+                        <div className='space-y-3 max-h-[500px] overflow-y-auto pr-1'>
+                            <p className='text-xs text-gray-500 dark:text-gray-400'>
+                                ⚡ {isVi ? "Bảng tra cứu và sao chép cú pháp Regex cho toàn bộ 11 ngôn ngữ lập trình:" : "Quick copy regex pattern and declaration across 11 programming languages:"}
+                            </p>
+                            <div className='space-y-2.5'>
+                                {SUPPORTED_LANGUAGES.map((lang) => (
+                                    <div
+                                        key={lang.id}
+                                        className='p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/60 space-y-2'
+                                    >
+                                        <div className='flex items-center justify-between'>
+                                            <div className='flex items-center gap-2'>
+                                                <span className='text-base'>{lang.icon}</span>
+                                                <span className='font-bold text-xs text-gray-900 dark:text-gray-100'>{lang.name}</span>
+                                                <span className='text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'>
+                                                    {lang.badge}
+                                                </span>
+                                            </div>
+                                            <div className='flex gap-1.5'>
+                                                <button
+                                                    type='button'
+                                                    onClick={() => handleCopyText(lang.getPatternLiteral(pattern, flags), `${lang.name} Pattern`)}
+                                                    className='px-2 py-1 rounded bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-mono font-semibold border border-gray-200 dark:border-gray-700 cursor-pointer'
+                                                >
+                                                    📋 Pattern
+                                                </button>
+                                                <button
+                                                    type='button'
+                                                    onClick={() => handleCopyText(lang.getCodeSnippet(pattern, flags, testString), `${lang.name} Snippet`)}
+                                                    className='px-2 py-1 rounded bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold border border-gray-200 dark:border-gray-700 cursor-pointer'
+                                                >
+                                                    📄 Code
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <code className='block p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-xs rounded-lg border border-gray-200 dark:border-gray-700 break-all select-all'>
+                                            {lang.getDeclaration(pattern, flags)}
+                                        </code>
+                                    </div>
                                 ))}
                             </div>
                         </div>
+                    )}
 
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>{ui.testStringsLabel}</label>
-                            <textarea value={testString} onChange={(e) => setTestString(e.target.value)} placeholder={ui.testStringsPlaceholder} rows={10} className='w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-gray-100 font-mono text-sm' />
-                        </div>
-
-                        <Button onClick={testRegex} variant='primary' size='lg' fullWidth>
-                            {ui.testButton}
-                        </Button>
-
-                        {error && <div className='p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-lg'>{error}</div>}
-                    </div>
-                </div>
-
-                {/* Results Section */}
-                {results.length > 0 && (
-                    <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
-                        <div className='flex items-center justify-between mb-4'>
-                            <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>{ui.resultsTitle}</h3>
-                            <div className='flex gap-4 text-sm'>
-                                <span className='text-green-600 dark:text-green-400 font-medium'>
-                                    ✓ {matchedCount} {ui.matched}
-                                </span>
-                                <span className='text-red-600 dark:text-red-400 font-medium'>
-                                    ✗ {unmatchedCount} {ui.notMatched}
-                                </span>
-                            </div>
-                        </div>
-                        <div className='space-y-2 max-h-96 overflow-y-auto'>
-                            {results.map((result) => (
-                                <div key={result.line} className={`p-3 rounded-lg border-l-4 ${result.matched ? "bg-green-50 dark:bg-green-900/20 border-green-500" : "bg-red-50 dark:bg-red-900/20 border-red-500"}`}>
-                                    <div className='flex items-start gap-3'>
-                                        <span className='text-xs font-bold text-gray-500 dark:text-gray-400 w-8 shrink-0'>L{result.line}</span>
-                                        <span className={`flex-1 font-mono text-sm ${result.matched ? "text-green-900 dark:text-green-100" : "text-red-900 dark:text-red-100"}`}>{result.text || "(empty line)"}</span>
-                                        <span className='text-xs font-semibold'>{result.matched ? <span className='text-green-600 dark:text-green-400'>✓ MATCH</span> : <span className='text-red-600 dark:text-red-400'>✗ NO MATCH</span>}</span>
+                    {/* Tab 5: Cheatsheet Inserter */}
+                    {viewMode === "cheatsheet" && (
+                        <div className='space-y-4 max-h-[460px] overflow-y-auto pr-1'>
+                            <p className='text-xs text-gray-500 dark:text-gray-400'>
+                                💡 {isVi ? "Bấm vào bất kỳ ký tự nào để chèn trực tiếp vào ô Regular Expression ở trên." : "Click any token to instantly insert it into the regex input above."}
+                            </p>
+                            {CHEATSHEET.map((sec, i) => (
+                                <div key={i} className='space-y-2'>
+                                    <h4 className='text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400'>
+                                        {isVi ? sec.categoryVi : sec.categoryEn}
+                                    </h4>
+                                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                                        {sec.items.map((item, j) => (
+                                            <button
+                                                key={j}
+                                                type='button'
+                                                onClick={() => handleInsertToken(item.token)}
+                                                className='flex items-center justify-between p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/60 hover:border-blue-500 dark:hover:border-blue-500 transition-all text-left group cursor-pointer'
+                                            >
+                                                <div className='min-w-0 pr-2'>
+                                                    <div className='text-xs font-semibold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400'>
+                                                        {isVi ? item.descVi : item.descEn}
+                                                    </div>
+                                                    <div className='text-[11px] text-gray-400 font-mono truncate'>
+                                                        {item.example}
+                                                    </div>
+                                                </div>
+                                                <code className='px-2 py-1 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold font-mono border border-gray-200 dark:border-gray-700 shrink-0'>
+                                                    {item.token}
+                                                </code>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Regex Flavor Selector */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700'>
-                    <h3 className='text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100'>{ui.flavorTitle}</h3>
-
-                    {/* Warning Note */}
-                    <div className='mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 rounded'>
-                        <p className='text-sm text-yellow-800 dark:text-yellow-200'>
-                            <strong>⚠️ {locale === "vi" ? "Lưu ý" : "Note"}:</strong> {ui.flavorNote}
-                        </p>
-                    </div>
-
-                    <div className='flex flex-wrap gap-2 mb-4'>
-                        {regexFlavors.map((flavor) => (
-                            <button key={flavor.language} onClick={() => setSelectedFlavor(flavor.language)} className={`px-3 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer ${selectedFlavor === flavor.language ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"}`}>
-                                {flavor.language}
-                            </button>
-                        ))}
-                    </div>
-                    {regexFlavors.find((f) => f.language === selectedFlavor) && (
-                        <div className='space-y-3'>
-                            <div className='p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg'>
-                                <p className='text-sm font-medium text-blue-900 dark:text-blue-100'>{regexFlavors.find((f) => f.language === selectedFlavor)?.description}</p>
-                            </div>
-                            <div className='space-y-2'>
-                                <p className='text-sm font-semibold text-gray-700 dark:text-gray-300'>{ui.keyDifferences}</p>
-                                <ul className='space-y-1.5'>
-                                    {regexFlavors
-                                        .find((f) => f.language === selectedFlavor)
-                                        ?.differences.map((diff, idx) => (
-                                            <li key={idx} className='text-sm text-gray-600 dark:text-gray-400 flex gap-2'>
-                                                <span className='text-blue-600 dark:text-blue-400'>•</span>
-                                                <span>{diff}</span>
-                                            </li>
-                                        ))}
-                                </ul>
-                            </div>
-                            {/* Future Languages Notice */}
-                            <div className='mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 border-blue-500'>
-                                <p className='text-xs text-gray-600 dark:text-gray-400'>💡 {ui.futureLanguages}</p>
-                            </div>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Quick Reference Sidebar - Right 1 column */}
-            <div className='lg:col-span-1 space-y-4'>
-                <div className='bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 sticky top-4'>
-                    <h3 className='text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100'>{ui.commonPatternsTitle}</h3>
+            {/* Right Column: Pattern Presets Library */}
+            <div className='lg:col-span-1 space-y-6'>
+                <div className='bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 sticky top-20 space-y-4'>
+                    <div className='flex items-center justify-between'>
+                        <h3 className='text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2'>
+                            <span>📚</span> {ui.commonPatternsTitle}
+                        </h3>
+                        <span className='text-xs text-gray-500'>{filteredPatterns.length} {isVi ? "mẫu" : "patterns"}</span>
+                    </div>
 
                     {/* Category Filter */}
-                    <div className='mb-4'>
+                    <div>
                         <select
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
-                            className='w-full px-3 py-2 pr-10 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100 appearance-none cursor-pointer'
-                            style={{
-                                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                                backgroundPosition: "right 0.5rem center",
-                                backgroundRepeat: "no-repeat",
-                                backgroundSize: "1.5em 1.5em",
-                            }}
+                            className='w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500'
                         >
                             {categories.map((cat) => (
                                 <option key={cat} value={cat}>
-                                    {getCategoryLabel(cat)}
+                                    {cat === "All" ? (isVi ? "Tất cả danh mục" : "All Categories") : cat}
                                 </option>
                             ))}
                         </select>
                     </div>
 
-                    <div className='space-y-2 max-h-[600px] overflow-y-auto' style={{ scrollbarWidth: "thin", scrollbarColor: "rgb(156 163 175) transparent" }}>
+                    {/* Patterns list */}
+                    <div className='space-y-2.5 max-h-[calc(100vh-280px)] overflow-y-auto pr-1'>
                         {filteredPatterns.map((p, idx) => (
-                            <div key={idx} onClick={() => loadPattern(p)} className='p-3 bg-gray-50 dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded cursor-pointer border border-gray-200 dark:border-gray-700 transition-colors'>
-                                <div className='font-medium text-sm text-gray-900 dark:text-gray-100 mb-1'>{p.name}</div>
-                                <div className='text-xs text-gray-600 dark:text-gray-400 mb-2'>{p.description}</div>
-                                <code className='text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded text-blue-600 dark:text-blue-400 break-all block'>{p.pattern.length > 40 ? p.pattern.substring(0, 40) + "..." : p.pattern}</code>
+                            <div
+                                key={idx}
+                                onClick={() => handleLoadPattern(p)}
+                                className='p-3 bg-gray-50 dark:bg-gray-900/60 hover:bg-blue-50/60 dark:hover:bg-blue-900/20 rounded-xl cursor-pointer border border-gray-200 dark:border-gray-700/80 transition-all group'
+                            >
+                                <div className='flex items-center justify-between mb-1'>
+                                    <span className='font-semibold text-xs text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'>
+                                        {p.name}
+                                    </span>
+                                    <span className='text-[10px] px-1.5 py-0.5 rounded bg-gray-200/70 dark:bg-gray-800 text-gray-600 dark:text-gray-400'>
+                                        {p.category}
+                                    </span>
+                                </div>
+                                <p className='text-[11px] text-gray-500 dark:text-gray-400 mb-2 line-clamp-2'>
+                                    {p.description}
+                                </p>
+                                <code className='text-[11px] bg-white dark:bg-gray-800 px-2 py-1 rounded-lg text-blue-600 dark:text-blue-400 break-all block border border-gray-100 dark:border-gray-700 font-mono'>
+                                    {p.pattern.length > 38 ? p.pattern.substring(0, 38) + "..." : p.pattern}
+                                </code>
                             </div>
                         ))}
-                    </div>
-                </div>
-
-                {/* Quick Reference Guide */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700'>
-                    <h3 className='text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100'>{ui.quickReferenceTitle}</h3>
-                    <div className='space-y-2 text-xs'>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>.</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.anyChar}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>\d</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.digit}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>\w</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.wordChar}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>\s</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.whitespace}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>^</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.startLine}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>$</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.endLine}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>*</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.zeroOrMore}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>+</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.oneOrMore}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>?</code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.zeroOrOne}</span>
-                        </div>
-                        <div className='p-2 bg-gray-50 dark:bg-gray-900 rounded'>
-                            <code className='text-blue-600 dark:text-blue-400'>
-                                {"{"}n,m{"}"}
-                            </code>
-                            <span className='ml-2 text-gray-700 dark:text-gray-300'>{ui.quickRef.between}</span>
-                        </div>
                     </div>
                 </div>
             </div>

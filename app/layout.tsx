@@ -2,8 +2,10 @@ import { FloatingButtons } from "@/components/FloatingButtons";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CommandPalette } from "@/components/CommandPalette";
+import SuggestModal from "@/components/SuggestModal";
 import QueryProvider from "@/components/QueryProvider";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
+import { ToastProvider } from "@/components/ui/Toast";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -82,11 +84,14 @@ export default function RootLayout({
             <body className={`${inter.variable} antialiased flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`} suppressHydrationWarning>
                 <QueryProvider>
                     <LanguageProvider>
-                        <Header />
-                        <main className='flex-1'>{children}</main>
-                        <Footer />
-                        <FloatingButtons />
-                        <CommandPalette />
+                        <ToastProvider>
+                            <Header />
+                            <main className='flex-1'>{children}</main>
+                            <Footer />
+                            <FloatingButtons />
+                            <CommandPalette />
+                            <SuggestModal />
+                        </ToastProvider>
                     </LanguageProvider>
                 </QueryProvider>
             </body>

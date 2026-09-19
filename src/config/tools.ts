@@ -22,6 +22,7 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/code-minifier", icon: "🗜️", key: "codeMinifier" },
             { href: "/tools/cron-generator", icon: "⏰", key: "cronGenerator" },
             { href: "/tools/csv-converter", icon: "📊", key: "csvConverter" },
+            { href: "/tools/curl-converter", icon: "🔄", key: "curlConverter" },
             { href: "/tools/fake-data-generator", icon: "🎲", key: "fakeDataGenerator" },
             { href: "/tools/hash-generator", icon: "#", key: "hashGenerator" },
             { href: "/tools/html-entity-encoder", icon: "🏷️", key: "htmlEntityEncoder" },
@@ -32,6 +33,7 @@ export const toolsConfig: ToolCategory[] = [
             { href: "/tools/number-converter", icon: "🔢", key: "numberConverter" },
             { href: "/tools/regex-tester", icon: "🔍", key: "regexTester" },
             { href: "/tools/repo-tree", icon: "🌳", key: "repoTree" },
+            { href: "/tools/sql-formatter", icon: "🗄️", key: "sqlFormatter" },
             { href: "/tools/stun-turn-test", icon: "🧪", key: "stunTurnTest" },
             { href: "/tools/timestamp-converter", icon: "⏰", key: "timestampConverter" },
             { href: "/tools/url-encoder", icon: "🔗", key: "urlEncoder" },
@@ -77,6 +79,7 @@ export const toolsConfig: ToolCategory[] = [
         key: "downloader",
         icon: "📥",
         tools: [
+            { href: "/tools/scribd-downloader", icon: "📑", key: "scribdDownloader" },
             { href: "/tools/slideshare-downloader", icon: "📊", key: "slideshareDownloader" },
             { href: "/tools/studocu-downloader", icon: "📚", key: "studocuDownloader" },
         ],

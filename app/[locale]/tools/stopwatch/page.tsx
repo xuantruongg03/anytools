@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import StopwatchClient from "./StopwatchClient";
@@ -12,7 +13,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Đồng Hồ Bấm Giây Online - Stopwatch Miễn Phí 2026" : "Online Stopwatch - Free Time Measurement Tool 2026";
+    const title = isVi ? `Đồng Hồ Bấm Giây Online - Stopwatch Miễn Phí ${getCurrentYear()}` : `Online Stopwatch - Free Time Measurement Tool ${getCurrentYear()}`;
     const description = isVi ? "Đo thời gian chính xác với tính năng bấm giờ từng vòng. Công cụ đồng hồ bấm giây miễn phí." : "Precise time measurement with lap tracking. Free online stopwatch tool.";
 
     return {

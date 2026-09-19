@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { use } from "react";
 import { ToolPageLayout } from "@/components/layout";
@@ -13,8 +14,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
 
     const titles = {
-        en: "URL Shortener - Free Link Shortener Online 2026",
-        vi: "Rút Gọn Link - Công Cụ Rút Gọn URL Miễn Phí 2026",
+        en: `URL Shortener - Free Link Shortener Online ${getCurrentYear()}`,
+        vi: `Rút Gọn Link - Công Cụ Rút Gọn URL Miễn Phí ${getCurrentYear()}`,
     };
 
     const descriptions = {

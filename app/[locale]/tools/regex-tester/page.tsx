@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RegexTesterContent from "./RegexTesterContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Kiểm Tra Regex - Công Cụ Test Biểu Thức Chính Quy 2026" : "Regex Tester - Regular Expression Testing Tool Online 2026";
+    const title = isVi ? `Kiểm Tra Regex - Công Cụ Test Biểu Thức Chính Quy ${getCurrentYear()}` : `Regex Tester - Regular Expression Testing Tool Online ${getCurrentYear()}`;
     const description = isVi ? "Kiểm tra và xác thực biểu thức chính quy trực tuyến. Công cụ regex miễn phí với khớp mẫu, hỗ trợ cờ và kết quả tức thì. 100% bảo mật." : "Test and validate regular expressions online. Free regex tester with pattern matching, flags support, instant results. 100% secure.";
 
     return {

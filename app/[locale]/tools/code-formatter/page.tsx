@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import CodeFormatterContent from "./CodeFormatterContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Format Code Online - Beautify JavaScript, CSS, HTML, SQL, Python 2026" : "Code Formatter Online - Beautify JavaScript, CSS, HTML, SQL, Python 2026";
+    const title = isVi ? `Format Code Online - Beautify JavaScript, CSS, HTML, SQL, Python ${getCurrentYear()}` : `Code Formatter Online - Beautify JavaScript, CSS, HTML, SQL, Python ${getCurrentYear()}`;
     const description = isVi ? "Format và beautify code miễn phí. Hỗ trợ JavaScript, TypeScript, CSS, HTML, JSON, SQL, Python, XML, Markdown. Minify code nhanh chóng." : "Free online code formatter and beautifier. Support JavaScript, TypeScript, CSS, HTML, JSON, SQL, Python, XML, Markdown. Minify code instantly.";
 
     return {

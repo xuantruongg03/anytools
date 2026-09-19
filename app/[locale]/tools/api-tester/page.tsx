@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import RelatedTools from "@/components/RelatedTools";
 import { getRelatedTools } from "@/lib/utils/relatedTools";
@@ -12,7 +13,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     return {
-        title: locale === "vi" ? "Test API Online - Công Cụ Test API Miễn Phí 2026" : "API Tester Online - Free API Testing Tool 2026",
+        title: locale === "vi" ? `Test API Online - Công Cụ Test API Miễn Phí ${getCurrentYear()}` : `API Tester Online - Free API Testing Tool ${getCurrentYear()}`,
         description: locale === "vi" ? "Công cụ test API miễn phí. Gửi HTTP requests GET, POST, PUT, DELETE. Kiểm tra response, headers, body. 100% client-side." : "Free online API testing tool. Send HTTP requests, check responses, headers, body. Like Postman but in browser. Secure.",
         keywords: ["api tester", "api testing tool", "rest api tester", "http client", "api testing online", "postman alternative", "rest client", "api debugger", "http request tool", "api testing", "test api", "api endpoint tester", "rest api testing", "công cụ test api", "test api online", "kiểm tra api", "gửi http request"],
         authors: [{ name: "AnyTools" }],
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         publisher: "AnyTools",
         applicationName: "AnyTools API Tester",
         openGraph: {
-            title: locale === "vi" ? "Test API Online - Công Cụ Test API Miễn Phí 2026" : "API Tester Online - Free API Testing Tool 2026",
+            title: locale === "vi" ? `Test API Online - Công Cụ Test API Miễn Phí ${getCurrentYear()}` : `API Tester Online - Free API Testing Tool ${getCurrentYear()}`,
             description: locale === "vi" ? "Công cụ test API miễn phí. Hỗ trợ GET, POST, PUT, DELETE. Kiểm tra headers, body, response. 100% client-side." : "Free API testing tool. Support GET, POST, PUT, DELETE. Check headers, body, response. 100% client-side.",
             type: "website",
             siteName: "AnyTools",

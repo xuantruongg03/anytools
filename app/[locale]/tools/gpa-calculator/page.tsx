@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import GpaCalculatorClient from "./GpaCalculatorClient";
@@ -14,12 +15,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "GPA Calculator - Calculate Grade Point Average Online 2026",
+            title: `GPA Calculator - Calculate Grade Point Average Online ${getCurrentYear()}`,
             description: "Free online GPA calculator. Calculate current GPA, predict target grades, simulate scenarios. Support 4.0, 10-point, 100-point scales.",
             keywords: "GPA calculator, grade point average, calculate GPA, GPA conversion, credit system, university GPA, academic grade calculator, grade calculator Vietnam, cumulative GPA, semester GPA, graduation classification, tính GPA, điểm trung bình tích lũy, hệ thống tín chỉ",
         },
         vi: {
-            title: "Máy Tính GPA - Điểm Trung Bình Tích Lũy 2026",
+            title: `Máy Tính GPA - Điểm Trung Bình Tích Lũy ${getCurrentYear()}`,
             description: "Công cụ tính GPA miễn phí. Tính GPA hiện tại, dự đoán điểm cần thiết. Hỗ trợ thang 4.0, thang 10, thang 100.",
             keywords: "tính GPA, máy tính GPA, điểm trung bình tích lũy, GPA trung bình, hệ thống tín chỉ, tín chỉ đại học, quy đổi điểm, GPA calculator, tính điểm TB, phân loại tốt nghiệp, GPA 4.0, thang điểm 10, cách tính GPA",
         },

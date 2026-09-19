@@ -27,22 +27,27 @@ export function Header() {
                         <div className='flex items-center gap-6'>
                             <Link
                                 href={`/${locale}`}
-                                className='text-2xl font-extrabold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-85 transition-opacity tracking-tight'
+                                className='flex items-center gap-2.5 group cursor-pointer'
                             >
-                                AnyTools
+                                <div className='w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white text-lg shadow-sm group-hover:scale-105 transition-transform'>
+                                    🛠️
+                                </div>
+                                <span className='text-xl font-extrabold bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 dark:from-white dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent tracking-tight'>
+                                    AnyTools
+                                </span>
                             </Link>
 
                             {/* Search Trigger Button */}
                             <button
                                 onClick={openCommandPalette}
-                                className='hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800/90 hover:bg-gray-200 dark:hover:bg-gray-700/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-xs text-gray-500 dark:text-gray-400 transition-all cursor-pointer shadow-2xs'
-                                aria-label='Quick Search'
+                                className='hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 bg-gray-100/80 dark:bg-gray-800/80 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-xs text-gray-500 dark:text-gray-400 transition-all cursor-pointer shadow-2xs'
+                                aria-label={locale === "vi" ? "Tìm kiếm nhanh (Ctrl+K)" : "Quick Search (Ctrl+K)"}
                             >
-                                <svg className='w-3.5 h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                <svg className='w-3.5 h-3.5 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
                                 </svg>
-                                <span>{locale === "vi" ? "Tìm kiếm..." : "Quick search..."}</span>
-                                <kbd className='px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 font-semibold'>
+                                <span>{locale === "vi" ? "Tìm kiếm công cụ..." : "Search tools..."}</span>
+                                <kbd className='px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 rounded-md border border-gray-200 dark:border-gray-700 font-semibold shadow-2xs'>
                                     Ctrl+K
                                 </kbd>
                             </button>
@@ -94,7 +99,7 @@ export function Header() {
                             <button
                                 onClick={openCommandPalette}
                                 className='sm:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer'
-                                aria-label='Search'
+                                aria-label={locale === "vi" ? "Tìm kiếm" : "Search"}
                             >
                                 <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
@@ -110,7 +115,7 @@ export function Header() {
                             <button
                                 onClick={() => setMobileDrawerOpen(true)}
                                 className='lg:hidden p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer'
-                                aria-label='Open Navigation Menu'
+                                aria-label={locale === "vi" ? "Mở menu điều hướng" : "Open Navigation Menu"}
                             >
                                 <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6h16M4 12h16M4 18h16' />

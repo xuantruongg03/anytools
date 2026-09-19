@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Trình Soạn Markdown Online - Xuất PDF, Word Miễn Phí 2026" : "Markdown Editor Online - Export to PDF, Word Free 2026";
+    const title = isVi ? `Trình Soạn Markdown Online - Xuất PDF, Word Miễn Phí ${getCurrentYear()}` : `Markdown Editor Online - Export to PDF, Word Free ${getCurrentYear()}`;
     const description = isVi ? "Trình soạn Markdown miễn phí với xem trước thời gian thực. Xuất sang PDF, Word. Hỗ trợ bảng, code, danh sách, và nhiều hơn nữa." : "Free online Markdown editor with real-time preview. Export to PDF and Word. Supports tables, code blocks, lists, and more.";
 
     return {

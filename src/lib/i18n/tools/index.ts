@@ -18,6 +18,7 @@ import { microphoneTestTranslations } from "./microphone-test";
 import { randomToolsTranslations } from "./random-tools";
 import { weatherTranslations } from "./weather";
 import { slideshareDownloaderTranslations } from "./slideshare-downloader";
+import { scribdDownloaderTranslations } from "./scribd-downloader";
 import { studocuDownloaderTranslations } from "./studocu-downloader";
 import { speechToTextTranslations } from "./speech-to-text";
 import { removeBackgroundTranslations } from "./remove-background";
@@ -55,6 +56,7 @@ export const toolsTranslations = {
         microphoneTest: microphoneTestTranslations.en.microphoneTest,
         weather: weatherTranslations.en.weather,
         slideshareDownloader: slideshareDownloaderTranslations.en,
+        scribdDownloader: scribdDownloaderTranslations.en,
         studocuDownloader: studocuDownloaderTranslations.en,
         speechToText: speechToTextTranslations.en,
         removeBackground: removeBackgroundTranslations.en,
@@ -88,6 +90,7 @@ export const toolsTranslations = {
         microphoneTest: microphoneTestTranslations.vi.microphoneTest,
         weather: weatherTranslations.vi.weather,
         slideshareDownloader: slideshareDownloaderTranslations.vi,
+        scribdDownloader: scribdDownloaderTranslations.vi,
         studocuDownloader: studocuDownloaderTranslations.vi,
         speechToText: speechToTextTranslations.vi,
         removeBackground: removeBackgroundTranslations.vi,

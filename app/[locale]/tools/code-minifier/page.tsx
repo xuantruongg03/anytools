@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import CodeMinifierContent from "./CodeMinifierContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -12,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
     const title = isVi 
-        ? "Minify Code - Nén HTML, CSS, JavaScript Online Miễn Phí 2026" 
-        : "Code Minifier - Minify HTML, CSS, JavaScript Online Free 2026";
+        ? `Minify Code - Nén HTML, CSS, JavaScript Online Miễn Phí ${getCurrentYear()}` 
+        : `Code Minifier - Minify HTML, CSS, JavaScript Online Free ${getCurrentYear()}`;
     const description = isVi 
         ? "Công cụ nén code miễn phí. Minify HTML, CSS, JavaScript để giảm kích thước file và tăng tốc website. Beautify code ngược lại. Nhanh, an toàn." 
         : "Free online code minifier. Minify HTML, CSS, and JavaScript to reduce file size and speed up your website. Beautify code too. Fast and secure.";

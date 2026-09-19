@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import ColorPickerContent from "./ColorPickerContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Bảng Chọn Màu & Chuyển Đổi - HEX, RGB, HSL 2026" : "Color Picker & Converter - HEX, RGB, HSL Tool 2026";
+    const title = isVi ? `Bảng Chọn Màu & Chuyển Đổi - HEX, RGB, HSL ${getCurrentYear()}` : `Color Picker & Converter - HEX, RGB, HSL Tool ${getCurrentYear()}`;
     const description = isVi ? "Công cụ chọn màu và chuyển đổi miễn phí. Chọn màu từ bảng màu hoặc trích xuất từ ảnh. Chuyển đổi HEX, RGB, HSL, RGBA." : "Free online color picker and converter. Pick colors from wheel or extract from images. Convert HEX, RGB, HSL, RGBA instantly.";
 
     return {

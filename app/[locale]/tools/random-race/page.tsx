@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RandomRaceContent from "./RandomRaceContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Đua Thú Ngẫu Nhiên - Trò Chơi Đua Thú Vui Nhộn 2026" : "Random Race Game - Animal Racing Simulator Online 2026";
+    const title = isVi ? `Đua Thú Ngẫu Nhiên - Trò Chơi Đua Thú Vui Nhộn ${getCurrentYear()}` : `Random Race Game - Animal Racing Simulator Online ${getCurrentYear()}`;
     const description = isVi ? "Trò chơi đua thú ngẫu nhiên miễn phí với hoạt hình sinh động! Xem các con vật dễ thương đua đến đích. Hoàn hảo cho giải trí." : "Free random race game with animated animals! Watch cute animals race to the finish line. Perfect for fun and random selection.";
 
     return {

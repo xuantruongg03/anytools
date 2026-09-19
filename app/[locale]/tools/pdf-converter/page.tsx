@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import PdfConverterContent from "./PdfConverterContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi PDF - PDF sang Ảnh, Word Miễn Phí 2026" : "PDF Converter - Convert PDF to Image, Word Free 2026";
+    const title = isVi ? `Chuyển Đổi PDF - PDF sang Ảnh, Word Miễn Phí ${getCurrentYear()}` : `PDF Converter - Convert PDF to Image, Word Free ${getCurrentYear()}`;
     const description = isVi ? "Chuyển đổi PDF sang ảnh (PNG, JPG), Word miễn phí. Hỗ trợ chuyển ảnh sang PDF. Nhanh, bảo mật, không cần đăng ký." : "Convert PDF to images (PNG, JPG), Word for free. Support image to PDF conversion. Fast, secure, no registration required.";
 
     return {

@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import DnsLookupContent from "./DnsLookupContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "DNS Lookup - Tra Cứu DNS Records & WHOIS Online Miễn Phí 2026" : "DNS Lookup - Check DNS Records & WHOIS Information Online 2026";
+    const title = isVi ? `DNS Lookup - Tra Cứu DNS Records & WHOIS Online Miễn Phí ${getCurrentYear()}` : `DNS Lookup - Check DNS Records & WHOIS Information Online ${getCurrentYear()}`;
     const description = isVi ? "Tra cứu DNS miễn phí. Kiểm tra DNS records (A, AAAA, MX, TXT, NS), WHOIS domain, SSL certificate. Nhanh, chính xác." : "Free DNS lookup tool. Check DNS records (A, AAAA, MX, TXT, NS), WHOIS domain info, SSL certificates. Fast and accurate.";
 
     return {

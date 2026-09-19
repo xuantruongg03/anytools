@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import NumberConverterContent from "./NumberConverterContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Đổi Hệ Số & Máy Tính Bitwise - Nhị Phân, Hex 2026" : "Number System Converter & Bitwise Calculator Online 2026";
+    const title = isVi ? `Chuyển Đổi Hệ Số & Máy Tính Bitwise - Nhị Phân, Hex ${getCurrentYear()}` : `Number System Converter & Bitwise Calculator Online ${getCurrentYear()}`;
     const description = isVi ? "Công cụ chuyển đổi hệ số và máy tính bitwise miễn phí. Chuyển đổi giữa nhị phân, thập phân, thập lục phân, bát phân. Thực hiện AND, OR, XOR." : "Free number system converter and bitwise calculator. Convert between binary, decimal, hexadecimal, octal. Perform AND, OR, XOR, shift operations.";
 
     return {

@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { use } from "react";
 import { ToolPageLayout } from "@/components/layout";
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
 
-    const title = isVi ? "Tạo Ảnh Giữ Chỗ - Placeholder Image API 2026" : "Placeholder Image Generator - Free API 2026";
+    const title = isVi ? `Tạo Ảnh Giữ Chỗ - Placeholder Image API ${getCurrentYear()}` : `Placeholder Image Generator - Free API ${getCurrentYear()}`;
 
     const description = isVi ? "Tạo ảnh giữ chỗ với kích thước tùy chỉnh. API: /api/placeholder-image/640x480. Hỗ trợ gradient, solid color. Miễn phí." : "Generate placeholder images with custom sizes. API: /api/placeholder-image/640x480. Supports gradients, solid colors. Free & unlimited.";
 

@@ -7,6 +7,8 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { allTools, toolsConfig } from "@/config/tools";
 import { categoryTranslations } from "@/constants";
 import Button from "@/components/ui/Button";
+import { getCurrentYear } from "@/lib/utils/date";
+import SuggestToolBanner from "@/components/SuggestToolBanner";
 
 interface HomeContentProps {
     locale: "en" | "vi";
@@ -29,18 +31,33 @@ export default function HomeContent({ locale }: HomeContentProps) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"all" | "featured" | "favorites">("all");
     const [favorites, setFavorites] = useState<string[]>([]);
+    const [recents, setRecents] = useState<string[]>([]);
 
-    // Load favorites from localStorage
+    // Load favorites and recents from localStorage
     useEffect(() => {
         try {
             const saved = localStorage.getItem("anytools_favorites");
             if (saved) {
                 setFavorites(JSON.parse(saved));
             }
+            const savedRecents = localStorage.getItem("anytools_recents");
+            if (savedRecents) {
+                setRecents(JSON.parse(savedRecents));
+            }
         } catch (e) {
             // Ignore localStorage errors
         }
     }, []);
+
+    const addRecent = (toolKey: string) => {
+        setRecents((prev) => {
+            const next = [toolKey, ...prev.filter((k) => k !== toolKey)].slice(0, 6);
+            try {
+                localStorage.setItem("anytools_recents", JSON.stringify(next));
+            } catch (err) {}
+            return next;
+        });
+    };
 
     // Toggle favorite tool
     const toggleFavorite = (toolKey: string, e: React.MouseEvent) => {
@@ -127,12 +144,12 @@ export default function HomeContent({ locale }: HomeContentProps) {
                 <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-blue-500/10 via-purple-500/10 to-pink-500/10 dark:from-blue-600/15 dark:via-purple-600/15 dark:to-pink-600/15 blur-3xl -z-10 rounded-full pointer-events-none' />
 
                 {/* Hero Badge */}
-                <div className='inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800/60 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-6 shadow-2xs'>
-                    <span>✨</span>
+                <div className='inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/90 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800/60 text-xs font-semibold text-blue-600 dark:text-blue-400 mb-6 shadow-2xs backdrop-blur-md'>
+                    <span className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse' />
                     <span>
                         {locale === "vi"
-                            ? `${allTools.length}+ Công Cụ Miễn Phí • 100% Chạy Trong Trình Duyệt`
-                            : `${allTools.length}+ Free Tools • 100% Client-Side & Private`}
+                            ? `${allTools.length}+ Công Cụ Miễn Phí • Cập Nhật Năm ${getCurrentYear()}`
+                            : `${allTools.length}+ Free Online Tools • Updated for ${getCurrentYear()}`}
                     </span>
                 </div>
 
@@ -164,11 +181,37 @@ export default function HomeContent({ locale }: HomeContentProps) {
                         <button
                             onClick={openCommandPalette}
                             className='absolute right-3 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer hidden sm:block'
-                            title='Open Command Palette'
+                            title={locale === "vi" ? "Mở bảng lệnh nhanh (Ctrl+K)" : "Open Command Palette (Ctrl+K)"}
                         >
                             Ctrl+K
                         </button>
                     </div>
+
+                    {/* Recently Used Bar */}
+                    {recents.length > 0 && !searchQuery && (
+                        <div className='flex items-center justify-center gap-2 mt-3 flex-wrap text-xs animate-fadeIn'>
+                            <span className='text-gray-400 dark:text-gray-500 flex items-center gap-1 font-medium'>
+                                <span>🕒</span>
+                                <span>{locale === "vi" ? "Gần đây:" : "Recent:"}</span>
+                            </span>
+                            {recents.map((toolKey) => {
+                                const tool = allTools.find((t) => t.key === toolKey);
+                                const toolData = (t.tools as any)?.[toolKey];
+                                if (!tool || !toolData) return null;
+
+                                return (
+                                    <Link
+                                        key={tool.href}
+                                        href={`/${locale}${tool.href}`}
+                                        className='inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/70 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition-colors shadow-2xs hover:border-blue-500/50'
+                                    >
+                                        <span>{tool.icon}</span>
+                                        <span className='font-medium truncate max-w-[140px]'>{toolData.name}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {/* Category Pills (Dynamically generated & accurately mapped) */}
@@ -290,12 +333,13 @@ export default function HomeContent({ locale }: HomeContentProps) {
                             if (!toolData) return null;
 
                             const isFav = favorites.includes(tool.key);
-                            const isNew = ["boxShadowGenerator", "cssUnitConverter", "wordCounter", "cronGenerator", "jsonToTypes", "chmodCalculator"].includes(tool.key);
+                            const isNew = ["scribdDownloader", "boxShadowGenerator", "cssUnitConverter", "wordCounter", "cronGenerator", "jsonToTypes", "chmodCalculator"].includes(tool.key);
 
                             return (
                                 <Link
                                     key={tool.href}
                                     href={`/${locale}${tool.href}`}
+                                    onClick={() => addRecent(tool.key)}
                                     className='group relative block p-5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700/80 rounded-2xl hover:border-blue-500/60 dark:hover:border-blue-500/60 shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200'
                                 >
                                     <div className='flex items-start gap-4'>
@@ -314,7 +358,7 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                                 <div className='flex items-center gap-1.5'>
                                                     {isNew && (
                                                         <span className='px-1.5 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-md uppercase'>
-                                                            New
+                                                            {locale === "vi" ? "Mới" : "New"}
                                                         </span>
                                                     )}
 
@@ -326,7 +370,15 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                                                 ? "text-amber-500 hover:text-amber-600"
                                                                 : "text-gray-300 dark:text-gray-600 hover:text-amber-400"
                                                         }`}
-                                                        aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+                                                        aria-label={
+                                                            isFav
+                                                                ? locale === "vi"
+                                                                    ? "Xóa khỏi danh sách yêu thích"
+                                                                    : "Remove from favorites"
+                                                                : locale === "vi"
+                                                                ? "Thêm vào danh sách yêu thích"
+                                                                : "Add to favorites"
+                                                        }
                                                     >
                                                         ★
                                                     </button>
@@ -369,6 +421,9 @@ export default function HomeContent({ locale }: HomeContentProps) {
                     </div>
                 )}
             </main>
+
+            {/* Tool & Extension Suggestion Section */}
+            <SuggestToolBanner />
 
             {/* Value Propositions Section */}
             <section className='container mx-auto px-4 py-16 max-w-5xl'>

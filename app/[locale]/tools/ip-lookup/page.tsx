@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import IpLookupClient from "./IpLookupClient";
@@ -14,11 +15,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "What Is My IP Address - IP Lookup Tool 2026",
+            title: `What Is My IP Address - IP Lookup Tool ${getCurrentYear()}`,
             description: "Find your public IP, local IP, IPv4, IPv6 and geolocation info. Free IP checker with ISP, country, city detection.",
         },
         vi: {
-            title: "Tra Cứu Địa Chỉ IP - Kiểm Tra IP Của Bạn 2026",
+            title: `Tra Cứu Địa Chỉ IP - Kiểm Tra IP Của Bạn ${getCurrentYear()}`,
             description: "Tìm địa chỉ IP công cộng, IP local, IPv4, IPv6 và thông tin vị trí. Kiểm tra IP miễn phí với phát hiện ISP, quốc gia, thành phố.",
         },
     };

@@ -87,29 +87,43 @@ export default function ToolsSidebar({ isOpen, onClose }: ToolsSidebarProps) {
             {/* Sidebar */}
             <aside
                 className={`
-                    fixed top-0 left-0 bottom-0 bg-white/95 dark:bg-gray-900/95 
+                    bg-white/95 dark:bg-gray-900/95 
                     border-r border-gray-200 dark:border-gray-800
-                    transition-all duration-300 ease-in-out z-50
-                    flex flex-col w-64 backdrop-blur-md
-                    ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+                    transition-transform duration-300 ease-in-out
+                    flex flex-col w-64 backdrop-blur-md shrink-0
+                    
+                    /* Mobile Drawer */
+                    fixed inset-y-0 left-0 z-50
+                    ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
+
+                    /* Desktop Sticky: stays stuck below header and stops above footer */
+                    lg:sticky lg:top-16 lg:bottom-auto lg:h-[calc(100vh-4rem)] lg:translate-x-0 lg:z-30 lg:shadow-none
                 `}
             >
-                {/* Fixed Header: Logo + Search */}
+                {/* Fixed Header: Logo (mobile) + Search */}
                 <div className='shrink-0 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800 backdrop-blur-md'>
-                    {/* Logo */}
-                    <div className='flex items-center justify-between p-4'>
+                    {/* Logo (Mobile Drawer only) */}
+                    <div className='flex lg:hidden items-center justify-between p-4'>
                         <Link href={`/${locale}`} className='text-2xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity'>
                             AnyTools
                         </Link>
-                        <button onClick={onClose} className='lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer dark:text-gray-100' aria-label='Close sidebar'>
+                        <button onClick={onClose} className='p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer dark:text-gray-100' aria-label={locale === "vi" ? "Đóng danh sách công cụ" : "Close sidebar"}>
                             <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
                             </svg>
                         </button>
                     </div>
 
+                    {/* Desktop Header Label */}
+                    <div className='hidden lg:flex items-center justify-between px-4 pt-4 pb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400'>
+                        <span>{locale === "vi" ? "Danh Mục Công Cụ" : "Tools Directory"}</span>
+                        <span className='font-mono text-[11px] bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-md border border-blue-200 dark:border-blue-900/50 font-semibold'>
+                            {toolsConfig.reduce((acc, c) => acc + c.tools.length, 0)}
+                        </span>
+                    </div>
+
                     {/* Search Input */}
-                    <div className='px-4 pb-4'>
+                    <div className='px-4 pb-3'>
                         <div className='relative'>
                             <input type='text' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={locale === "vi" ? "Tìm kiếm công cụ..." : "Search tools..."} className='w-full px-4 py-2 pl-10 bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' />
                             <svg className='absolute left-3 top-2.5 w-5 h-5 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>

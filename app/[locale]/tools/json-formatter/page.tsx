@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import JsonFormatterContent from "./JsonFormatterContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Định Dạng JSON - Công Cụ Format & Validate Miễn Phí 2026" : "JSON Formatter Online - Free Beautifier & Validator 2026";
+    const title = isVi ? `Định Dạng JSON - Công Cụ Format & Validate Miễn Phí ${getCurrentYear()}` : `JSON Formatter Online - Free Beautifier & Validator ${getCurrentYear()}`;
     const description = isVi ? "Công cụ định dạng, xác thực và làm đẹp JSON miễn phí. Định dạng, validate, thu gọn JSON ngay lập tức. Có syntax highlighting." : "Free online JSON formatter, validator and beautifier. Format, validate, minify JSON instantly. Syntax highlighting included.";
 
     return {

@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 ﻿import type { Metadata } from "next";
 import { use } from "react";
 import { ToolPageLayout } from "@/components/layout";
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
 
-    const title = isVi ? "Mock API Generator - Tạo API Giả Lập Miễn Phí 2026" : "Mock API Generator - Create Free Mock APIs Online 2026";
+    const title = isVi ? `Mock API Generator - Tạo API Giả Lập Miễn Phí ${getCurrentYear()}` : `Mock API Generator - Create Free Mock APIs Online ${getCurrentYear()}`;
 
     const description = isVi ? "Tạo Mock API miễn phí với JSON response tùy chỉnh, dynamic data, chia sẻ endpoint. Hoàn hảo cho frontend dev, testing và prototyping." : "Free Mock API Generator. Create REST APIs with custom JSON responses, dynamic data, shareable endpoints. Perfect for frontend development and testing.";
 

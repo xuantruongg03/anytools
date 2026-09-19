@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import FakeDataGeneratorContent from "./FakeDataGeneratorContent";
 import RelatedTools from "@/components/RelatedTools";
@@ -12,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
     const title = isVi 
-        ? "Tạo Dữ Liệu Giả - Lorem Ipsum & Fake Data Generator Miễn Phí 2026" 
-        : "Fake Data Generator - Lorem Ipsum & Test Data Generator Free 2026";
+        ? `Tạo Dữ Liệu Giả - Lorem Ipsum & Fake Data Generator Miễn Phí ${getCurrentYear()}` 
+        : `Fake Data Generator - Lorem Ipsum & Test Data Generator Free ${getCurrentYear()}`;
     const description = isVi 
         ? "Công cụ tạo dữ liệu giả miễn phí. Lorem Ipsum, tên người, email, địa chỉ, số điện thoại, UUID, ngày tháng. Hoàn hảo cho testing và development." 
         : "Free fake data generator tool. Create Lorem Ipsum, names, emails, addresses, phone numbers, UUIDs, dates. Perfect for testing and development.";

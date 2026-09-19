@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import DiffCheckerClient from "./DiffCheckerClient";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "So Sánh Văn Bản - Công Cụ Diff Checker Miễn Phí 2026" : "Diff Checker - Text Comparison Tool Online Free 2026";
+    const title = isVi ? `So Sánh Văn Bản - Công Cụ Diff Checker Miễn Phí ${getCurrentYear()}` : `Diff Checker - Text Comparison Tool Online Free ${getCurrentYear()}`;
     const description = isVi ? "So sánh hai văn bản và tìm sự khác biệt trực tuyến. Công cụ diff checker miễn phí để so sánh file, code, tài liệu." : "Compare two texts and find differences online. Free diff checker tool to compare text files, code, documents. Highlight changes instantly.";
 
     return {

@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import WorldClockClient from "./WorldClockClient";
@@ -12,7 +13,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Đồng Hồ Thế Giới - Xem Giờ Trực Tuyến Miễn Phí 2026" : "World Clock - Free Online Time Zone Checker 2026";
+    const title = isVi ? `Đồng Hồ Thế Giới - Xem Giờ Trực Tuyến Miễn Phí ${getCurrentYear()}` : `World Clock - Free Online Time Zone Checker ${getCurrentYear()}`;
     const description = isVi ? "Xem giờ hiện tại của các thành phố trên thế giới. Công cụ đồng hồ thế giới miễn phí." : "Check current time across multiple time zones worldwide. Free online world clock tool.";
 
     return {

@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RelatedTools from "@/components/RelatedTools";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Chuyển Ảnh Thành Văn Bản - OCR Miễn Phí Online 2026" : "Image to Text - Free Online OCR Converter 2026";
+    const title = isVi ? `Chuyển Ảnh Thành Văn Bản - OCR Miễn Phí Online ${getCurrentYear()}` : `Image to Text - Free Online OCR Converter ${getCurrentYear()}`;
     const description = isVi ? "Chuyển đổi ảnh thành văn bản miễn phí bằng công nghệ OCR. Hỗ trợ nhiều ngôn ngữ, nhận dạng chữ in và chữ viết tay. Nhanh chóng, chính xác." : "Convert images to text for free using OCR technology. Support multiple languages, recognize printed and handwritten text. Fast and accurate.";
 
     return {

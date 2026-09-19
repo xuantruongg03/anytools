@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import JwtDecoderContent from "./JwtDecoderContent";
@@ -11,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? "Giải Mã JWT Online - Decode JSON Web Token Miễn Phí 2026" : "JWT Decoder Online - Decode JSON Web Tokens Free 2026";
+    const title = isVi ? `Giải Mã JWT Online - Decode JSON Web Token Miễn Phí ${getCurrentYear()}` : `JWT Decoder Online - Decode JSON Web Tokens Free ${getCurrentYear()}`;
     const description = isVi ? "Giải mã và kiểm tra JWT (JSON Web Token) trực tuyến. Xem header, payload và signature. 100% client-side, bảo mật." : "Decode and inspect JWT online instantly. View header, payload, and signature. Free JWT decoder for developers. 100% secure.";
 
     return {

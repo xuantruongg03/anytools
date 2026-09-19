@@ -1,3 +1,4 @@
+import { getCurrentYear } from "@/lib/utils/date";
 import type { Metadata } from "next";
 import { ToolPageLayout } from "@/components/layout";
 import RepoTreeClient from "./RepoTreeClient";
@@ -14,12 +15,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const metadata = {
         en: {
-            title: "GitHub Repo Tree Viewer - Folder Structure 2026",
+            title: `GitHub Repo Tree Viewer - Folder Structure ${getCurrentYear()}`,
             description: "Free GitHub repo tree viewer. Visualize folder structure, generate markdown tree for README. Support public and private repos.",
             keywords: "github tree, repo tree viewer, folder structure, directory tree, github markdown, repository structure, project tree, github visualizer, readme tree, file structure generator",
         },
         vi: {
-            title: "Xem Cây Thư Mục GitHub - Cấu Trúc Repo 2026",
+            title: `Xem Cây Thư Mục GitHub - Cấu Trúc Repo ${getCurrentYear()}`,
             description: "Công cụ xem cây thư mục GitHub miễn phí. Hiển thị cấu trúc thư mục, tạo markdown tree cho README. Hỗ trợ repo public và private.",
             keywords: "github tree, xem cây thư mục, cấu trúc thư mục, directory tree, github markdown, cấu trúc repo, project tree, repo structure, readme tree, tạo cây thư mục",
         },
