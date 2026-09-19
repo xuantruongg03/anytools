@@ -180,8 +180,18 @@ export async function getUserCredits(userId: string, clientIp: string = "unknown
             }
         }
 
-        // Nếu user chưa tồn tại -> Tạo mới (Mặc định 0 credit, cần nạp hoặc chờ 10s)
-        const initialCredits = 0;
+        // Kiểm tra số tài khoản đã tạo từ IP này (chống lạm dụng xóa storage để nhận 3 credit liên tục)
+        let ipCount = 0;
+        if (clientIp && clientIp !== "unknown") {
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i][3] === clientIp) {
+                    ipCount++;
+                }
+            }
+        }
+
+        // Tặng mặc định 3 credit cho người dùng mới khi cài đặt lần đầu
+        const initialCredits = ipCount < 2 ? 3 : 0;
         const now = getVnTimeString();
 
         await sheets.spreadsheets.values.append({
