@@ -22,6 +22,13 @@ export const studocuDownloaderTranslations = {
             text: "Temporarily we provide a browser extension tool for you to download content from Studocu, we are still finding a way to fix it for the website. Everything will work soon.",
             linkText: "browser extension tool",
         },
+        maintenanceNotice: {
+            badge: "⚠️ Maintenance",
+            title: "This tool is temporarily unavailable",
+            description: "Our online StuDocu downloader is currently experiencing technical issues due to platform changes. We have developed a browser extension as a reliable alternative that works perfectly.",
+            ctaText: "Use StuDocu Downloader Extension (Recommended)",
+            inputPlaceholder: "Download temporarily unavailable — please use the extension above",
+        },
         howToUse: "How to Use",
         step1: "Find the document you want to download on StuDocu",
         step2: "Copy the URL from your browser's address bar",
@@ -107,6 +114,13 @@ export const studocuDownloaderTranslations = {
         temporaryNotice: {
             text: "Tạm thời chúng tôi cung cấp 1 công cụ tiện ích mở rộng để bạn tải nội dung từ Studocu, chúng tôi vẫn đang tìm cách khắc phục cho trang web. Mọi thứ sẽ sớm hoạt động.",
             linkText: "công cụ tiện ích mở rộng",
+        },
+        maintenanceNotice: {
+            badge: "⚠️ Bảo trì",
+            title: "Công cụ tạm thời không khả dụng",
+            description: "Công cụ tải StuDocu trực tuyến đang gặp sự cố kỹ thuật do thay đổi từ nền tảng. Chúng tôi đã phát triển một tiện ích mở rộng trình duyệt thay thế hoạt động ổn định 100%.",
+            ctaText: "Dùng Extension StuDocu Downloader (Khuyên dùng)",
+            inputPlaceholder: "Tính năng tải tạm thời không khả dụng — vui lòng sử dụng extension ở trên",
         },
         howToUse: "Cách Sử Dụng",
         step1: "Tìm tài liệu bạn muốn tải trên StuDocu",

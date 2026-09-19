@@ -404,7 +404,10 @@ function ExtensionCard({ extension, locale, t, onScrollToGuide }: ExtensionCardP
     const isUnpublished = extension.isUnpublished || (!extension.chromeUrl && !extension.firefoxUrl && !extension.edgeUrl);
 
     return (
-        <article className='bg-white dark:bg-gray-800/90 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-2xs hover:shadow-xl hover:-translate-y-0.5 transition-all p-5 sm:p-6 flex flex-col h-full group'>
+        <article
+            id={extension.id}
+            className='bg-white dark:bg-gray-800/90 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-2xs hover:shadow-xl hover:-translate-y-0.5 transition-all p-5 sm:p-6 flex flex-col h-full group scroll-mt-28 target:ring-2 target:ring-amber-500 target:border-amber-500 dark:target:ring-amber-400'
+        >
             {/* Header */}
             <div className='flex items-start gap-3.5 mb-3'>
                 {extension.icon ? (
