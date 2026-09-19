@@ -194,6 +194,39 @@ export const extensionPrivacyPolicies: Record<string, PrivacyPolicyData> = {
             vi: "Tất cả việc xử lý tài liệu diễn ra cục bộ trong trình duyệt của bạn. Không có nội dung nào được gửi đến máy chủ bên ngoài. Extension chỉ lưu trữ tiến trình tải xuống và cài đặt cục bộ. Không có dữ liệu nào được chia sẻ với bên thứ ba - extension hoạt động hoàn toàn ngoại tuyến sau khi cài đặt.",
         },
     },
+        "scribd-downloader": {
+        extensionId: "scribd-downloader",
+        extensionName: "Scribd Downloader",
+        lastUpdated: "September 2026",
+        permissions: [
+            {
+                name: "activeTab",
+                description: {
+                    en: "Only to detect Scribd document pages and navigate to clean embed view",
+                    vi: "Chỉ để nhận diện trang tài liệu Scribd và chuyển hướng sang chế độ in sạch",
+                },
+            },
+            {
+                name: "scripting",
+                description: {
+                    en: "Only to execute lazy-load scrolling and inject dynamic print sizing stylesheets",
+                    vi: "Chỉ để kích hoạt cuộn tải trang tự động và chèn định dạng khổ giấy in chuẩn",
+                },
+            },
+            {
+                name: "https://*.scribd.com/*",
+                description: {
+                    en: "Only to communicate with Scribd pages and track real-time download progress",
+                    vi: "Chỉ để giao tiếp với trang tài liệu Scribd và theo dõi tiến trình tải theo thời gian thực",
+                },
+            },
+        ],
+        additionalInfo: {
+            en: "All document processing, lazy-load scrolling, and PDF creation happen 100% locally in your browser. No document content or browsing data is ever sent to external servers. No data is collected, tracked, or shared with third parties - the extension runs purely client-side.",
+            vi: "Tất cả quá trình xử lý tài liệu, cuộn tải trang và xuất file PDF đều diễn ra 100% cục bộ trong trình duyệt của bạn. Không có bất kỳ nội dung tài liệu hay dữ liệu duyệt web nào được gửi đến máy chủ bên ngoài. Tiện ích hoàn toàn không thu thập, theo dõi hay chia sẻ dữ liệu với bên thứ ba.",
+        },
+    },
+
 };
 
 // Helper function to get privacy policy by extension ID
