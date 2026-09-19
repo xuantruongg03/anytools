@@ -99,6 +99,21 @@ export const extensions: Extension[] = [
         author: "xuantruongg03",
         tags: ["studocu", "downloader", "education", "pdf"],
     },
+    {
+        id: "scribd-downloader",
+        name: "Scribd Downloader",
+        description: {
+            en: "Download educational lecture notes, study guides, and university materials from Scribd into clean, high-resolution PDF documents effortlessly.",
+            vi: "Công cụ hỗ trợ tải, chuyển đổi và lưu trữ tài liệu học tập, bài giảng, giáo trình từ Scribd thành file PDF độ nét cao phục vụ nghiên cứu và ôn tập một cách thuận tiện.",
+        },
+        category: "utility",
+        githubUrl: "https://github.com/xuantruongg03/scribd-downloader",
+        edgeUrl: "",
+        zipDownloadUrl: "https://github.com/xuantruongg03/scribd-downloader/archive/refs/heads/main.zip",
+        isUnpublished: true,
+        author: "xuantruongg03",
+        tags: ["scribd", "downloader", "education", "pdf"],
+    },
 ];
 
 // Helper function to get extensions by category
