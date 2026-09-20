@@ -1,10 +1,12 @@
+import { allTools } from "@/config/tools";
+
 /**
  * IndexNow API Integration
  * Protocol to instantly notify search engines about content changes
  * Supported by: Bing, Yandex, Seznam, Naver
  */
 
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY || "e8f5b2c7a9d1456789abcdef12345678";
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || "6d3e12248a4740dfab15f1fe5a51241a";
 const SITE_HOST = "anytools.online";
 
 interface IndexNowResponse {
@@ -84,64 +86,25 @@ export async function submitUrlsToIndexNow(urls: string[]): Promise<IndexNowResp
 export function generateToolUrls(): string[] {
     const baseUrl = "https://anytools.online";
     const locales = ["en", "vi"];
-
-    const tools = [
-        "api-tester",
-        "base64",
-        "color-picker",
-        "countdown",
-        "css-unit-converter",
-        "diff-checker",
-        "gpa-calculator",
-        "hash-generator",
-        "html-entity-encoder",
-        "image-to-text",
-        "json-formatter",
-        "jwt-decoder",
-        "microphone-test",
-        "number-converter",
-        "password-generator",
-        "qr-code-generator",
-        "random-race",
-        "random-wheel",
-        "regex-tester",
-        "remove-background",
-        "repo-tree",
-        "slideshare-downloader",
-        "speech-to-text",
-        "stopwatch",
-        "studocu-downloader",
-        "stun-turn-test",
-        "tailwind-css",
-        "text-case",
-        "timestamp-converter",
-        "url-encoder",
-        "url-shortener",
-        "uuid-generator",
-        "weather",
-        "world-clock",
-        "svg-preview",
-        "png-to-svg",
-        "latex-editor",
-        "markdown-editor",
-        "promo-image-generator",
-        "pdf-converter",
-    ];
+    const tools = allTools.map((tool) => tool.href.replace("/tools/", ""));
 
     const urls: string[] = [];
 
-    // Add homepage for each locale
+    // Add homepage, tools page, and each tool for each locale
     locales.forEach((locale) => {
-        const prefix = locale === "en" ? "" : `/${locale}`;
-        urls.push(`${baseUrl}${prefix}`);
+        urls.push(`${baseUrl}/${locale}`);
+        urls.push(`${baseUrl}/${locale}/tools`);
 
-        // Add tools page
-        urls.push(`${baseUrl}${prefix}/tools`);
-
-        // Add each tool
         tools.forEach((tool) => {
-            urls.push(`${baseUrl}${prefix}/tools/${tool}`);
+            urls.push(`${baseUrl}/${locale}/tools/${tool}`);
         });
+    });
+
+    // Also include default URLs without locale prefix
+    urls.push(`${baseUrl}`);
+    urls.push(`${baseUrl}/tools`);
+    tools.forEach((tool) => {
+        urls.push(`${baseUrl}/tools/${tool}`);
     });
 
     return urls;

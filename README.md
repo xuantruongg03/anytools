@@ -171,6 +171,42 @@ export default function MyComponent() {
 
 ---
 
+## ⚡ Instant Indexing (IndexNow / Bing Search)
+
+AnyTools uses the **[IndexNow](https://www.indexnow.org/)** protocol to instantly notify search engines (**Bing**, **Yandex**, **Seznam**, **Naver**) whenever new tools or pages are added or updated.
+
+### 🔑 IndexNow Key Configuration
+
+1. **Where to get or generate an IndexNow key:**
+   - **IndexNow.org:** Visit [IndexNow.org](https://www.indexnow.org/) and click **"Generate Key"** to get a 32-character key and download the key `.txt` file.
+   - **Bing Webmaster Tools:** Log in to [Bing Webmaster Tools](https://www.bing.com/webmasters) > click the **Settings (⚙️)** icon in the top right > **API access** > **API Key**.
+
+2. **Where the key is configured in this project:**
+   - **Verification file:** `public/<KEY>.txt` (e.g. [public/key.txt](public/key.txt)) - contains only the key string.
+   - **Environment variable:** `INDEXNOW_KEY` in `.env` (and Vercel Environment Variables).
+   - **Code references:** 
+     - [src/lib/indexnow.ts](src/lib/indexnow.ts) (API helper & `generateToolUrls()`)
+     - [scripts/submit-indexnow.mjs](scripts/submit-indexnow.mjs) (CLI submission script)
+
+### 🚀 Submitting URLs to Bing / IndexNow
+
+You can submit newly added tools or all pages directly from the command line:
+
+```bash
+# 1. Submit a specific tool (submits /en, /vi, and root URLs)
+npm run indexnow auto-bing-search
+
+# 2. Submit all tools (all 62 tools in EN & VI + home & tools pages)
+npm run indexnow
+
+# 3. Submit custom URLs
+node scripts/submit-indexnow.mjs https://anytools.online/custom-page
+```
+
+Submitted URLs will immediately appear in your **Bing Webmaster Tools** > **IndexNow** dashboard.
+
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
