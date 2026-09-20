@@ -23,8 +23,15 @@ export async function OPTIONS() {
  */
 function extractUserId(text: string): string | null {
     if (!text) return null;
-    const match = text.match(/USER_[A-Za-z0-9_]+/i);
-    return match ? match[0].toUpperCase() : null;
+    // 1. Chuẩn: USER_XXXX
+    let match = text.match(/USER_[A-Za-z0-9_]+/i);
+    if (match) return match[0].toUpperCase();
+
+    // 2. Dự phòng khi người dùng gõ nhầm dấu gạch ngang hoặc dấu cách: USER-XXXX hoặc USER XXXX
+    match = text.match(/USER[- ]([A-Za-z0-9]{4,10})/i);
+    if (match) return `USER_${match[1].toUpperCase()}`;
+
+    return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -129,6 +136,7 @@ export async function POST(request: NextRequest) {
             transId: `BMAC_${transId}`,
             userId,
             amount,
+            coffees,
             currency: "USD",
             bankCode: "BUYMEACOFFEE",
             content: `BMAC: ${content} (${supporterName}${supporterEmail ? ` - ${supporterEmail}` : ""})`,

@@ -8,9 +8,15 @@ const WEBHOOK_SECRET = process.env.PAYMENT_WEBHOOK_SECRET || process.env.ADMIN_S
  */
 function extractUserId(content: string): string | null {
     if (!content) return null;
-    // Tìm USER_xxxx
-    const match = content.match(/USER_[A-Za-z0-9_]+/i);
-    return match ? match[0].toUpperCase() : null;
+    // 1. Chuẩn: USER_XXXX
+    let match = content.match(/USER_[A-Za-z0-9_]+/i);
+    if (match) return match[0].toUpperCase();
+
+    // 2. Dự phòng khi người dùng gõ nhầm dấu gạch ngang hoặc dấu cách: USER-XXXX hoặc USER XXXX
+    match = content.match(/USER[- ]([A-Za-z0-9]{4,10})/i);
+    if (match) return `USER_${match[1].toUpperCase()}`;
+
+    return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -42,13 +48,14 @@ export async function POST(request: NextRequest) {
             bankCode?: string;
         }> = [];
 
-        // SePay format: { id, transferType: 'in', transferAmount, content, referenceCode }
-        if (body.transferAmount !== undefined && body.content !== undefined) {
+        // SePay format: { id, transferType: 'in', transferAmount, content, description, referenceCode, gateway }
+        if (body.transferAmount !== undefined && (body.content !== undefined || body.description !== undefined)) {
             if (body.transferType === "in" || !body.transferType) {
+                const combinedContent = `${body.content || ""} ${body.description || ""}`.trim();
                 transactions.push({
-                    transId: String(body.referenceCode || body.id || Date.now()),
+                    transId: String(body.id || body.referenceCode || Date.now()),
                     amount: Number(body.transferAmount),
-                    content: String(body.content),
+                    content: combinedContent,
                     bankCode: String(body.gateway || "BANK"),
                 });
             }

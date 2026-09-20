@@ -170,7 +170,7 @@ export async function getUserCredits(userId: string, clientIp: string = "unknown
         // Header: User_ID (0), Credits (1), Total_Downloaded (2), Created_IP (3), Created_At (4), Updated_At (5)
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            if (row[0] === userId) {
+            if (row[0]?.toString().trim().toUpperCase() === userId.trim().toUpperCase()) {
                 return {
                     userId,
                     credits: parseInt(row[1] || "0", 10),
@@ -242,7 +242,7 @@ export async function deductUserCredit(userId: string): Promise<{
         let totalDownloaded = 0;
 
         for (let i = 1; i < rows.length; i++) {
-            if (rows[i][0] === userId) {
+            if (rows[i][0]?.toString().trim().toUpperCase() === userId.trim().toUpperCase()) {
                 rowIndex = i + 1; // 1-based index cho Sheets
                 currentCredits = parseInt(rows[i][1] || "0", 10);
                 totalDownloaded = parseInt(rows[i][2] || "0", 10);
@@ -299,6 +299,8 @@ export async function deductUserCredit(userId: string): Promise<{
  * - Lớn hơn: tỷ lệ ưu đãi
  */
 export function calculateCreditsFromAmount(amount: number): number {
+    if (amount >= 200000) return 800;
+    if (amount >= 100000) return 350;
     if (amount >= 50000) return 150;
     if (amount >= 20000) return 55;
     if (amount >= 10000) return 25;
@@ -310,16 +312,18 @@ export function calculateCreditsFromAmount(amount: number): number {
 
 /**
  * Quy đổi tiền USD (Buy Me a Coffee / International) thành credits:
- * - $1 (1 coffee) = 30 credits
- * - $3 (3 coffees) = 100 credits
- * - $5 (5 coffees) = 200 credits
+ * - $1 (1 coffee) = 60 credits (~25,000 VND)
+ * - $3 (3 coffees) = 200 credits (~75,000 VND) - Best Value
+ * - $5 (5 coffees) = 400 credits (~125,000 VND) - Siêu ưu đãi
+ * - $10+ = 900 credits
  */
 export function calculateCreditsFromUsd(usd: number, coffees: number = 0): number {
     const count = coffees > 0 ? coffees : Math.round(usd);
-    if (count >= 5 || usd >= 5) return 200;
-    if (count >= 3 || usd >= 3) return 100;
-    if (count >= 1 || usd >= 1) return 30;
-    return 30;
+    if (count >= 10 || usd >= 10) return 900;
+    if (count >= 5 || usd >= 5) return 400;
+    if (count >= 3 || usd >= 3) return 200;
+    if (count >= 1 || usd >= 1) return 60;
+    return 60;
 }
 
 /**
@@ -333,6 +337,7 @@ export async function processPaymentWebhook(data: {
     userId: string;
     amount: number;
     currency?: string;
+    coffees?: number;
     creditsOverride?: number;
     bankCode?: string;
     content: string;
@@ -359,7 +364,7 @@ export async function processPaymentWebhook(data: {
         let creditsToAdd = data.creditsOverride || 0;
         if (creditsToAdd <= 0) {
             if (data.currency === "USD") {
-                creditsToAdd = calculateCreditsFromUsd(data.amount);
+                creditsToAdd = calculateCreditsFromUsd(data.amount, data.coffees);
             } else {
                 creditsToAdd = calculateCreditsFromAmount(data.amount);
             }
@@ -393,7 +398,7 @@ export async function processPaymentWebhook(data: {
         let currentCredits = 0;
 
         for (let i = 1; i < rows.length; i++) {
-            if (rows[i][0] === data.userId) {
+            if (rows[i][0]?.toString().trim().toUpperCase() === data.userId.trim().toUpperCase()) {
                 userRowIndex = i + 1;
                 currentCredits = parseInt(rows[i][1] || "0", 10);
                 break;
