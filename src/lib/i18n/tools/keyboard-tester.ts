@@ -1,0 +1,140 @@
+export const keyboardTesterTranslations = {
+    en: {
+        name: "Keyboard Tester",
+        description: "Test your computer keyboard online. Check for broken or sticky keys, test N-Key Rollover (NKRO) anti-ghosting, detect key chatter, and inspect key codes.",
+        category: "Multimedia",
+
+        // Controls
+        layout: "Keyboard Layout",
+        layoutFull: "Full Size (104 Keys)",
+        layoutTkl: "Tenkeyless (87 Keys)",
+        layout60: "Compact (60% Keys)",
+        osLayout: "OS Style",
+        osWindows: "Windows (Win / Alt)",
+        osMac: "macOS (Cmd / Option)",
+        switchSound: "Switch Sound",
+        soundClicky: "Clicky (Blue)",
+        soundTactile: "Tactile (Brown)",
+        soundLinear: "Linear (Red)",
+        soundMute: "Muted (Off)",
+        preventDefaults: "Prevent Browser Shortcuts (F1-F12, Alt, Tab)",
+        reset: "Reset Tester",
+        resetConfirm: "Keyboard test reset!",
+
+        // Metrics & HUD
+        currentlyPressed: "Currently Pressed",
+        maxSimultaneous: "Max Rollover (NKRO)",
+        totalTested: "Keys Tested",
+        chatterDetected: "Chatter Warnings",
+        chatterTooltip: "Key triggered twice under 35ms (possible faulty mechanical switch)",
+        keys: "keys",
+
+        // Legend
+        legendUntested: "Untested",
+        legendActive: "Pressing Now",
+        legendTested: "Tested (Working)",
+        legendChatter: "Chatter / Double-click",
+
+        // Inspector
+        eventLog: "Key Event Inspector",
+        clearLog: "Clear Log",
+        tableKey: "Key",
+        tableCode: "Code",
+        tableKeyCode: "KeyCode",
+        tableLocation: "Location",
+        tableDuration: "Duration",
+        tableStatus: "Status",
+
+        // SEO Guide
+        guideTitle: "Comprehensive Guide to Keyboard Testing & Troubleshooting",
+        whatIsGhosting: "What is Keyboard Ghosting & N-Key Rollover (NKRO)?",
+        whatIsGhostingDesc: "Ghosting occurs when pressing multiple keys simultaneously causes some keys not to register or an unintended key to activate. Modern mechanical and gaming keyboards feature N-Key Rollover (NKRO) or 6-Key Rollover (6KRO), allowing you to press many keys at once without blocking.",
+        whatIsChatter: "What is Key Chatter (Double Typing)?",
+        whatIsChatterDesc: "Key chattering (or key bounce) happens when a single press of a key results in two or more characters being typed (e.g. typing 'tt' instead of 't'). This is usually caused by dirt, dust, or oxidized copper leaves inside mechanical switches.",
+        howToFix: "How to Fix Keyboard Issues",
+        tip1Title: "Cleaning with Compressed Air or Alcohol",
+        tip1Desc: "For mechanical keyboards, remove the keycap and use compressed air or a few drops of 99% isopropyl alcohol directly into the switch stem while pressing it repeatedly.",
+        tip2Title: "Driver & Firmware Updates",
+        tip2Desc: "Check device manager or your keyboard manufacturer software (Razer Synapse, Corsair iCUE, Logitech G HUB) for firmware updates or debounce time adjustments.",
+        tip3Title: "Check for Physical Membrane Tears",
+        tip3Desc: "On membrane laptop keyboards, unresponsive key clusters often indicate liquid spill damage or cracked conductive traces requiring keyboard replacement.",
+
+        // FAQs
+        faqTitle: "Frequently Asked Questions",
+        faq1Q: "Why does pressing F1 or F5 refresh my browser during the test?",
+        faq1A: "Browsers have native shortcuts bound to function keys. Make sure 'Prevent Browser Shortcuts' is enabled at the top of the tester to capture them safely.",
+        faq2Q: "Can this tool test Mac keyboards?",
+        faq2A: "Yes! Simply switch the 'OS Style' toggle to macOS to display Command (⌘), Option (⌥), and Control (^).",
+        faq3Q: "Are Fn and Fn combination keys testable?",
+        faq3A: "Most laptops handle the Fn key purely in hardware before reaching the operating system or browser. If your browser does not receive a key event for Fn alone, it will still capture the combined function (such as media keys).",
+    },
+    vi: {
+        name: "Test Bàn Phím Trực Tuyến",
+        description: "Công cụ kiểm tra bàn phím máy tính trực tuyến miễn phí. Kiểm tra liệt phím, kẹt phím, test Anti-Ghosting / NKRO, phát hiện đúp phím (key chatter) và xem mã phím.",
+        category: "Đa phương tiện",
+
+        // Controls
+        layout: "Bố cục bàn phím",
+        layoutFull: "Full Size (104 Phím)",
+        layoutTkl: "Tenkeyless (87 Phím)",
+        layout60: "Compact (60% Phím)",
+        osLayout: "Hệ điều hành",
+        osWindows: "Windows (Win / Alt)",
+        osMac: "macOS (Cmd / Option)",
+        switchSound: "Âm thanh Switch",
+        soundClicky: "Clicky (Blue switch)",
+        soundTactile: "Tactile (Brown switch)",
+        soundLinear: "Linear (Red switch)",
+        soundMute: "Tắt âm thanh",
+        preventDefaults: "Chặn phím tắt trình duyệt (F1-F12, Alt, Tab)",
+        reset: "Làm mới kiểm tra",
+        resetConfirm: "Đã làm mới dữ liệu kiểm tra bàn phím!",
+
+        // Metrics & HUD
+        currentlyPressed: "Đang nhấn giữ",
+        maxSimultaneous: "Đồng thời tối đa (NKRO)",
+        totalTested: "Phím đã kiểm tra",
+        chatterDetected: "Cảnh báo đúp phím",
+        chatterTooltip: "Phím bị kích hoạt 2 lần liên tiếp dưới 35ms (dấu hiệu switch cơ bị chattering)",
+        keys: "phím",
+
+        // Legend
+        legendUntested: "Chưa bấm",
+        legendActive: "Đang nhấn",
+        legendTested: "Đã kiểm tra (Tốt)",
+        legendChatter: "Bị đúp / Lỗi",
+
+        // Inspector
+        eventLog: "Nhật ký sự kiện phím",
+        clearLog: "Xóa nhật ký",
+        tableKey: "Ký tự",
+        tableCode: "Mã Code",
+        tableKeyCode: "Mã KeyCode",
+        tableLocation: "Vị trí",
+        tableDuration: "Thời gian giữ",
+        tableStatus: "Trạng thái",
+
+        // SEO Guide
+        guideTitle: "Cẩm Nang Hướng Dẫn Kiểm Tra & Khắc Phục Lỗi Bàn Phím",
+        whatIsGhosting: "Hiện Tượng Ghosting & Chuẩn N-Key Rollover (NKRO) Là Gì?",
+        whatIsGhostingDesc: "Ghosting xảy ra khi bạn bấm nhiều phím cùng một lúc nhưng bàn phím không nhận diện được hết hoặc tự sinh ra phím ảo không bấm. Bàn phím cơ hoặc bàn phím gaming cao cấp hỗ trợ NKRO (nhận diện không giới hạn phím) hoặc 6KRO (nhận tối đa 6 phím cùng lúc), giúp các thao tác chơi game tốc độ cao không bị nuốt phím.",
+        whatIsChatter: "Lỗi Đúp Phím (Key Chatter / Bouncing) Là Gì?",
+        whatIsChatterDesc: "Đúp phím là hiện tượng bạn chỉ gõ 1 lần nhưng màn hình lại hiện 2 hoặc nhiều ký tự (ví dụ gõ 'a' thành 'aa'). Nguyên nhân chủ yếu do lá đồng tiếp điểm trong switch cơ bị bám bụi, gỉ sét hoặc lò xo tiếp xúc kém.",
+        howToFix: "Cách Xử Lý Khi Bàn Phím Bị Lỗi",
+        tip1Title: "Vệ Sinh Switch Bằng Cồn Isopropyl Hoặc Bình Xịt Khí Nén",
+        tip1Desc: "Tháo keycap của phím bị đúp hoặc kẹt, dùng bình xịt khí nén thổi sạch bụi bẩn, hoặc nhỏ 1-2 giọt cồn y tế 90 độ / cồn Isopropyl 99% vào khe switch rồi nhấn liên tục cho cồn làm sạch tiếp điểm.",
+        tip2Title: "Cập Nhật Driver & Điều Chỉnh Thời Gian Debounce",
+        tip2Desc: "Cài đặt phần mềm chính hãng của bàn phím (Razer Synapse, Corsair iCUE, Logitech G HUB, v.v.) và tăng thời gian Debounce Time lên 10-20ms để lọc hiện tượng nhảy phím ảo.",
+        tip3Title: "Kiểm Tra Mạch Bàn Phím Laptop Khi Bị Liệt Theo Hàng",
+        tip3Desc: "Nếu bàn phím laptop bị liệt cả một cụm phím hoặc cả một hàng phím, thường là do cáp nối bị lỏng hoặc mạch phim (membrane) bị đứt do ẩm mốc, cần mang đến trung tâm bảo hành để thay thế.",
+
+        // FAQs
+        faqTitle: "Câu Hỏi Thường Gặp (FAQs)",
+        faq1Q: "Tại sao khi bấm F5 trang web lại tải lại thay vì chỉ kiểm tra phím?",
+        faq1A: "Trình duyệt mặc định gán phím F5 là phím tải lại trang. Hãy đảm bảo tính năng 'Chặn phím tắt trình duyệt' ở góc trên công cụ đã được bật.",
+        faq2Q: "Công cụ có hỗ trợ bàn phím Macbook không?",
+        faq2A: "Có! Bạn chỉ cần chọn kiểu hệ điều hành 'macOS' để hiển thị các phím Command (⌘), Option (⌥), và Control (^).",
+        faq3Q: "Tại sao phím Fn trên bàn phím của tôi không sáng đèn khi bấm?",
+        faq3A: "Phím Fn trên hầu hết các dòng laptop được xử lý ở tầng phần cứng (BIOS / Embedded Controller) trước khi gửi tín hiệu tới hệ điều hành. Do đó trình duyệt không nhận được sự kiện riêng lẻ cho phím Fn, nhưng khi bấm kết hợp (ví dụ Fn + F1) vẫn kiểm tra được bình thường.",
+    },
+};

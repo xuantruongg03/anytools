@@ -32,6 +32,17 @@ import { autoBingSearchTranslations } from "./auto-bing-search";
 import { sixNewToolsTranslations } from "./six-new-tools";
 import { teamGeneratorTranslations } from "./team-generator";
 import { examShufflerTranslations } from "./exam-shuffler";
+import { typingTestTranslations } from "./typing-test";
+import { loanCalculatorTranslations } from "./loan-calculator";
+import { pdfSplitMergeTranslations } from "./pdf-split-merge";
+import { textToSpeechTranslations } from "./text-to-speech";
+import { metaTagsPreviewTranslations } from "./meta-tags-preview";
+import { gradientGeneratorTranslations } from "./gradient-generator";
+import { jsonDiffTranslations } from "./json-diff";
+import { speedTestTranslations } from "./speed-test";
+import { screenRecorderTranslations } from "./screen-recorder";
+import { audioTrimmerTranslations } from "./audio-trimmer";
+import { keyboardTesterTranslations } from "./keyboard-tester";
 
 export const toolsTranslations = {
     en: {
@@ -69,6 +80,17 @@ export const toolsTranslations = {
         ipLookup: ipLookupTranslations.en.ipLookup,
         teamGenerator: teamGeneratorTranslations.en,
         examShuffler: examShufflerTranslations.en,
+        typingTest: typingTestTranslations.en,
+        loanCalculator: loanCalculatorTranslations.en,
+        pdfSplitMerge: pdfSplitMergeTranslations.en,
+        textToSpeech: textToSpeechTranslations.en,
+        metaTagsPreview: metaTagsPreviewTranslations.en,
+        gradientGenerator: gradientGeneratorTranslations.en,
+        jsonDiff: jsonDiffTranslations.en,
+        speedTest: speedTestTranslations.en,
+        screenRecorder: screenRecorderTranslations.en,
+        audioTrimmer: audioTrimmerTranslations.en,
+        keyboardTester: keyboardTesterTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -105,5 +127,16 @@ export const toolsTranslations = {
         ipLookup: ipLookupTranslations.vi.ipLookup,
         teamGenerator: teamGeneratorTranslations.vi,
         examShuffler: examShufflerTranslations.vi,
+        typingTest: typingTestTranslations.vi,
+        loanCalculator: loanCalculatorTranslations.vi,
+        pdfSplitMerge: pdfSplitMergeTranslations.vi,
+        textToSpeech: textToSpeechTranslations.vi,
+        metaTagsPreview: metaTagsPreviewTranslations.vi,
+        gradientGenerator: gradientGeneratorTranslations.vi,
+        jsonDiff: jsonDiffTranslations.vi,
+        speedTest: speedTestTranslations.vi,
+        screenRecorder: screenRecorderTranslations.vi,
+        audioTrimmer: audioTrimmerTranslations.vi,
+        keyboardTester: keyboardTesterTranslations.vi,
     },
 };

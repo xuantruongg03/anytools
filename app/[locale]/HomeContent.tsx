@@ -16,12 +16,16 @@ const TOOL_CATEGORY_MAP = new Map<string, string>(
 );
 
 const NEW_TOOL_KEYS = new Set([
+    "keyboardTester", "typingTest", "loanCalculator", "pdfSplitMerge", "textToSpeech", "metaTagsPreview",
+    "gradientGenerator", "jsonDiff", "speedTest", "screenRecorder", "audioTrimmer",
     "scribdDownloader", "boxShadowGenerator", "cssUnitConverter", "wordCounter",
     "cronGenerator", "jsonToTypes", "chmodCalculator", "randomWheel", "countdown",
     "latexEditor", "teamGenerator", "examShuffler"
 ]);
 
 const FEATURED_TOOL_KEYS = new Set([
+    "keyboardTester", "typingTest", "loanCalculator", "pdfSplitMerge", "speedTest", "gradientGenerator",
+    "jsonDiff", "screenRecorder", "audioTrimmer", "textToSpeech", "metaTagsPreview",
     "jsonFormatter", "cssUnitConverter", "wordCounter", "boxShadowGenerator",
     "cronGenerator", "jsonToTypes", "base64", "colorPicker", "hashGenerator",
     "chmodCalculator", "qrCodeGenerator", "passwordGenerator", "examShuffler",
