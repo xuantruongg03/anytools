@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useMemo, useDeferredValue } from "react";
 import { allTools, toolsConfig } from "@/config/tools";
 import { categoryTranslations } from "@/constants";
 import Button from "@/components/ui/Button";
-import { getCurrentYear } from "@/lib/utils/date";
+import { getCurrentYear, formatUpdateDate } from "@/lib/utils/date";
 import SuggestToolBanner from "@/components/SuggestToolBanner";
 
 // Pre-computed static lookups to eliminate O(N*M) iteration during renders
@@ -49,7 +49,7 @@ export default function HomeContent({ locale }: HomeContentProps) {
     const deferredSearchQuery = useDeferredValue(searchQuery);
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<"all" | "featured" | "favorites">("all");
+    const [viewMode, setViewMode] = useState<"all" | "updated" | "featured" | "favorites">("all");
     const [favorites, setFavorites] = useState<string[]>([]);
     const [recents, setRecents] = useState<string[]>([]);
 
@@ -109,7 +109,7 @@ export default function HomeContent({ locale }: HomeContentProps) {
     const filteredTools = useMemo(() => {
         const query = deferredSearchQuery.toLowerCase().trim();
 
-        return allTools.filter((tool) => {
+        let list = allTools.filter((tool) => {
             const toolData = t.tools[tool.key as keyof typeof t.tools] as {
                 name?: string;
                 description?: string;
@@ -135,9 +135,23 @@ export default function HomeContent({ locale }: HomeContentProps) {
             if (viewMode === "featured" && !selectedCategory && !query) {
                 return FEATURED_TOOL_KEYS.has(tool.key);
             }
+            if (viewMode === "updated") {
+                return !!tool.updatedAt;
+            }
 
             return true;
         });
+
+        // If in "updated" view mode, sort by updatedAt descending (newest first)
+        if (viewMode === "updated") {
+            list = [...list].sort((a, b) => {
+                const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                return dateB - dateA;
+            });
+        }
+
+        return list;
     }, [deferredSearchQuery, selectedCategory, viewMode, favorites, t]);
 
     const openCommandPalette = () => {
@@ -267,11 +281,13 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                 ? (locale === "vi" ? `Công cụ yêu thích (${filteredTools.length})` : `Favorites (${filteredTools.length})`)
                                 : viewMode === "featured"
                                 ? (locale === "vi" ? "Công cụ nổi bật" : "Featured Tools")
+                                : viewMode === "updated"
+                                ? (locale === "vi" ? `Công cụ mới cập nhật (${filteredTools.length})` : `Recently Updated Tools (${filteredTools.length})`)
                                 : (locale === "vi" ? `Tất cả công cụ (${allTools.length})` : `All Tools (${allTools.length})`)}
                         </h2>
                     </div>
 
-                    {/* View mode toggle (All / Featured / Favorites) */}
+                    {/* View mode toggle (All / Updated / Featured / Favorites) */}
                     <div className='flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl text-xs font-semibold'>
                         <button
                             onClick={() => {
@@ -288,11 +304,25 @@ export default function HomeContent({ locale }: HomeContentProps) {
                         </button>
                         <button
                             onClick={() => {
+                                setViewMode("updated");
+                                setSelectedCategory(null);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                                viewMode === "updated" && selectedCategory === null
+                                    ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-2xs"
+                                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                            }`}
+                        >
+                            <span>✨</span>
+                            <span>{locale === "vi" ? "Mới cập nhật" : "Recently Updated"}</span>
+                        </button>
+                        <button
+                            onClick={() => {
                                 setViewMode("featured");
                                 setSelectedCategory(null);
                             }}
                             className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
-                                viewMode === "featured"
+                                viewMode === "featured" && selectedCategory === null
                                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-2xs"
                                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             }`}
@@ -306,7 +336,7 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                 setSelectedCategory(null);
                             }}
                             className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
-                                viewMode === "favorites"
+                                viewMode === "favorites" && selectedCategory === null
                                     ? "bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-2xs"
                                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             }`}
@@ -370,6 +400,7 @@ export default function HomeContent({ locale }: HomeContentProps) {
 
                             const isFav = favorites.includes(tool.key);
                             const isNew = NEW_TOOL_KEYS.has(tool.key);
+                            const isRecentlyUpdated = !!tool.updatedAt && tool.updatedAt >= "2026-09-01";
 
                             return (
                                 <Link
@@ -428,9 +459,24 @@ export default function HomeContent({ locale }: HomeContentProps) {
                                     </div>
 
                                     {/* Tool Description */}
-                                    <p className='text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed mt-auto'>
+                                    <p className='text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed mb-3'>
                                         {toolData.description}
                                     </p>
+
+                                    {/* Updated Date Footer */}
+                                    {tool.updatedAt && (
+                                        <div className='flex items-center justify-between text-[11px] text-gray-400 dark:text-gray-500 pt-2 mt-auto border-t border-gray-100 dark:border-gray-700/60'>
+                                            <span className='flex items-center gap-1 font-mono text-[10px]'>
+                                                <span>🕒</span>
+                                                <span>{formatUpdateDate(tool.updatedAt, locale)}</span>
+                                            </span>
+                                            {isRecentlyUpdated && (
+                                                <span className='inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60'>
+                                                    {locale === "vi" ? "Cập nhật" : "Updated"}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </Link>
                             );
                         })}

@@ -28,7 +28,7 @@ import { mockApiGeneratorTranslations } from "./mock-api-generator";
 import { placeholderImageTranslations } from "./placeholder-image";
 import { ipLookupTranslations } from "./ip-lookup";
 import { fiveNewToolsTranslations } from "./five-new-tools";
-import { autoBingSearch } from "./auto-bing-search";
+import { autoBingSearchTranslations } from "./auto-bing-search";
 import { sixNewToolsTranslations } from "./six-new-tools";
 import { teamGeneratorTranslations } from "./team-generator";
 import { examShufflerTranslations } from "./exam-shuffler";
@@ -39,7 +39,7 @@ export const toolsTranslations = {
         ...randomToolsTranslations.en,
         ...fiveNewToolsTranslations.en,
         ...sixNewToolsTranslations.en,
-        autoBingSearch: autoBingSearch,
+        autoBingSearch: autoBingSearchTranslations.en,
         uuidGenerator: uuidGeneratorTranslations.en,
         jwtDecoder: jwtDecoderTranslations.en,
         timestampConverter: timestampConverterTranslations.en.timestampConverter,
@@ -75,7 +75,7 @@ export const toolsTranslations = {
         ...randomToolsTranslations.vi,
         ...fiveNewToolsTranslations.vi,
         ...sixNewToolsTranslations.vi,
-        autoBingSearch: autoBingSearch,
+        autoBingSearch: autoBingSearchTranslations.vi,
         uuidGenerator: uuidGeneratorTranslations.vi,
         jwtDecoder: jwtDecoderTranslations.vi,
         timestampConverter: timestampConverterTranslations.vi.timestampConverter,

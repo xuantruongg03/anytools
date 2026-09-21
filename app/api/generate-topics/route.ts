@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/utils/api-wrapper";
+import { generateInstantSearchTopics } from "@/lib/constants/bing-search-topics";
 
-async function generateTopics(existingTopics: string[], count: number): Promise<string[]> {
-    const prompt = `Generate a list of ${count} unique and interesting search topics. The topics should be diverse and suitable for general audience. Avoid topics that are too niche or controversial. Here are some topics that have already been used, please provide completely new ones: ${existingTopics.join(", ")}. Return the topics as a JSON array of strings ONLY, no other text.`;
+async function generateTopics(existingTopics: string[], count: number, locale: string = "vi"): Promise<string[]> {
+    const isVi = locale === "vi";
+    const language = isVi ? "Vietnamese" : "English";
+    // Limit recent history context to last 25 items to avoid token bloat
+    const recentHistory = existingTopics.slice(-25).join(", ");
+    
+    const prompt = `Generate a JSON array of ${count} diverse, natural search queries in ${language}. 
+Topics should cover everyday interests: tech questions, cooking recipes, travel spots, science trivia, health tips, pop culture. 
+Must look like realistic search engine queries typed by real humans (e.g., "thời tiết đà lạt cuối tuần", "how to speed up laptop").
+${recentHistory ? `Avoid these recent queries: ${recentHistory}.` : ""}
+Return ONLY a valid JSON array of strings, with no markdown code blocks and no extra text.`;
 
     try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            console.warn("GEMINI_API_KEY not found, falling back to instant search topics");
+            return generateInstantSearchTopics(count, existingTopics, locale);
+        }
+
         const { response } = await callGemini("gemini-2.5-flash", [{ role: "user", content: prompt }]);
         
         // Extract JSON array from the response
@@ -14,16 +30,20 @@ async function generateTopics(existingTopics: string[], count: number): Promise<
         }
 
         const topics = JSON.parse(jsonMatch[0]);
-        return topics;
+        if (Array.isArray(topics) && topics.length > 0) {
+            return topics;
+        }
+        return generateInstantSearchTopics(count, existingTopics, locale);
     } catch (error) {
-        console.error("Error calling Gemini API:", error);
-        throw new Error("Failed to generate topics from Gemini.");
+        console.error("Error calling Gemini API for topics, falling back to instant:", error);
+        return generateInstantSearchTopics(count, existingTopics, locale);
     }
 }
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
-    const { existingTopics = [], count = 20 } = await req.json();
-    const newTopics = await generateTopics(existingTopics, count);
+    const { existingTopics = [], count = 20, locale = "vi" } = await req.json();
+    const safeCount = Math.min(Math.max(1, count), 50);
+    const newTopics = await generateTopics(existingTopics, safeCount, locale);
     return NextResponse.json({ topics: newTopics });
 }, "/api/generate-topics");
 
@@ -40,12 +60,12 @@ async function callGemini(model: string, messages: { role: string; content: stri
         body: JSON.stringify({
             contents,
             systemInstruction: systemMessage ? { parts: [{ text: systemMessage.content }] } : undefined,
-            generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+            generationConfig: { temperature: 0.8, maxOutputTokens: 1024 },
         }),
     });
 
     if (!res.ok) {
-        const error = await res.json();
+        const error = await res.json().catch(() => ({}));
         throw new Error(error.error?.message || `Gemini API error: ${res.status}`);
     }
 
@@ -54,4 +74,4 @@ async function callGemini(model: string, messages: { role: string; content: stri
         response: data.candidates?.[0]?.content?.parts?.[0]?.text || "",
         usage: { promptTokens: data.usageMetadata?.promptTokenCount || 0, completionTokens: data.usageMetadata?.candidatesTokenCount || 0 },
     };
-}
+}
