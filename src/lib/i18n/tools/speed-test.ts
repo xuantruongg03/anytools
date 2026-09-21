@@ -6,10 +6,19 @@ export const speedTestTranslations = {
 
         // Actions
         startTest: "Start Speed Test",
-        testingPing: "Measuring Ping & Jitter...",
-        testingDownload: "Testing Download Speed...",
-        testingUpload: "Testing Upload Speed...",
-        testComplete: "Speed Test Complete!",
+        testAgain: "Test Again",
+        testingPing: "Measuring Latency & Jitter...",
+        testingDownload: "Testing Download Bandwidth...",
+        testingUpload: "Testing Upload Bandwidth...",
+        testComplete: "Speed Test Completed Successfully!",
+        copyResults: "Copy Results",
+        resultsCopied: "Speed test results copied to clipboard!",
+
+        // Stepper
+        stepPing: "1. Ping & Jitter",
+        stepDownload: "2. Download",
+        stepUpload: "3. Upload",
+        stepComplete: "4. Complete",
 
         // Metrics
         downloadSpeed: "Download",
@@ -41,10 +50,19 @@ export const speedTestTranslations = {
 
         // Actions
         startTest: "Bắt Đầu Kiểm Tra",
-        testingPing: "Đang đo Ping & Jitter...",
-        testingDownload: "Đang đo tốc độ Tải xuống...",
-        testingUpload: "Đang đo tốc độ Tải lên...",
-        testComplete: "Kiểm tra tốc độ hoàn tất!",
+        testAgain: "Kiểm Tra Lại",
+        testingPing: "Đang đo độ trễ Ping & Jitter...",
+        testingDownload: "Đang đo tốc độ Tải xuống (Download)...",
+        testingUpload: "Đang đo tốc độ Tải lên (Upload)...",
+        testComplete: "Kiểm tra tốc độ hoàn tất thành công!",
+        copyResults: "Sao Chép Kết Quả",
+        resultsCopied: "Đã sao chép kết quả đo tốc độ vào bộ nhớ tạm!",
+
+        // Stepper
+        stepPing: "1. Ping & Jitter",
+        stepDownload: "2. Tải xuống",
+        stepUpload: "3. Tải lên",
+        stepComplete: "4. Hoàn tất",
 
         // Metrics
         downloadSpeed: "Tải xuống",

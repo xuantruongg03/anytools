@@ -7,47 +7,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 
-// Load environment variables from .env.local and .env
-function loadEnv() {
-    const envFiles = [".env.local", ".env"];
-    for (const file of envFiles) {
-        const fullPath = path.join(projectRoot, file);
-        if (fs.existsSync(fullPath)) {
-            const content = fs.readFileSync(fullPath, "utf-8");
-            for (const line of content.split("\n")) {
-                const trimmed = line.trim();
-                if (!trimmed || trimmed.startsWith("#")) continue;
-                const eqIndex = trimmed.indexOf("=");
-                if (eqIndex !== -1) {
-                    const key = trimmed.slice(0, eqIndex).trim();
-                    let val = trimmed.slice(eqIndex + 1).trim();
-                    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-                        val = val.slice(1, -1);
-                    }
-                    if (!process.env[key]) {
-                        process.env[key] = val;
-                    }
-                }
-            }
-        }
-    }
-}
-loadEnv();
-
 const SITE_HOST = "anytools.online";
 const BASE_URL = `https://${SITE_HOST}`;
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY || "6d3e12248a4740dfab15f1fe5a51241a";
+const INDEXNOW_KEY = "5a2585ce96c14ba49a1b2113563b56cd"
 const KEY_LOCATION = `${BASE_URL}/${INDEXNOW_KEY}.txt`;
-
-// Ensure public verification key file exists
-const publicDir = path.join(projectRoot, "public");
-if (fs.existsSync(publicDir)) {
-    const keyFilePath = path.join(publicDir, `${INDEXNOW_KEY}.txt`);
-    if (!fs.existsSync(keyFilePath)) {
-        fs.writeFileSync(keyFilePath, INDEXNOW_KEY, "utf-8");
-        console.log(`📁 Auto-created verification file: public/${INDEXNOW_KEY}.txt`);
-    }
-}
 
 // Read tools from src/config/tools.ts
 function getAllToolSlugs() {
@@ -144,15 +107,9 @@ async function main() {
     console.log(`🔑 Key: ${INDEXNOW_KEY}`);
     console.log(`📄 Key Location: ${KEY_LOCATION}\n`);
 
-    if (urls.length <= 10) {
-        console.log("URLs to submit:");
-        urls.forEach((u) => console.log(`  - ${u}`));
-        console.log("");
-    } else {
-        console.log(`Sample URLs (first 5 of ${urls.length}):`);
-        urls.slice(0, 5).forEach((u) => console.log(`  - ${u}`));
-        console.log("  ...\n");
-    }
+    console.log(`URLs to submit (${urls.length}):`);
+    urls.forEach((u, i) => console.log(`${u}`));
+    console.log("");
 
     const payload = {
         host: SITE_HOST,

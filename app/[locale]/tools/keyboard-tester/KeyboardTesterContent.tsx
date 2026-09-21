@@ -16,8 +16,10 @@ interface KeyDef {
     subLabel?: string;
     macLabel?: string;
     macSubLabel?: string;
-    widthClass?: string; // custom width for special keys
+    // Width in flex units or custom class
+    widthClass?: string;
     heightClass?: string;
+    gridSpan?: string;
 }
 
 interface KeyState {
@@ -40,157 +42,166 @@ interface LogEntry {
     timestamp: string;
 }
 
-// Full ANSI Keyboard Definition
-const F_ROW_MAIN: KeyDef[] = [
-    { code: "Escape", label: "Esc", widthClass: "w-10 sm:w-12" },
+// ==========================================
+// 1. FUNCTION ROW DEFINITIONS
+// ==========================================
+const F_ROW_ESC: KeyDef = { code: "Escape", label: "Esc" };
+const F_ROW_G1: KeyDef[] = [
     { code: "F1", label: "F1" },
     { code: "F2", label: "F2" },
     { code: "F3", label: "F3" },
     { code: "F4", label: "F4" },
+];
+const F_ROW_G2: KeyDef[] = [
     { code: "F5", label: "F5" },
     { code: "F6", label: "F6" },
     { code: "F7", label: "F7" },
     { code: "F8", label: "F8" },
+];
+const F_ROW_G3: KeyDef[] = [
     { code: "F9", label: "F9" },
     { code: "F10", label: "F10" },
     { code: "F11", label: "F11" },
     { code: "F12", label: "F12" },
 ];
 
-const F_ROW_NAV: KeyDef[] = [
-    { code: "PrintScreen", label: "PrtSc" },
-    { code: "ScrollLock", label: "ScrLk" },
-    { code: "Pause", label: "Pause" },
+// ==========================================
+// 2. MAIN ALPHANUMERIC AREA (15u wide per row)
+// ==========================================
+const NUMBER_ROW: KeyDef[] = [
+    { code: "Backquote", label: "`", subLabel: "~", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit1", label: "1", subLabel: "!", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit2", label: "2", subLabel: "@", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit3", label: "3", subLabel: "#", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit4", label: "4", subLabel: "$", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit5", label: "5", subLabel: "%", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit6", label: "6", subLabel: "^", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit7", label: "7", subLabel: "&", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit8", label: "8", subLabel: "*", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit9", label: "9", subLabel: "(", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Digit0", label: "0", subLabel: ")", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Minus", label: "-", subLabel: "_", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Equal", label: "=", subLabel: "+", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Backspace", label: "Backspace", subLabel: "⌫", widthClass: "w-[80px] sm:w-[96px]" },
 ];
 
-const NUMBER_ROW_MAIN: KeyDef[] = [
-    { code: "Backquote", label: "`", subLabel: "~" },
-    { code: "Digit1", label: "1", subLabel: "!" },
-    { code: "Digit2", label: "2", subLabel: "@" },
-    { code: "Digit3", label: "3", subLabel: "#" },
-    { code: "Digit4", label: "4", subLabel: "$" },
-    { code: "Digit5", label: "5", subLabel: "%" },
-    { code: "Digit6", label: "6", subLabel: "^" },
-    { code: "Digit7", label: "7", subLabel: "&" },
-    { code: "Digit8", label: "8", subLabel: "*" },
-    { code: "Digit9", label: "9", subLabel: "(" },
-    { code: "Digit0", label: "0", subLabel: ")" },
-    { code: "Minus", label: "-", subLabel: "_" },
-    { code: "Equal", label: "=", subLabel: "+" },
-    { code: "Backspace", label: "⌫", widthClass: "w-16 sm:w-20" },
+const QWERTY_ROW: KeyDef[] = [
+    { code: "Tab", label: "Tab", subLabel: "⇥", widthClass: "w-[58px] sm:w-[70px]" },
+    { code: "KeyQ", label: "Q", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyW", label: "W", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyE", label: "E", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyR", label: "R", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyT", label: "T", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyY", label: "Y", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyU", label: "U", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyI", label: "I", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyO", label: "O", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyP", label: "P", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "BracketLeft", label: "[", subLabel: "{", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "BracketRight", label: "]", subLabel: "}", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Backslash", label: "\\", subLabel: "|", widthClass: "w-[58px] sm:w-[70px]" },
 ];
 
-const NUMBER_ROW_NAV: KeyDef[] = [
-    { code: "Insert", label: "Ins" },
-    { code: "Home", label: "Home" },
-    { code: "PageUp", label: "PgUp" },
+const HOME_ROW: KeyDef[] = [
+    { code: "CapsLock", label: "Caps Lock", widthClass: "w-[68px] sm:w-[82px]" },
+    { code: "KeyA", label: "A", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyS", label: "S", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyD", label: "D", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyF", label: "F", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyG", label: "G", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyH", label: "H", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyJ", label: "J", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyK", label: "K", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyL", label: "L", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Semicolon", label: ";", subLabel: ":", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Quote", label: "'", subLabel: '"', widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Enter", label: "Enter", subLabel: "↵", widthClass: "w-[88px] sm:w-[106px]" },
 ];
 
-const NUMBER_ROW_NUMPAD: KeyDef[] = [
-    { code: "NumLock", label: "Num" },
+const SHIFT_ROW: KeyDef[] = [
+    { code: "ShiftLeft", label: "Shift", subLabel: "⇧", widthClass: "w-[88px] sm:w-[106px]" },
+    { code: "KeyZ", label: "Z", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyX", label: "X", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyC", label: "C", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyV", label: "V", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyB", label: "B", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyN", label: "N", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "KeyM", label: "M", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Comma", label: ",", subLabel: "<", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Period", label: ".", subLabel: ">", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Slash", label: "/", subLabel: "?", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "ShiftRight", label: "Shift", subLabel: "⇧", widthClass: "w-[108px] sm:w-[130px]" },
+];
+
+const BOTTOM_ROW: KeyDef[] = [
+    { code: "ControlLeft", label: "Ctrl", macLabel: "Control", macSubLabel: "⌃", widthClass: "w-[48px] sm:w-[58px]" },
+    { code: "MetaLeft", label: "Win", macLabel: "Cmd", macSubLabel: "⌘", widthClass: "w-[48px] sm:w-[58px]" },
+    { code: "AltLeft", label: "Alt", macLabel: "Opt", macSubLabel: "⌥", widthClass: "w-[48px] sm:w-[58px]" },
+    { code: "Space", label: "Space", widthClass: "flex-1 min-w-[220px] sm:min-w-[260px]" },
+    { code: "AltRight", label: "Alt", macLabel: "Opt", macSubLabel: "⌥", widthClass: "w-[48px] sm:w-[58px]" },
+    { code: "MetaRight", label: "Win", macLabel: "Cmd", macSubLabel: "⌘", widthClass: "w-[48px] sm:w-[58px]" },
+    { code: "ContextMenu", label: "Menu", macLabel: "Fn", widthClass: "w-[48px] sm:w-[58px]" },
+    { code: "ControlRight", label: "Ctrl", macLabel: "Control", macSubLabel: "⌃", widthClass: "w-[48px] sm:w-[58px]" },
+];
+
+// ==========================================
+// 3. NAVIGATION CLUSTER (3u wide)
+// ==========================================
+const NAV_ROW_F: KeyDef[] = [
+    { code: "PrintScreen", label: "PrtSc", subLabel: "SysRq", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "ScrollLock", label: "Scroll", subLabel: "Lock", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Pause", label: "Pause", subLabel: "Break", widthClass: "w-[38px] sm:w-[46px]" },
+];
+
+const NAV_ROW_1: KeyDef[] = [
+    { code: "Insert", label: "Insert", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Home", label: "Home", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "PageUp", label: "Page", subLabel: "Up", widthClass: "w-[38px] sm:w-[46px]" },
+];
+
+const NAV_ROW_2: KeyDef[] = [
+    { code: "Delete", label: "Delete", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "End", label: "End", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "PageDown", label: "Page", subLabel: "Down", widthClass: "w-[38px] sm:w-[46px]" },
+];
+
+const NAV_ARROW_UP: KeyDef = { code: "ArrowUp", label: "↑", widthClass: "w-[38px] sm:w-[46px]" };
+const NAV_ARROWS_BOTTOM: KeyDef[] = [
+    { code: "ArrowLeft", label: "←", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "ArrowDown", label: "↓", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "ArrowRight", label: "→", widthClass: "w-[38px] sm:w-[46px]" },
+];
+
+// ==========================================
+// 4. NUMPAD CLUSTER (4-column CSS grid)
+// ==========================================
+const NUMPAD_GRID_KEYS: KeyDef[] = [
+    // Row 1
+    { code: "NumLock", label: "Num", subLabel: "Lock" },
     { code: "NumpadDivide", label: "/" },
     { code: "NumpadMultiply", label: "*" },
     { code: "NumpadSubtract", label: "-" },
-];
 
-const QWERTY_ROW_MAIN: KeyDef[] = [
-    { code: "Tab", label: "Tab", widthClass: "w-14 sm:w-16" },
-    { code: "KeyQ", label: "Q" },
-    { code: "KeyW", label: "W" },
-    { code: "KeyE", label: "E" },
-    { code: "KeyR", label: "R" },
-    { code: "KeyT", label: "T" },
-    { code: "KeyY", label: "Y" },
-    { code: "KeyU", label: "U" },
-    { code: "KeyI", label: "I" },
-    { code: "KeyO", label: "O" },
-    { code: "KeyP", label: "P" },
-    { code: "BracketLeft", label: "[", subLabel: "{" },
-    { code: "BracketRight", label: "]", subLabel: "}" },
-    { code: "Backslash", label: "\\", subLabel: "|", widthClass: "w-12 sm:w-14" },
-];
+    // Row 2
+    { code: "Numpad7", label: "7", subLabel: "Home" },
+    { code: "Numpad8", label: "8", subLabel: "▲" },
+    { code: "Numpad9", label: "9", subLabel: "PgUp" },
+    { code: "NumpadAdd", label: "+", gridSpan: "row-span-2 h-[82px] sm:h-[98px]" },
 
-const QWERTY_ROW_NAV: KeyDef[] = [
-    { code: "Delete", label: "Del" },
-    { code: "End", label: "End" },
-    { code: "PageDown", label: "PgDn" },
-];
-
-const QWERTY_ROW_NUMPAD: KeyDef[] = [
-    { code: "Numpad7", label: "7" },
-    { code: "Numpad8", label: "8" },
-    { code: "Numpad9", label: "9" },
-    { code: "NumpadAdd", label: "+", heightClass: "h-22 sm:h-26" },
-];
-
-const HOME_ROW_MAIN: KeyDef[] = [
-    { code: "CapsLock", label: "Caps", widthClass: "w-16 sm:w-20" },
-    { code: "KeyA", label: "A" },
-    { code: "KeyS", label: "S" },
-    { code: "KeyD", label: "D" },
-    { code: "KeyF", label: "F" },
-    { code: "KeyG", label: "G" },
-    { code: "KeyH", label: "H" },
-    { code: "KeyJ", label: "J" },
-    { code: "KeyK", label: "K" },
-    { code: "KeyL", label: "L" },
-    { code: "Semicolon", label: ";", subLabel: ":" },
-    { code: "Quote", label: "'", subLabel: '"' },
-    { code: "Enter", label: "Enter", widthClass: "w-18 sm:w-22" },
-];
-
-const HOME_ROW_NUMPAD: KeyDef[] = [
-    { code: "Numpad4", label: "4" },
+    // Row 3
+    { code: "Numpad4", label: "4", subLabel: "◀" },
     { code: "Numpad5", label: "5" },
-    { code: "Numpad6", label: "6" },
-];
+    { code: "Numpad6", label: "6", subLabel: "▶" },
 
-const SHIFT_ROW_MAIN: KeyDef[] = [
-    { code: "ShiftLeft", label: "Shift", widthClass: "w-20 sm:w-24" },
-    { code: "KeyZ", label: "Z" },
-    { code: "KeyX", label: "X" },
-    { code: "KeyC", label: "C" },
-    { code: "KeyV", label: "V" },
-    { code: "KeyB", label: "B" },
-    { code: "KeyN", label: "N" },
-    { code: "KeyM", label: "M" },
-    { code: "Comma", label: ",", subLabel: "<" },
-    { code: "Period", label: ".", subLabel: ">" },
-    { code: "Slash", label: "/", subLabel: "?" },
-    { code: "ShiftRight", label: "Shift", widthClass: "w-22 sm:w-28" },
-];
+    // Row 4
+    { code: "Numpad1", label: "1", subLabel: "End" },
+    { code: "Numpad2", label: "2", subLabel: "▼" },
+    { code: "Numpad3", label: "3", subLabel: "PgDn" },
+    { code: "NumpadEnter", label: "Enter", subLabel: "↵", gridSpan: "row-span-2 h-[82px] sm:h-[98px]" },
 
-const SHIFT_ROW_NAV: KeyDef[] = [
-    { code: "ArrowUp", label: "▲" },
-];
-
-const SHIFT_ROW_NUMPAD: KeyDef[] = [
-    { code: "Numpad1", label: "1" },
-    { code: "Numpad2", label: "2" },
-    { code: "Numpad3", label: "3" },
-    { code: "NumpadEnter", label: "↵", heightClass: "h-22 sm:h-26" },
-];
-
-const BOTTOM_ROW_MAIN: KeyDef[] = [
-    { code: "ControlLeft", label: "Ctrl", macLabel: "Control", widthClass: "w-12 sm:w-14" },
-    { code: "MetaLeft", label: "Win", macLabel: "⌘ Cmd", widthClass: "w-12 sm:w-14" },
-    { code: "AltLeft", label: "Alt", macLabel: "⌥ Opt", widthClass: "w-12 sm:w-14" },
-    { code: "Space", label: "Space", widthClass: "flex-1 min-w-32 max-w-72" },
-    { code: "AltRight", label: "Alt", macLabel: "⌥ Opt", widthClass: "w-12 sm:w-14" },
-    { code: "MetaRight", label: "Win", macLabel: "⌘ Cmd", widthClass: "w-12 sm:w-14" },
-    { code: "ContextMenu", label: "Menu", macLabel: "Fn", widthClass: "w-10 sm:w-12" },
-    { code: "ControlRight", label: "Ctrl", macLabel: "Control", widthClass: "w-12 sm:w-14" },
-];
-
-const BOTTOM_ROW_NAV: KeyDef[] = [
-    { code: "ArrowLeft", label: "◀" },
-    { code: "ArrowDown", label: "▼" },
-    { code: "ArrowRight", label: "▶" },
-];
-
-const BOTTOM_ROW_NUMPAD: KeyDef[] = [
-    { code: "Numpad0", label: "0", widthClass: "w-22 sm:w-26" },
-    { code: "NumpadDecimal", label: "." },
+    // Row 5
+    { code: "Numpad0", label: "0", subLabel: "Ins", gridSpan: "col-span-2 w-full" },
+    { code: "NumpadDecimal", label: ".", subLabel: "Del" },
 ];
 
 export default function KeyboardTesterContent() {
@@ -203,6 +214,8 @@ export default function KeyboardTesterContent() {
     const [osType, setOsType] = useState<OsType>("windows");
     const [soundType, setSoundType] = useState<SoundType>("clicky");
     const [preventDefaults, setPreventDefaults] = useState<boolean>(true);
+    const [theme, setTheme] = useState<"classic" | "dark">("classic");
+    const [showZones, setShowZones] = useState<boolean>(true);
 
     // Dynamic Testing States
     const [keyStates, setKeyStates] = useState<{ [code: string]: KeyState }>({});
@@ -210,6 +223,11 @@ export default function KeyboardTesterContent() {
     const [maxRollover, setMaxRollover] = useState<number>(0);
     const [chatterCount, setChatterCount] = useState<number>(0);
     const [eventLogs, setEventLogs] = useState<LogEntry[]>([]);
+
+    // LED States
+    const [capsLockActive, setCapsLockActive] = useState<boolean>(false);
+    const [numLockActive, setNumLockActive] = useState<boolean>(true);
+    const [scrollLockActive, setScrollLockActive] = useState<boolean>(false);
 
     // Audio Context Ref
     const audioCtxRef = useRef<AudioContext | null>(null);
@@ -283,6 +301,13 @@ export default function KeyboardTesterContent() {
                 }
             }
 
+            // Track lock states
+            if (e.getModifierState) {
+                setCapsLockActive(e.getModifierState("CapsLock"));
+                setNumLockActive(e.getModifierState("NumLock"));
+                setScrollLockActive(e.getModifierState("ScrollLock"));
+            }
+
             const code = e.code || e.key;
             const now = performance.now();
 
@@ -329,52 +354,56 @@ export default function KeyboardTesterContent() {
     );
 
     // Handle Keyup
-    const handleKeyUp = useCallback(
-        (e: KeyboardEvent) => {
-            const code = e.code || e.key;
-            const now = performance.now();
+    const handleKeyUp = useCallback((e: KeyboardEvent) => {
+        // Track lock states
+        if (e.getModifierState) {
+            setCapsLockActive(e.getModifierState("CapsLock"));
+            setNumLockActive(e.getModifierState("NumLock"));
+            setScrollLockActive(e.getModifierState("ScrollLock"));
+        }
 
-            setKeyStates((prev) => {
-                const existing = prev[code];
-                if (!existing) return prev;
+        const code = e.code || e.key;
+        const now = performance.now();
 
-                const duration = Math.round(now - existing.lastDownTime);
+        setKeyStates((prev) => {
+            const existing = prev[code];
+            if (!existing) return prev;
 
-                const next = {
-                    ...prev,
-                    [code]: {
-                        ...existing,
-                        isPressed: false,
-                        totalDuration: existing.totalDuration + duration,
-                    },
-                };
+            const duration = Math.round(now - existing.lastDownTime);
 
-                // Add to event log
-                const locationName =
-                    e.location === 1 ? "Left" : e.location === 2 ? "Right" : e.location === 3 ? "Numpad" : "Standard";
+            const next = {
+                ...prev,
+                [code]: {
+                    ...existing,
+                    isPressed: false,
+                    totalDuration: existing.totalDuration + duration,
+                },
+            };
 
-                setEventLogs((logs) => [
-                    {
-                        id: Math.random().toString(36).substring(2, 9),
-                        key: e.key === " " ? "Space" : e.key,
-                        code: e.code,
-                        keyCode: e.keyCode,
-                        location: locationName,
-                        durationMs: duration,
-                        hasChatter: existing.hasChatter,
-                        timestamp: new Date().toLocaleTimeString(),
-                    },
-                    ...logs.slice(0, 49), // Keep latest 50 entries
-                ]);
+            // Add to event log
+            const locationName =
+                e.location === 1 ? "Left" : e.location === 2 ? "Right" : e.location === 3 ? "Numpad" : "Standard";
 
-                const activeCount = Object.values(next).filter((k) => k.isPressed).length;
-                setCurrentlyPressedCount(activeCount);
+            setEventLogs((logs) => [
+                {
+                    id: Math.random().toString(36).substring(2, 9),
+                    key: e.key === " " ? "Space" : e.key,
+                    code: e.code,
+                    keyCode: e.keyCode,
+                    location: locationName,
+                    durationMs: duration,
+                    hasChatter: existing.hasChatter,
+                    timestamp: new Date().toLocaleTimeString(),
+                },
+                ...logs.slice(0, 49),
+            ]);
 
-                return next;
-            });
-        },
-        []
-    );
+            const activeCount = Object.values(next).filter((k) => k.isPressed).length;
+            setCurrentlyPressedCount(activeCount);
+
+            return next;
+        });
+    }, []);
 
     // Register global event listeners
     useEffect(() => {
@@ -403,7 +432,7 @@ export default function KeyboardTesterContent() {
     // Calculate total tested keys count
     const totalTestedCount = Object.values(keyStates).filter((k) => k.isTested).length;
 
-    // Helper to render individual key
+    // Helper to render individual realistic 3D keycap
     const renderKey = (keyDef: KeyDef) => {
         const state = keyStates[keyDef.code];
         const isPressed = state?.isPressed;
@@ -414,29 +443,76 @@ export default function KeyboardTesterContent() {
         const mainLabel = osType === "mac" && keyDef.macLabel ? keyDef.macLabel : keyDef.label;
         const subLabel = osType === "mac" && keyDef.macSubLabel ? keyDef.macSubLabel : keyDef.subLabel;
 
-        let bgClass = "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 shadow-xs";
-        if (hasChatter) {
-            bgClass = "bg-red-500 text-white border-red-600 shadow-red-500/50";
-        } else if (isPressed) {
-            bgClass = "bg-blue-500 text-white border-blue-600 shadow-md shadow-blue-500/50 translate-y-0.5 scale-95";
-        } else if (isTested) {
-            bgClass = "bg-emerald-500/15 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-500/60 font-semibold";
+        // Realistic 3D Keycap Styling (Classic vs Dark)
+        let keycapStyle = "";
+        if (theme === "classic") {
+            // Classic white/light-grey keyboard (matching Image 2)
+            if (hasChatter) {
+                keycapStyle =
+                    "bg-gradient-to-b from-red-500 to-red-600 text-white border-red-400 shadow-[0_1px_0_0_#991b1b] translate-y-[2px]";
+            } else if (isPressed) {
+                keycapStyle =
+                    "bg-gradient-to-b from-blue-500 to-blue-600 text-white border-blue-400 shadow-[0_1px_0_0_#1d4ed8] translate-y-[2px]";
+            } else if (isTested) {
+                keycapStyle =
+                    "bg-gradient-to-b from-emerald-100 to-emerald-200 text-emerald-900 border-emerald-400 shadow-[0_3px_0_0_#10b981]";
+            } else {
+                keycapStyle =
+                    "bg-gradient-to-b from-white via-slate-50 to-slate-200 text-slate-800 border border-slate-300 shadow-[0_3px_0_0_#94a3b8]";
+            }
+        } else {
+            // Dark mechanical keyboard
+            if (hasChatter) {
+                keycapStyle =
+                    "bg-gradient-to-b from-red-500 to-red-600 text-white border-red-400 shadow-[0_1px_0_0_#b91c1c] translate-y-[2px]";
+            } else if (isPressed) {
+                keycapStyle =
+                    "bg-gradient-to-b from-blue-500 to-blue-600 text-white border-blue-400 shadow-[0_1px_0_0_#1d4ed8] translate-y-[2px]";
+            } else if (isTested) {
+                keycapStyle =
+                    "bg-gradient-to-b from-emerald-950/90 to-emerald-900/90 text-emerald-300 border-emerald-500/80 shadow-[0_3px_0_0_#064e3b]";
+            } else {
+                keycapStyle =
+                    "bg-gradient-to-b from-gray-800 to-gray-850 text-gray-200 border border-gray-700/80 shadow-[0_3px_0_0_#1e293b]";
+            }
         }
+
+        const widthCls = keyDef.widthClass || "w-[38px] sm:w-[46px]";
+        const heightCls = keyDef.heightClass || "h-[38px] sm:h-[46px]";
+        const gridSpan = keyDef.gridSpan || "";
+
+        // Tactile Homing Bump for F, J, and Numpad 5
+        const isHomingKey = keyDef.code === "KeyF" || keyDef.code === "KeyJ";
+        const isNumpadHoming = keyDef.code === "Numpad5";
 
         return (
             <div
                 key={keyDef.code}
-                className={`relative flex flex-col items-center justify-center select-none rounded-lg border text-xs sm:text-sm transition-all duration-75 min-w-8 sm:min-w-10 h-10 sm:h-12 px-1 ${
-                    keyDef.widthClass || "w-8 sm:w-11"
-                } ${keyDef.heightClass || ""} ${bgClass}`}
+                className={`relative flex flex-col items-center justify-center select-none rounded-lg text-xs font-mono transition-all duration-75 p-0.5 cursor-default ${widthCls} ${heightCls} ${gridSpan} ${keycapStyle}`}
                 title={`${keyDef.code}${count > 0 ? ` (Pressed ${count}x)` : ""}`}
             >
-                {subLabel && <span className='text-[9px] opacity-60 leading-none'>{subLabel}</span>}
-                <span className='font-bold leading-tight truncate max-w-full'>{mainLabel}</span>
+                {/* Secondary/Shift label */}
+                {subLabel && (
+                    <span className='text-[9px] sm:text-[10px] font-semibold opacity-70 leading-none mb-0.5'>
+                        {subLabel}
+                    </span>
+                )}
+                {/* Primary label */}
+                <span className='font-bold text-xs sm:text-[13px] leading-none truncate max-w-full px-0.5'>
+                    {mainLabel}
+                </span>
 
-                {/* Counter Badge if pressed multiple times */}
+                {/* Tactile Homing Bump */}
+                {isHomingKey && (
+                    <span className='absolute bottom-1 w-2.5 h-[2px] rounded-full bg-current opacity-40' />
+                )}
+                {isNumpadHoming && (
+                    <span className='absolute bottom-1 w-1.5 h-1.5 rounded-full bg-current opacity-40' />
+                )}
+
+                {/* Counter Badge */}
                 {count > 1 && (
-                    <span className='absolute top-0.5 right-0.5 text-[8px] font-mono px-1 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold'>
+                    <span className='absolute top-0.5 right-0.5 text-[8px] font-mono px-1 rounded-full bg-blue-500 text-white font-bold leading-tight shadow-xs'>
                         {count}
                     </span>
                 )}
@@ -447,7 +523,7 @@ export default function KeyboardTesterContent() {
     return (
         <div className='flex flex-col items-center justify-center w-full max-w-6xl mx-auto space-y-6'>
             {/* Top Controls Toolbar */}
-            <div className='w-full bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4'>
+            <div className='w-full bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4'>
                 <div className='flex flex-wrap items-center gap-3 text-xs'>
                     {/* Layout Selector */}
                     <div className='flex items-center gap-1.5'>
@@ -455,11 +531,24 @@ export default function KeyboardTesterContent() {
                         <select
                             value={layout}
                             onChange={(e) => setLayout(e.target.value as LayoutType)}
-                            className='px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium cursor-pointer'
+                            className='px-2.5 py-1.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold cursor-pointer'
                         >
                             <option value='full'>{t.layoutFull}</option>
                             <option value='tkl'>{t.layoutTkl}</option>
                             <option value='60'>{t.layout60}</option>
+                        </select>
+                    </div>
+
+                    {/* Theme Selector */}
+                    <div className='flex items-center gap-1.5'>
+                        <span className='font-bold text-gray-700 dark:text-gray-300'>🎨 {t.keyboardTheme}:</span>
+                        <select
+                            value={theme}
+                            onChange={(e) => setTheme(e.target.value as "classic" | "dark")}
+                            className='px-2.5 py-1.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold cursor-pointer'
+                        >
+                            <option value='classic'>{t.themeClassic}</option>
+                            <option value='dark'>{t.themeDark}</option>
                         </select>
                     </div>
 
@@ -469,7 +558,7 @@ export default function KeyboardTesterContent() {
                         <select
                             value={osType}
                             onChange={(e) => setOsType(e.target.value as OsType)}
-                            className='px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium cursor-pointer'
+                            className='px-2.5 py-1.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold cursor-pointer'
                         >
                             <option value='windows'>{t.osWindows}</option>
                             <option value='mac'>{t.osMac}</option>
@@ -482,7 +571,7 @@ export default function KeyboardTesterContent() {
                         <select
                             value={soundType}
                             onChange={(e) => setSoundType(e.target.value as SoundType)}
-                            className='px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium cursor-pointer'
+                            className='px-2.5 py-1.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold cursor-pointer'
                         >
                             <option value='clicky'>{t.soundClicky}</option>
                             <option value='tactile'>{t.soundTactile}</option>
@@ -492,7 +581,18 @@ export default function KeyboardTesterContent() {
                     </div>
                 </div>
 
-                <div className='flex items-center gap-3'>
+                <div className='flex flex-wrap items-center gap-3'>
+                    {/* Zone Highlighting Toggle (Image 2) */}
+                    <label className='flex items-center gap-2 text-xs font-semibold text-rose-600 dark:text-rose-400 cursor-pointer bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50'>
+                        <input
+                            type='checkbox'
+                            checked={showZones}
+                            onChange={(e) => setShowZones(e.target.checked)}
+                            className='rounded accent-rose-600'
+                        />
+                        <span>🏷️ {t.showZones}</span>
+                    </label>
+
                     {/* Prevent Browser Defaults Toggle */}
                     <label className='flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer'>
                         <input
@@ -558,111 +658,225 @@ export default function KeyboardTesterContent() {
                 </div>
             </div>
 
-            {/* Virtual Keyboard Graphic Container */}
-            <div className='w-full bg-slate-100 dark:bg-gray-950 p-4 sm:p-6 rounded-3xl border border-gray-300 dark:border-gray-800 shadow-lg overflow-x-auto'>
-                <div className='min-w-[760px] sm:min-w-[940px] space-y-2 select-none'>
-                    {/* F-Row (Hidden in 60%) */}
+            {/* REALISTIC PHYSICAL KEYBOARD CHASSIS (Matches Image 2) */}
+            <div
+                className={`w-full p-4 sm:p-7 pt-8 pb-9 rounded-[32px] sm:rounded-[42px] border-4 shadow-2xl overflow-x-auto select-none transition-colors ${
+                    theme === "classic"
+                        ? "bg-[#e8eaed] dark:bg-[#20242c] border-[#cbd2db] dark:border-[#333a46] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.22)]"
+                        : "bg-gray-950 border-gray-800 shadow-[0_25px_60px_rgba(0,0,0,0.8)]"
+                }`}
+            >
+                <div className='min-w-[940px] flex items-start gap-4 mx-auto justify-center pt-3 pb-3'>
+                    {/* ==================================================== */}
+                    {/* COLUMN 1: ZONE 1 (F-Row) + ZONE 2 (Main Typing Area) */}
+                    {/* ==================================================== */}
+                    <div className='flex flex-col gap-3.5'>
+                        {/* ZONE 1: Khu vực phím chức năng (Function Row) */}
+                        {layout !== "60" && (
+                            <div className='relative'>
+                                {/* Image 2 Callout Tag for Zone 1 */}
+                                {showZones && (
+                                    <div className='absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center pointer-events-none'>
+                                        <span className='bg-pink-100 dark:bg-pink-950/90 text-pink-700 dark:text-pink-300 border border-pink-300 dark:border-pink-800 text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap'>
+                                            {t.zoneFunction}
+                                        </span>
+                                        <span className='w-0.5 h-2 bg-pink-400 dark:bg-pink-600' />
+                                    </div>
+                                )}
+
+                                <div
+                                    className={`flex items-center gap-1.5 p-2 rounded-2xl transition-all ${
+                                        showZones
+                                            ? "border-2 border-red-500/85 ring-2 ring-red-500/20 bg-red-500/5 dark:bg-red-500/10"
+                                            : theme === "classic"
+                                            ? "bg-[#dadfe6] dark:bg-[#181c22] border border-[#c4cbd4] dark:border-[#2a303c] shadow-inner"
+                                            : "bg-gray-900/80 border border-gray-800 shadow-inner"
+                                    }`}
+                                >
+                                    {renderKey(F_ROW_ESC)}
+                                    <div className='w-5 sm:w-7' />
+                                    <div className='flex items-center gap-1.5'>{F_ROW_G1.map(renderKey)}</div>
+                                    <div className='w-3 sm:w-4' />
+                                    <div className='flex items-center gap-1.5'>{F_ROW_G2.map(renderKey)}</div>
+                                    <div className='w-3 sm:w-4' />
+                                    <div className='flex items-center gap-1.5'>{F_ROW_G3.map(renderKey)}</div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ZONE 2: Khu vực chính (Main Alphanumeric 15u Area) */}
+                        <div className='relative'>
+                            <div
+                                className={`flex flex-col gap-1.5 p-2.5 rounded-2xl transition-all ${
+                                    showZones
+                                        ? "border-2 border-red-500/85 ring-2 ring-red-500/20 bg-red-500/5 dark:bg-red-500/10"
+                                        : theme === "classic"
+                                        ? "bg-[#dadfe6] dark:bg-[#181c22] border border-[#c4cbd4] dark:border-[#2a303c] shadow-inner"
+                                        : "bg-gray-900/80 border border-gray-800 shadow-inner"
+                                }`}
+                            >
+                                {/* Number Row */}
+                                <div className='flex items-center gap-1.5'>{NUMBER_ROW.map(renderKey)}</div>
+
+                                {/* QWERTY Row */}
+                                <div className='flex items-center gap-1.5'>{QWERTY_ROW.map(renderKey)}</div>
+
+                                {/* Home Row */}
+                                <div className='flex items-center gap-1.5'>{HOME_ROW.map(renderKey)}</div>
+
+                                {/* Shift Row */}
+                                <div className='flex items-center gap-1.5'>{SHIFT_ROW.map(renderKey)}</div>
+
+                                {/* Bottom Row */}
+                                <div className='flex items-center gap-1.5'>{BOTTOM_ROW.map(renderKey)}</div>
+                            </div>
+
+                            {/* Image 2 Callout Tag for Zone 2 */}
+                            {showZones && (
+                                <div className='absolute -bottom-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center pointer-events-none'>
+                                    <span className='w-0.5 h-2 bg-pink-400 dark:bg-pink-600' />
+                                    <span className='bg-pink-100 dark:bg-pink-950/90 text-pink-700 dark:text-pink-300 border border-pink-300 dark:border-pink-800 text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap'>
+                                        {t.zoneMain}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ==================================================== */}
+                    {/* COLUMN 2: ZONE 3 (Navigation & Control Area)         */}
+                    {/* ==================================================== */}
                     {layout !== "60" && (
-                        <div className='flex items-center gap-4 mb-2'>
-                            <div className='flex items-center gap-1.5'>{F_ROW_MAIN.map(renderKey)}</div>
-                            <div className='w-4' />
-                            <div className='flex items-center gap-1.5'>{F_ROW_NAV.map(renderKey)}</div>
+                        <div className='relative w-[140px] sm:w-[166px]'>
+                            <div
+                                className={`flex flex-col p-2 rounded-2xl transition-all ${
+                                    showZones
+                                        ? "border-2 border-red-500/85 ring-2 ring-red-500/20 bg-red-500/5 dark:bg-red-500/10"
+                                        : theme === "classic"
+                                        ? "bg-[#dadfe6] dark:bg-[#181c22] border border-[#c4cbd4] dark:border-[#2a303c] shadow-inner"
+                                        : "bg-gray-900/80 border border-gray-800 shadow-inner"
+                                }`}
+                            >
+                                {/* Top row: PrtSc, ScrLk, Pause (aligned with F-row) */}
+                                <div className='flex items-center gap-1.5 justify-center pb-2'>
+                                    {NAV_ROW_F.map(renderKey)}
+                                </div>
+
+                                {/* Gap matching Zone 1 to Zone 2 separator */}
+                                <div className='h-3.5' />
+
+                                {/* 2x3 Nav Block (aligned with Number & QWERTY rows) */}
+                                <div className='flex flex-col gap-1.5 items-center'>
+                                    <div className='flex items-center gap-1.5'>{NAV_ROW_1.map(renderKey)}</div>
+                                    <div className='flex items-center gap-1.5'>{NAV_ROW_2.map(renderKey)}</div>
+                                </div>
+
+                                {/* Gap spacer (aligned with Home row) */}
+                                <div className='h-[38px] sm:h-[46px]' />
+
+                                {/* Inverted-T Arrows (aligned with Shift & Bottom rows) */}
+                                <div className='flex flex-col gap-1.5 items-center'>
+                                    <div className='flex items-center justify-center w-full'>{renderKey(NAV_ARROW_UP)}</div>
+                                    <div className='flex items-center gap-1.5'>{NAV_ARROWS_BOTTOM.map(renderKey)}</div>
+                                </div>
+                            </div>
+
+                            {/* Image 2 Callout Tag for Zone 3 */}
+                            {showZones && (
+                                <div className='absolute -bottom-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center pointer-events-none'>
+                                    <span className='w-0.5 h-2 bg-pink-400 dark:bg-pink-600' />
+                                    <span className='bg-pink-100 dark:bg-pink-950/90 text-pink-700 dark:text-pink-300 border border-pink-300 dark:border-pink-800 text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap'>
+                                        {t.zoneControl}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    {/* Number Row */}
-                    <div className='flex items-center gap-4'>
-                        <div className='flex items-center gap-1.5'>{NUMBER_ROW_MAIN.map(renderKey)}</div>
-                        {layout !== "60" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{NUMBER_ROW_NAV.map(renderKey)}</div>
-                            </>
-                        )}
-                        {layout === "full" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{NUMBER_ROW_NUMPAD.map(renderKey)}</div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* QWERTY Row */}
-                    <div className='flex items-center gap-4'>
-                        <div className='flex items-center gap-1.5'>{QWERTY_ROW_MAIN.map(renderKey)}</div>
-                        {layout !== "60" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{QWERTY_ROW_NAV.map(renderKey)}</div>
-                            </>
-                        )}
-                        {layout === "full" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{QWERTY_ROW_NUMPAD.map(renderKey)}</div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Home Row */}
-                    <div className='flex items-center gap-4'>
-                        <div className='flex items-center gap-1.5'>{HOME_ROW_MAIN.map(renderKey)}</div>
-                        {layout !== "60" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='w-[114px] sm:w-[138px]' />
-                            </>
-                        )}
-                        {layout === "full" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{HOME_ROW_NUMPAD.map(renderKey)}</div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Shift Row */}
-                    <div className='flex items-center gap-4'>
-                        <div className='flex items-center gap-1.5'>{SHIFT_ROW_MAIN.map(renderKey)}</div>
-                        {layout !== "60" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center justify-center w-[114px] sm:w-[138px]'>
-                                    {SHIFT_ROW_NAV.map(renderKey)}
+                    {/* ==================================================== */}
+                    {/* COLUMN 3: ZONE 4 (Numpad Area + LED Indicators)      */}
+                    {/* ==================================================== */}
+                    {layout === "full" && (
+                        <div className='relative w-[184px] sm:w-[218px]'>
+                            {/* Image 2 Callout Tag for Zone 4 */}
+                            {showZones && (
+                                <div className='absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center pointer-events-none'>
+                                    <span className='bg-pink-100 dark:bg-pink-950/90 text-pink-700 dark:text-pink-300 border border-pink-300 dark:border-pink-800 text-[11px] font-bold px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap'>
+                                        {t.zoneNumpad}
+                                    </span>
+                                    <span className='w-0.5 h-2 bg-pink-400 dark:bg-pink-600' />
                                 </div>
-                            </>
-                        )}
-                        {layout === "full" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{SHIFT_ROW_NUMPAD.map(renderKey)}</div>
-                            </>
-                        )}
-                    </div>
+                            )}
 
-                    {/* Bottom Row */}
-                    <div className='flex items-center gap-4'>
-                        <div className='flex items-center gap-1.5'>{BOTTOM_ROW_MAIN.map(renderKey)}</div>
-                        {layout !== "60" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{BOTTOM_ROW_NAV.map(renderKey)}</div>
-                            </>
-                        )}
-                        {layout === "full" && (
-                            <>
-                                <div className='w-4' />
-                                <div className='flex items-center gap-1.5'>{BOTTOM_ROW_NUMPAD.map(renderKey)}</div>
-                            </>
-                        )}
-                    </div>
+                            <div
+                                className={`flex flex-col p-2 rounded-2xl transition-all ${
+                                    showZones
+                                        ? "border-2 border-red-500/85 ring-2 ring-red-500/20 bg-red-500/5 dark:bg-red-500/10"
+                                        : theme === "classic"
+                                        ? "bg-[#dadfe6] dark:bg-[#181c22] border border-[#c4cbd4] dark:border-[#2a303c] shadow-inner"
+                                        : "bg-gray-900/80 border border-gray-800 shadow-inner"
+                                }`}
+                            >
+                                {/* LED Indicators Header (aligned with F-row & PrtSc) */}
+                                <div className='flex items-center justify-around px-3 pb-2 h-[38px] sm:h-[46px]'>
+                                    {/* Num Lock LED */}
+                                    <div className='flex flex-col items-center gap-1'>
+                                        <span className='text-[8px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
+                                            Num Lock
+                                        </span>
+                                        <span
+                                            className={`w-2 h-2 rounded-full transition-all ${
+                                                numLockActive
+                                                    ? "bg-emerald-500 shadow-[0_0_8px_#10b981] ring-1 ring-emerald-400"
+                                                    : "bg-gray-300 dark:bg-gray-700 shadow-inner"
+                                            }`}
+                                        />
+                                    </div>
+
+                                    {/* Caps Lock LED */}
+                                    <div className='flex flex-col items-center gap-1'>
+                                        <span className='text-[8px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
+                                            Caps Lock
+                                        </span>
+                                        <span
+                                            className={`w-2 h-2 rounded-full transition-all ${
+                                                capsLockActive
+                                                    ? "bg-emerald-500 shadow-[0_0_8px_#10b981] ring-1 ring-emerald-400"
+                                                    : "bg-gray-300 dark:bg-gray-700 shadow-inner"
+                                            }`}
+                                        />
+                                    </div>
+
+                                    {/* Scroll Lock LED */}
+                                    <div className='flex flex-col items-center gap-1'>
+                                        <span className='text-[8px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
+                                            Scroll Lock
+                                        </span>
+                                        <span
+                                            className={`w-2 h-2 rounded-full transition-all ${
+                                                scrollLockActive
+                                                    ? "bg-emerald-500 shadow-[0_0_8px_#10b981] ring-1 ring-emerald-400"
+                                                    : "bg-gray-300 dark:bg-gray-700 shadow-inner"
+                                            }`}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Gap matching Zone 1 to Zone 2 separator */}
+                                <div className='h-3.5' />
+
+                                {/* 4x5 CSS Grid for Numpad Keys (aligned with Rows 1 to 5) */}
+                                <div className='grid grid-cols-4 gap-1.5'>{NUMPAD_GRID_KEYS.map(renderKey)}</div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Color Legend Bar */}
             <div className='flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-gray-600 dark:text-gray-400 py-1'>
                 <div className='flex items-center gap-2'>
-                    <span className='w-4 h-4 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700' />
+                    <span className='w-4 h-4 rounded bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-xs' />
                     <span>{t.legendUntested}</span>
                 </div>
                 <div className='flex items-center gap-2'>

@@ -20,6 +20,14 @@ export const keyboardTesterTranslations = {
         preventDefaults: "Prevent Browser Shortcuts (F1-F12, Alt, Tab)",
         reset: "Reset Tester",
         resetConfirm: "Keyboard test reset!",
+        showZones: "Highlight Keyboard Zones (Image 2)",
+        keyboardTheme: "Keyboard Theme",
+        themeClassic: "Classic White/Grey",
+        themeDark: "Dark Mechanical",
+        zoneFunction: "Function Key Area",
+        zoneMain: "Main Alphanumeric Area",
+        zoneControl: "Control & Navigation Area",
+        zoneNumpad: "Number Pad Area",
 
         // Metrics & HUD
         currentlyPressed: "Currently Pressed",
@@ -89,6 +97,14 @@ export const keyboardTesterTranslations = {
         preventDefaults: "Chặn phím tắt trình duyệt (F1-F12, Alt, Tab)",
         reset: "Làm mới kiểm tra",
         resetConfirm: "Đã làm mới dữ liệu kiểm tra bàn phím!",
+        showZones: "Khung phân vùng bàn phím (Hình 2)",
+        keyboardTheme: "Giao diện bàn phím",
+        themeClassic: "Cổ điển (Trắng/Xám)",
+        themeDark: "Đen cơ học (Dark)",
+        zoneFunction: "Khu vực phím chức năng",
+        zoneMain: "Khu vực chính",
+        zoneControl: "Khu vực phím điều khiển",
+        zoneNumpad: "Khu vực phím số",
 
         // Metrics & HUD
         currentlyPressed: "Đang nhấn giữ",
