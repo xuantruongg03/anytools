@@ -8,6 +8,7 @@ const SPREADSHEET_ID = process.env.CREDITS_SPREADSHEET_ID || process.env.GOOGLE_
 
 const USERS_SHEET_NAME = "Credits_Users";
 const TRANSACTIONS_SHEET_NAME = "Credits_Transactions";
+const DOWNLOADS_SHEET_NAME = "Credits_Downloads";
 
 // Initialize Upstash Redis for fast rate-limiting & concurrency lock if configured
 let redis: Redis | null = null;
@@ -50,13 +51,17 @@ function getSheetsClient(): sheets_v4.Sheets | null {
 const verifiedSheets = new Set<string>();
 
 /**
- * Đảm bảo 2 sheet Credits_Users và Credits_Transactions tồn tại và có header chuẩn
+ * Đảm bảo 3 sheet Credits_Users, Credits_Transactions và Credits_Downloads tồn tại và có header chuẩn
  */
 export async function ensureCreditsSheetsExist(): Promise<void> {
     const sheets = getSheetsClient();
     if (!sheets) return;
 
-    if (verifiedSheets.has(USERS_SHEET_NAME) && verifiedSheets.has(TRANSACTIONS_SHEET_NAME)) {
+    if (
+        verifiedSheets.has(USERS_SHEET_NAME) &&
+        verifiedSheets.has(TRANSACTIONS_SHEET_NAME) &&
+        verifiedSheets.has(DOWNLOADS_SHEET_NAME)
+    ) {
         return;
     }
 
@@ -105,6 +110,25 @@ export async function ensureCreditsSheetsExist(): Promise<void> {
             });
         }
         verifiedSheets.add(TRANSACTIONS_SHEET_NAME);
+
+        // 3. Sheet Downloads Log
+        if (!existingSheets.includes(DOWNLOADS_SHEET_NAME)) {
+            await sheets.spreadsheets.batchUpdate({
+                spreadsheetId: SPREADSHEET_ID!,
+                requestBody: {
+                    requests: [{ addSheet: { properties: { title: DOWNLOADS_SHEET_NAME } } }],
+                },
+            });
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: SPREADSHEET_ID!,
+                range: `${DOWNLOADS_SHEET_NAME}!A1:H1`,
+                valueInputOption: "USER_ENTERED",
+                requestBody: {
+                    values: [["Log_ID", "User_ID", "Download_Type", "Document_URL", "Document_Title", "Pages", "Client_IP", "Created_At"]],
+                },
+            });
+        }
+        verifiedSheets.add(DOWNLOADS_SHEET_NAME);
     } catch (error) {
         console.error("[Credits] Failed to ensure sheets exist:", error);
     }
@@ -446,3 +470,112 @@ export async function processPaymentWebhook(data: {
         return { success: false, creditsAdded: 0, message: "Lỗi hệ thống khi xử lý webhook" };
     }
 }
+
+/**
+ * Ghi nhận lượt tải xuống tài liệu Scribd:
+ * 1. Đảm bảo sheet Credits_Downloads tồn tại
+ * 2. Lưu thông tin chi tiết lượt tải vào sheet Credits_Downloads
+ * 3. Cập nhật cột Total_Downloaded trong sheet Credits_Users (nếu là lượt tải Free; với Instant thì deductUserCredit đã tăng)
+ */
+export async function recordDownloadEvent(data: {
+    userId: string;
+    downloadType: "free" | "instant";
+    documentUrl?: string;
+    documentTitle?: string;
+    totalPages?: number;
+    clientIp?: string;
+}): Promise<{
+    success: boolean;
+    totalDownloaded?: number;
+    error?: string;
+}> {
+    const sheets = getSheetsClient();
+    if (!sheets) {
+        return { success: false, error: "Google Sheets chưa được cấu hình" };
+    }
+
+    await ensureCreditsSheetsExist();
+
+    try {
+        const now = getVnTimeString();
+        const logId = `DL_${Date.now()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+        // 1. Ghi dòng nhật ký vào sheet Credits_Downloads
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID!,
+            range: `${DOWNLOADS_SHEET_NAME}!A:H`,
+            valueInputOption: "USER_ENTERED",
+            requestBody: {
+                values: [[
+                    logId,
+                    data.userId,
+                    data.downloadType,
+                    data.documentUrl || "",
+                    data.documentTitle || "",
+                    data.totalPages || 0,
+                    data.clientIp || "unknown",
+                    now,
+                ]],
+            },
+        });
+
+        // 2. Cập nhật Total_Downloaded trong sheet Credits_Users
+        const usersRes = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID!,
+            range: `${USERS_SHEET_NAME}!A:F`,
+        });
+
+        const rows = usersRes.data.values || [];
+        let rowIndex = -1;
+        let totalDownloaded = 0;
+
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i][0]?.toString().trim().toUpperCase() === data.userId.trim().toUpperCase()) {
+                rowIndex = i + 1;
+                totalDownloaded = parseInt(rows[i][2] || "0", 10);
+                break;
+            }
+        }
+
+        if (rowIndex !== -1) {
+            // Nếu là Free download, tăng Total_Downloaded (vì Instant download đã được deductUserCredit tăng trước đó)
+            if (data.downloadType === "free") {
+                const newDownloaded = totalDownloaded + 1;
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID!,
+                    range: `${USERS_SHEET_NAME}!C${rowIndex}`,
+                    valueInputOption: "USER_ENTERED",
+                    requestBody: {
+                        values: [[newDownloaded]],
+                    },
+                });
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID!,
+                    range: `${USERS_SHEET_NAME}!F${rowIndex}`,
+                    valueInputOption: "USER_ENTERED",
+                    requestBody: {
+                        values: [[now]],
+                    },
+                });
+                return { success: true, totalDownloaded: newDownloaded };
+            }
+            return { success: true, totalDownloaded };
+        } else {
+            // Nếu user chưa từng có dòng trong Users sheet (tải trực tiếp không qua balance check)
+            const newDownloaded = 1;
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: SPREADSHEET_ID!,
+                range: `${USERS_SHEET_NAME}!A:F`,
+                valueInputOption: "USER_ENTERED",
+                requestBody: {
+                    values: [[data.userId, 0, newDownloaded, data.clientIp || "unknown", now, now]],
+                },
+            });
+            return { success: true, totalDownloaded: newDownloaded };
+        }
+    } catch (error: any) {
+        console.error("[Credits] Failed to record download event:", error);
+        return { success: false, error: error.message || "Lỗi hệ thống khi ghi nhận lượt tải" };
+    }
+}
+
