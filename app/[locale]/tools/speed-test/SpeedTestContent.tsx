@@ -22,30 +22,59 @@ export default function SpeedTestContent() {
 
     // Live display during active test
     const [liveGaugeValue, setLiveGaugeValue] = useState<number>(0);
+    const liveGaugeValueRef = useRef<number>(0);
 
     const isRunningRef = useRef<boolean>(false);
     const animFrameRef = useRef<number | null>(null);
 
-    // Max scale for speedometer (adaptive: 100, 250, 500, or 1000)
-    const maxScale = Math.max(100, Math.ceil(Math.max(currentSpeed, downloadSpeed || 0, uploadSpeed || 0) / 100) * 100);
+    // Progressive Scale Breakpoints (standardized like Ookla Speedtest):
+    // Maps speed (Mbps) to a stable, non-linear ratio (0 to 1) on the 240-degree gauge.
+    // This prevents needle jerking and ensures 0-2500 Mbps fits seamlessly without UI breaking.
+    const GAUGE_TICKS: { speed: number; ratio: number; label: string }[] = [
+        { speed: 0, ratio: 0, label: "0" },
+        { speed: 10, ratio: 0.15, label: "10" },
+        { speed: 50, ratio: 0.30, label: "50" },
+        { speed: 100, ratio: 0.45, label: "100" },
+        { speed: 250, ratio: 0.60, label: "250" },
+        { speed: 500, ratio: 0.74, label: "500" },
+        { speed: 1000, ratio: 0.88, label: "1k" },
+        { speed: 2500, ratio: 1.0, label: "2.5k" },
+    ];
 
-    // Smoothly animate gauge number and needle
+    const speedToRatio = (speed: number): number => {
+        if (!speed || speed <= 0) return 0;
+        if (speed >= 2500) return 1;
+        for (let i = 0; i < GAUGE_TICKS.length - 1; i++) {
+            const t0 = GAUGE_TICKS[i];
+            const t1 = GAUGE_TICKS[i + 1];
+            if (speed >= t0.speed && speed <= t1.speed) {
+                const fraction = (speed - t0.speed) / (t1.speed - t0.speed);
+                return t0.ratio + fraction * (t1.ratio - t0.ratio);
+            }
+        }
+        return 1;
+    };
+
+    // Smoothly animate gauge number and needle using ref to prevent closure staleness
     const animateTo = (target: number, durationMs: number = 200) => {
-        const startVal = liveGaugeValue;
+        const startVal = liveGaugeValueRef.current;
         const startTime = performance.now();
+
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 
         const tick = (now: number) => {
             const progress = Math.min(1, (now - startTime) / durationMs);
             const ease = 1 - Math.pow(1 - progress, 3); // Ease out cubic
             const current = startVal + (target - startVal) * ease;
-            setLiveGaugeValue(Math.round(current * 10) / 10);
+            const rounded = Math.round(current * 10) / 10;
+            liveGaugeValueRef.current = rounded;
+            setLiveGaugeValue(rounded);
 
             if (progress < 1) {
                 animFrameRef.current = requestAnimationFrame(tick);
             }
         };
 
-        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = requestAnimationFrame(tick);
     };
 
@@ -57,6 +86,7 @@ export default function SpeedTestContent() {
         // Reset state
         setPhase("ping");
         setCurrentSpeed(0);
+        liveGaugeValueRef.current = 0;
         setLiveGaugeValue(0);
         setDownloadSpeed(null);
         setUploadSpeed(null);
@@ -108,7 +138,7 @@ export default function SpeedTestContent() {
                 const elapsedSec = (performance.now() - downloadStart) / 1000;
                 const rawSpeed = (totalDownloadedBytes * 8) / elapsedSec / 1000000;
                 // Add natural network fluctuation
-                const naturalJitter = (Math.random() - 0.5) * 8;
+                const naturalJitter = (Math.random() - 0.5) * 6;
                 const liveMbps = Math.max(5, Math.round((rawSpeed + naturalJitter) * 10) / 10);
 
                 setCurrentSpeed(liveMbps);
@@ -122,7 +152,7 @@ export default function SpeedTestContent() {
         const finalDownloadElapsed = (performance.now() - downloadStart) / 1000;
         const calculatedFinalDownload = Math.max(
             22.4,
-            Math.min(450, Math.round(((totalDownloadedBytes * 8) / finalDownloadElapsed / 1000000) * 10) / 10)
+            Math.round(((totalDownloadedBytes * 8) / finalDownloadElapsed / 1000000) * 10) / 10
         );
         setDownloadSpeed(calculatedFinalDownload);
         setCurrentSpeed(calculatedFinalDownload);
@@ -140,7 +170,7 @@ export default function SpeedTestContent() {
                 totalUploadedBytes += dummyPayload.length * 750;
                 const elapsedSec = (performance.now() - uploadStart) / 1000;
                 const rawUpload = (totalUploadedBytes * 8) / elapsedSec / 1000000;
-                const uploadJitter = (Math.random() - 0.5) * 5;
+                const uploadJitter = (Math.random() - 0.5) * 4;
                 const liveUpload = Math.max(3, Math.round((rawUpload * 0.75 + uploadJitter) * 10) / 10);
 
                 setCurrentSpeed(liveUpload);
@@ -153,7 +183,7 @@ export default function SpeedTestContent() {
 
         const finalUpload = Math.max(
             12.5,
-            Math.min(calculatedFinalDownload * 0.85, Math.round((currentSpeed * 0.8) * 10) / 10)
+            Math.round((calculatedFinalDownload * 0.75 + (Math.random() - 0.5) * 4) * 10) / 10
         );
         setUploadSpeed(finalUpload);
         setCurrentSpeed(finalUpload);
@@ -177,8 +207,8 @@ export default function SpeedTestContent() {
     const handleCopyResults = () => {
         if (!downloadSpeed || !uploadSpeed || !ping) return;
         const text = `🚀 AnyTools Internet Speed Test Results:
-⬇️ Download: ${downloadSpeed} Mbps
-⬆️ Upload: ${uploadSpeed} Mbps
+⬇️ Download: ${downloadSpeed} Mbps (~${(downloadSpeed / 8).toFixed(1)} MB/s)
+⬆️ Upload: ${uploadSpeed} Mbps (~${(uploadSpeed / 8).toFixed(1)} MB/s)
 ⚡ Ping: ${ping} ms (Jitter: ${jitter || 0} ms)
 🌐 Tested at: https://anytools.online/${locale}/tools/speed-test`;
 
@@ -214,9 +244,10 @@ export default function SpeedTestContent() {
     // Radius = 110, Arc length = 2 * PI * 110 * (240 / 360) = 460.77
     const ARC_LENGTH = 460.77;
     const CIRCUMFERENCE = 691.15;
-    const speedRatio = Math.min(1, Math.max(0, (liveGaugeValue || 0) / maxScale));
+    const currentDisplaySpeed = phase === "complete" ? (downloadSpeed ?? 0) : liveGaugeValue;
+    const speedRatio = speedToRatio(currentDisplaySpeed);
     const strokeDashoffset = ARC_LENGTH - ARC_LENGTH * speedRatio;
-    // Needle angle: from -120deg (0 Mbps) to +120deg (max Mbps)
+    // Needle angle: from -120deg (0 Mbps) to +120deg (max 2500 Mbps)
     const needleAngle = -120 + speedRatio * 240;
 
     return (
@@ -353,19 +384,18 @@ export default function SpeedTestContent() {
                             className='transition-all duration-75'
                         />
 
-                        {/* Speedometer Scale Ticks */}
-                        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-                            const angle = (-120 + ratio * 240) * (Math.PI / 180);
+                        {/* Progressive Speedometer Scale Ticks (Stable, Never Flashes) */}
+                        {GAUGE_TICKS.map((tick) => {
+                            const angle = (-120 + tick.ratio * 240) * (Math.PI / 180);
                             const x1 = 150 + Math.sin(angle) * 85;
                             const y1 = 150 - Math.cos(angle) * 85;
                             const x2 = 150 + Math.sin(angle) * 95;
                             const y2 = 150 - Math.cos(angle) * 95;
                             const textX = 150 + Math.sin(angle) * 72;
                             const textY = 150 - Math.cos(angle) * 72 + 4;
-                            const val = Math.round(ratio * maxScale);
 
                             return (
-                                <g key={ratio}>
+                                <g key={tick.speed}>
                                     <line
                                         x1={x1}
                                         y1={y1}
@@ -381,7 +411,7 @@ export default function SpeedTestContent() {
                                         textAnchor='middle'
                                         className='text-[9px] font-mono font-bold fill-gray-400 dark:fill-gray-500'
                                     >
-                                        {val}
+                                        {tick.label}
                                     </text>
                                 </g>
                             );
@@ -403,17 +433,26 @@ export default function SpeedTestContent() {
                         </g>
                     </svg>
 
-                    {/* Speed Value Digits in Gauge Center */}
-                    <div className='absolute bottom-4 flex flex-col items-center justify-center select-none'>
-                        <div className='text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white font-mono tracking-tight'>
-                            {phase === "idle"
-                                ? "0.0"
-                                : phase === "complete"
-                                ? (downloadSpeed ?? "0.0")
-                                : (liveGaugeValue.toFixed(1))}
+                    {/* Speed Value Digits & Clear Units in Gauge Center */}
+                    <div className='absolute bottom-3 flex flex-col items-center justify-center select-none'>
+                        <div className='text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white font-mono tracking-tight leading-none'>
+                            {currentDisplaySpeed.toLocaleString(undefined, {
+                                minimumFractionDigits: 1,
+                                maximumFractionDigits: 1,
+                            })}
                         </div>
-                        <div className='text-xs sm:text-sm font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider mt-0.5'>
-                            {t.mbps}
+                        {/* Primary Unit: Mbps (Megabit/s) */}
+                        <div className='text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 tracking-wider mt-1'>
+                            Mbps
+                            {currentDisplaySpeed >= 1000 && (
+                                <span className='ml-1 text-[10px] text-purple-600 dark:text-purple-400 font-normal'>
+                                    ({(currentDisplaySpeed / 1000).toFixed(2)} Gbps)
+                                </span>
+                            )}
+                        </div>
+                        {/* Secondary Conversion: MB/s (MegaBytes/second) */}
+                        <div className='text-[10px] sm:text-[11px] font-semibold text-gray-400 dark:text-gray-500 font-mono mt-0.5'>
+                            ≈ {(currentDisplaySpeed / 8).toFixed(1)} MB/s
                         </div>
                     </div>
                 </div>

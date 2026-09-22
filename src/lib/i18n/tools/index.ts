@@ -43,6 +43,22 @@ import { speedTestTranslations } from "./speed-test";
 import { screenRecorderTranslations } from "./screen-recorder";
 import { audioTrimmerTranslations } from "./audio-trimmer";
 import { keyboardTesterTranslations } from "./keyboard-tester";
+import { webcamTestTranslations } from "./webcam-test";
+import { mouseTesterTranslations } from "./mouse-tester";
+import { numberToWordsTranslations } from "./number-to-words";
+import { faviconGeneratorTranslations } from "./favicon-generator";
+import { htmlToJsxTranslations } from "./html-to-jsx";
+import { sqlToTypesTranslations } from "./sql-to-types";
+import { exifViewerTranslations } from "./exif-viewer";
+import { issuuDownloaderTranslations } from "./issuu-downloader";
+import { quizletExporterTranslations } from "./quizlet-exporter";
+import { videoToGifTranslations } from "./video-to-gif";
+import { qrScannerTranslations } from "./qr-scanner";
+import { colorConverterTranslations } from "./color-converter";
+import { svgOptimizerTranslations } from "./svg-optimizer";
+import { audioConverterTranslations } from "./audio-converter";
+import { markdownToPdfTranslations } from "./markdown-to-pdf";
+import { pomodoroTimerTranslations } from "./pomodoro-timer";
 
 export const toolsTranslations = {
     en: {
@@ -91,6 +107,22 @@ export const toolsTranslations = {
         screenRecorder: screenRecorderTranslations.en,
         audioTrimmer: audioTrimmerTranslations.en,
         keyboardTester: keyboardTesterTranslations.en,
+        webcamTest: webcamTestTranslations.en,
+        mouseTester: mouseTesterTranslations.en,
+        numberToWords: numberToWordsTranslations.en,
+        faviconGenerator: faviconGeneratorTranslations.en,
+        htmlToJsx: htmlToJsxTranslations.en,
+        sqlToTypes: sqlToTypesTranslations.en,
+        exifViewer: exifViewerTranslations.en,
+        issuuDownloader: issuuDownloaderTranslations.en,
+        quizletExporter: quizletExporterTranslations.en,
+        videoToGif: videoToGifTranslations.en,
+        qrScanner: qrScannerTranslations.en,
+        colorConverter: colorConverterTranslations.en,
+        svgOptimizer: svgOptimizerTranslations.en,
+        audioConverter: audioConverterTranslations.en,
+        markdownToPdf: markdownToPdfTranslations.en,
+        pomodoroTimer: pomodoroTimerTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -138,5 +170,21 @@ export const toolsTranslations = {
         screenRecorder: screenRecorderTranslations.vi,
         audioTrimmer: audioTrimmerTranslations.vi,
         keyboardTester: keyboardTesterTranslations.vi,
+        webcamTest: webcamTestTranslations.vi,
+        mouseTester: mouseTesterTranslations.vi,
+        numberToWords: numberToWordsTranslations.vi,
+        faviconGenerator: faviconGeneratorTranslations.vi,
+        htmlToJsx: htmlToJsxTranslations.vi,
+        sqlToTypes: sqlToTypesTranslations.vi,
+        exifViewer: exifViewerTranslations.vi,
+        issuuDownloader: issuuDownloaderTranslations.vi,
+        quizletExporter: quizletExporterTranslations.vi,
+        videoToGif: videoToGifTranslations.vi,
+        qrScanner: qrScannerTranslations.vi,
+        colorConverter: colorConverterTranslations.vi,
+        svgOptimizer: svgOptimizerTranslations.vi,
+        audioConverter: audioConverterTranslations.vi,
+        markdownToPdf: markdownToPdfTranslations.vi,
+        pomodoroTimer: pomodoroTimerTranslations.vi,
     },
 };

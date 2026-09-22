@@ -1,0 +1,68 @@
+export const sqlToTypesTranslations = {
+    en: {
+        name: "SQL to TypeScript & Schema Generator",
+        description: "Convert SQL CREATE TABLE statements into TypeScript interfaces, Zod schemas, and Go structs. Supports PostgreSQL, MySQL, and SQLite data types.",
+        category: "Developer",
+
+        // UI
+        inputLabel: "SQL CREATE TABLE Query",
+        inputPlaceholder: "CREATE TABLE users (\n    id SERIAL PRIMARY KEY,\n    email VARCHAR(255) NOT NULL,\n    ...\n);",
+        outputLabel: "Generated Schema & Types",
+        targetLanguage: "Target Schema / Language",
+        optTypeScript: "TypeScript Interface",
+        optZod: "Zod Schema (v3)",
+        optGo: "Go Struct",
+        optCSharp: "C# Class",
+        camelCaseOption: "CamelCase field names",
+        copyCode: "Copy Code",
+        copied: "Copied code to clipboard!",
+        downloadFile: "Download File",
+        clear: "Clear",
+        presets: "Sample SQL Tables",
+        presetUsers: "Users & Auth Table",
+        presetOrders: "E-Commerce Orders",
+        presetProducts: "Products with JSON Metadata",
+
+        // Guide
+        guideTitle: "SQL to Schema & Type Mapping Guide",
+        guide1Title: "Type Safety Between Database and Backend",
+        guide1Desc: "Generating TypeScript interfaces or Go structs directly from SQL DDL guarantees that your backend models and API contracts always match the exact database schema.",
+        guide2Title: "Zod Schema Validation",
+        guide2Desc: "Generating Zod schemas from your database tables allows instant runtime request validation, ensuring incoming payloads strictly conform to database column rules.",
+        guide3Title: "Supported Dialects",
+        guide3Desc: "Our parser accurately recognizes PostgreSQL (SERIAL, TIMESTAMPTZ, JSONB), MySQL (TINYINT(1), DATETIME, ENUM), and standard SQLite column types.",
+    },
+    vi: {
+        name: "Chuyển Đổi SQL Sang TypeScript & Zod",
+        description: "Chuyển câu lệnh SQL CREATE TABLE thành TypeScript Interface, Zod Schema và Go Struct. Hỗ trợ đầy đủ kiểu dữ liệu PostgreSQL, MySQL, SQLite.",
+        category: "Lập trình",
+
+        // UI
+        inputLabel: "Câu lệnh SQL CREATE TABLE",
+        inputPlaceholder: "CREATE TABLE users (\n    id SERIAL PRIMARY KEY,\n    email VARCHAR(255) NOT NULL,\n    ...\n);",
+        outputLabel: "Mã nguồn kiểu dữ liệu đầu ra",
+        targetLanguage: "Định dạng xuất",
+        optTypeScript: "TypeScript Interface",
+        optZod: "Zod Schema (v3)",
+        optGo: "Go Struct",
+        optCSharp: "C# Class",
+        camelCaseOption: "Đổi tên cột sang camelCase",
+        copyCode: "Sao chép mã",
+        copied: "Đã sao chép mã nguồn vào clipboard!",
+        downloadFile: "Tải file mã nguồn",
+        clear: "Xóa",
+        presets: "Mẫu bảng SQL phổ biến",
+        presetUsers: "Bảng Người dùng & Auth",
+        presetOrders: "Bảng Đơn hàng E-Commerce",
+        presetProducts: "Bảng Sản phẩm kèm JSON",
+
+        // Guide
+        guideTitle: "Hướng Dẫn Chuyển Đổi SQL Sang Kiểu Dữ Liệu Lập Trình",
+        guide1Title: "Đảm bảo tính an toàn kiểu dữ liệu (Type Safety)",
+        guide1Desc: "Tạo TypeScript interface hoặc Go struct trực tiếp từ câu lệnh SQL DDL giúp backend và API luôn đồng bộ tuyệt đối với cấu trúc cơ sở dữ liệu thực tế.",
+        guide2Title: "Xác thực dữ liệu runtime với Zod",
+        guide2Desc: "Zod schema được sinh tự động giúp kiểm tra tính hợp lệ của request payload từ client trước khi insert vào database, phòng tránh lỗi kiểu dữ liệu.",
+        guide3Title: "Hỗ trợ đa dạng hệ cơ sở dữ liệu",
+        guide3Desc: "Hỗ trợ đầy đủ các kiểu dữ liệu của PostgreSQL (SERIAL, TIMESTAMPTZ, JSONB), MySQL (TINYINT(1), DATETIME), và SQLite.",
+    },
+};

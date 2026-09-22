@@ -149,20 +149,20 @@ const BOTTOM_ROW: KeyDef[] = [
 // ==========================================
 const NAV_ROW_F: KeyDef[] = [
     { code: "PrintScreen", label: "PrtSc", subLabel: "SysRq", widthClass: "w-[38px] sm:w-[46px]" },
-    { code: "ScrollLock", label: "Scroll", subLabel: "Lock", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "ScrollLock", label: "ScrLk", subLabel: "Scroll", widthClass: "w-[38px] sm:w-[46px]" },
     { code: "Pause", label: "Pause", subLabel: "Break", widthClass: "w-[38px] sm:w-[46px]" },
 ];
 
 const NAV_ROW_1: KeyDef[] = [
-    { code: "Insert", label: "Insert", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Insert", label: "Ins", subLabel: "Insert", widthClass: "w-[38px] sm:w-[46px]" },
     { code: "Home", label: "Home", widthClass: "w-[38px] sm:w-[46px]" },
-    { code: "PageUp", label: "Page", subLabel: "Up", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "PageUp", label: "PgUp", subLabel: "Page", widthClass: "w-[38px] sm:w-[46px]" },
 ];
 
 const NAV_ROW_2: KeyDef[] = [
-    { code: "Delete", label: "Delete", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "Delete", label: "Del", subLabel: "Delete", widthClass: "w-[38px] sm:w-[46px]" },
     { code: "End", label: "End", widthClass: "w-[38px] sm:w-[46px]" },
-    { code: "PageDown", label: "Page", subLabel: "Down", widthClass: "w-[38px] sm:w-[46px]" },
+    { code: "PageDown", label: "PgDn", subLabel: "Page", widthClass: "w-[38px] sm:w-[46px]" },
 ];
 
 const NAV_ARROW_UP: KeyDef = { code: "ArrowUp", label: "↑", widthClass: "w-[38px] sm:w-[46px]" };
@@ -177,31 +177,31 @@ const NAV_ARROWS_BOTTOM: KeyDef[] = [
 // ==========================================
 const NUMPAD_GRID_KEYS: KeyDef[] = [
     // Row 1
-    { code: "NumLock", label: "Num", subLabel: "Lock" },
-    { code: "NumpadDivide", label: "/" },
-    { code: "NumpadMultiply", label: "*" },
-    { code: "NumpadSubtract", label: "-" },
+    { code: "NumLock", label: "Num", subLabel: "Lock", gridSpan: "col-start-1 row-start-1" },
+    { code: "NumpadDivide", label: "/", gridSpan: "col-start-2 row-start-1" },
+    { code: "NumpadMultiply", label: "*", gridSpan: "col-start-3 row-start-1" },
+    { code: "NumpadSubtract", label: "-", gridSpan: "col-start-4 row-start-1" },
 
     // Row 2
-    { code: "Numpad7", label: "7", subLabel: "Home" },
-    { code: "Numpad8", label: "8", subLabel: "▲" },
-    { code: "Numpad9", label: "9", subLabel: "PgUp" },
-    { code: "NumpadAdd", label: "+", gridSpan: "row-span-2 h-[82px] sm:h-[98px]" },
+    { code: "Numpad7", label: "7", subLabel: "Home", gridSpan: "col-start-1 row-start-2" },
+    { code: "Numpad8", label: "8", subLabel: "▲", gridSpan: "col-start-2 row-start-2" },
+    { code: "Numpad9", label: "9", subLabel: "PgUp", gridSpan: "col-start-3 row-start-2" },
+    { code: "NumpadAdd", label: "+", gridSpan: "col-start-4 row-start-2 row-span-2 h-full min-h-[82px] sm:min-h-[98px]" },
 
     // Row 3
-    { code: "Numpad4", label: "4", subLabel: "◀" },
-    { code: "Numpad5", label: "5" },
-    { code: "Numpad6", label: "6", subLabel: "▶" },
+    { code: "Numpad4", label: "4", subLabel: "◀", gridSpan: "col-start-1 row-start-3" },
+    { code: "Numpad5", label: "5", gridSpan: "col-start-2 row-start-3" },
+    { code: "Numpad6", label: "6", subLabel: "▶", gridSpan: "col-start-3 row-start-3" },
 
     // Row 4
-    { code: "Numpad1", label: "1", subLabel: "End" },
-    { code: "Numpad2", label: "2", subLabel: "▼" },
-    { code: "Numpad3", label: "3", subLabel: "PgDn" },
-    { code: "NumpadEnter", label: "Enter", subLabel: "↵", gridSpan: "row-span-2 h-[82px] sm:h-[98px]" },
+    { code: "Numpad1", label: "1", subLabel: "End", gridSpan: "col-start-1 row-start-4" },
+    { code: "Numpad2", label: "2", subLabel: "▼", gridSpan: "col-start-2 row-start-4" },
+    { code: "Numpad3", label: "3", subLabel: "PgDn", gridSpan: "col-start-3 row-start-4" },
+    { code: "NumpadEnter", label: "Enter", subLabel: "↵", gridSpan: "col-start-4 row-start-4 row-span-2 h-full min-h-[82px] sm:min-h-[98px]" },
 
     // Row 5
-    { code: "Numpad0", label: "0", subLabel: "Ins", gridSpan: "col-span-2 w-full" },
-    { code: "NumpadDecimal", label: ".", subLabel: "Del" },
+    { code: "Numpad0", label: "0", subLabel: "Ins", gridSpan: "col-start-1 col-span-2 row-start-5 w-full" },
+    { code: "NumpadDecimal", label: ".", subLabel: "Del", gridSpan: "col-start-3 row-start-5" },
 ];
 
 export default function KeyboardTesterContent() {
@@ -216,6 +216,7 @@ export default function KeyboardTesterContent() {
     const [preventDefaults, setPreventDefaults] = useState<boolean>(true);
     const [theme, setTheme] = useState<"classic" | "dark">("classic");
     const [showZones, setShowZones] = useState<boolean>(true);
+    const [fitToScreen, setFitToScreen] = useState<boolean>(false);
 
     // Dynamic Testing States
     const [keyStates, setKeyStates] = useState<{ [code: string]: KeyState }>({});
@@ -432,6 +433,39 @@ export default function KeyboardTesterContent() {
     // Calculate total tested keys count
     const totalTestedCount = Object.values(keyStates).filter((k) => k.isTested).length;
 
+    // Helper to simulate keydown/keyup from virtual click or tap
+    const handleKeyTrigger = useCallback(
+        (code: string, isDown: boolean) => {
+            if (isDown) {
+                const fakeEvent = {
+                    code,
+                    key: code,
+                    preventDefault: () => {},
+                    location: code.startsWith("Numpad") ? 3 : 0,
+                    keyCode: 0,
+                    getModifierState: (k: string) => {
+                        if (k === "CapsLock") return !capsLockActive;
+                        if (k === "NumLock") return !numLockActive;
+                        if (k === "ScrollLock") return !scrollLockActive;
+                        return false;
+                    },
+                } as any;
+                handleKeyDown(fakeEvent);
+            } else {
+                const fakeEvent = {
+                    code,
+                    key: code,
+                    preventDefault: () => {},
+                    location: code.startsWith("Numpad") ? 3 : 0,
+                    keyCode: 0,
+                    getModifierState: () => false,
+                } as any;
+                handleKeyUp(fakeEvent);
+            }
+        },
+        [capsLockActive, numLockActive, scrollLockActive, handleKeyDown, handleKeyUp]
+    );
+
     // Helper to render individual realistic 3D keycap
     const renderKey = (keyDef: KeyDef) => {
         const state = keyStates[keyDef.code];
@@ -477,8 +511,11 @@ export default function KeyboardTesterContent() {
             }
         }
 
-        const widthCls = keyDef.widthClass || "w-[38px] sm:w-[46px]";
-        const heightCls = keyDef.heightClass || "h-[38px] sm:h-[46px]";
+        const isNumpad = keyDef.code.startsWith("Numpad") || keyDef.code === "NumLock";
+        const widthCls = isNumpad ? "w-full" : (keyDef.widthClass || "w-[38px] sm:w-[46px]");
+        const heightCls = (keyDef.gridSpan && keyDef.gridSpan.includes("row-span-2"))
+            ? ""
+            : (keyDef.heightClass || "h-[38px] sm:h-[46px]");
         const gridSpan = keyDef.gridSpan || "";
 
         // Tactile Homing Bump for F, J, and Numpad 5
@@ -488,7 +525,20 @@ export default function KeyboardTesterContent() {
         return (
             <div
                 key={keyDef.code}
-                className={`relative flex flex-col items-center justify-center select-none rounded-lg text-xs font-mono transition-all duration-75 p-0.5 cursor-default ${widthCls} ${heightCls} ${gridSpan} ${keycapStyle}`}
+                onPointerDown={(e) => {
+                    e.preventDefault();
+                    handleKeyTrigger(keyDef.code, true);
+                }}
+                onPointerUp={(e) => {
+                    e.preventDefault();
+                    handleKeyTrigger(keyDef.code, false);
+                }}
+                onPointerLeave={() => {
+                    if (isPressed) {
+                        handleKeyTrigger(keyDef.code, false);
+                    }
+                }}
+                className={`relative flex flex-col items-center justify-center select-none rounded-lg text-xs font-mono transition-all duration-75 p-0.5 cursor-pointer active:scale-95 ${widthCls} ${heightCls} ${gridSpan} ${keycapStyle}`}
                 title={`${keyDef.code}${count > 0 ? ` (Pressed ${count}x)` : ""}`}
             >
                 {/* Secondary/Shift label */}
@@ -658,6 +708,26 @@ export default function KeyboardTesterContent() {
                 </div>
             </div>
 
+            {/* Mobile & Responsive Zoom Control Bar */}
+            <div className='w-full flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-gray-500 dark:text-gray-400'>
+                <div className='flex items-center gap-1.5'>
+                    <span>💡 {isVi ? "Chạm hoặc gõ phím để test âm thanh switch & độ nảy." : "Tap or press keys to test switch sound & responsiveness."}</span>
+                </div>
+                <div className='flex items-center gap-2'>
+                    <button
+                        type='button'
+                        onClick={() => setFitToScreen(!fitToScreen)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                            fitToScreen
+                                ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-50"
+                        }`}
+                    >
+                        <span>{fitToScreen ? "🔍 100% Cuộn Ngang" : "📱 Thu Vừa Màn Hình"}</span>
+                    </button>
+                </div>
+            </div>
+
             {/* REALISTIC PHYSICAL KEYBOARD CHASSIS (Matches Image 2) */}
             <div
                 className={`w-full p-4 sm:p-7 pt-8 pb-9 rounded-[32px] sm:rounded-[42px] border-4 shadow-2xl overflow-x-auto select-none transition-colors ${
@@ -666,7 +736,13 @@ export default function KeyboardTesterContent() {
                         : "bg-gray-950 border-gray-800 shadow-[0_25px_60px_rgba(0,0,0,0.8)]"
                 }`}
             >
-                <div className='min-w-[940px] flex items-start gap-4 mx-auto justify-center pt-3 pb-3'>
+                <div
+                    className={`min-w-[940px] flex items-start gap-4 mx-auto justify-center pt-3 pb-3 transition-transform origin-top ${
+                        fitToScreen
+                            ? "scale-[0.4] sm:scale-[0.6] md:scale-[0.8] lg:scale-100 -my-24 sm:-my-14 md:-my-6 lg:my-0"
+                            : ""
+                    }`}
+                >
                     {/* ==================================================== */}
                     {/* COLUMN 1: ZONE 1 (F-Row) + ZONE 2 (Main Typing Area) */}
                     {/* ==================================================== */}
@@ -818,45 +894,45 @@ export default function KeyboardTesterContent() {
                                 }`}
                             >
                                 {/* LED Indicators Header (aligned with F-row & PrtSc) */}
-                                <div className='flex items-center justify-around px-3 pb-2 h-[38px] sm:h-[46px]'>
+                                <div className='grid grid-cols-3 gap-1 px-2 pb-2 h-[38px] sm:h-[46px] items-center justify-items-center bg-slate-900/5 dark:bg-black/30 rounded-xl mb-1'>
                                     {/* Num Lock LED */}
-                                    <div className='flex flex-col items-center gap-1'>
-                                        <span className='text-[8px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
-                                            Num Lock
+                                    <div className='flex flex-col items-center gap-1 min-w-0'>
+                                        <span className='text-[9px] font-bold font-mono text-gray-500 dark:text-gray-400 uppercase tracking-tight leading-none'>
+                                            NUM
                                         </span>
                                         <span
-                                            className={`w-2 h-2 rounded-full transition-all ${
+                                            className={`w-2.5 h-2.5 rounded-full transition-all ${
                                                 numLockActive
                                                     ? "bg-emerald-500 shadow-[0_0_8px_#10b981] ring-1 ring-emerald-400"
-                                                    : "bg-gray-300 dark:bg-gray-700 shadow-inner"
+                                                    : "bg-gray-300 dark:bg-gray-700"
                                             }`}
                                         />
                                     </div>
 
                                     {/* Caps Lock LED */}
-                                    <div className='flex flex-col items-center gap-1'>
-                                        <span className='text-[8px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
-                                            Caps Lock
+                                    <div className='flex flex-col items-center gap-1 min-w-0'>
+                                        <span className='text-[9px] font-bold font-mono text-gray-500 dark:text-gray-400 uppercase tracking-tight leading-none'>
+                                            CAPS
                                         </span>
                                         <span
-                                            className={`w-2 h-2 rounded-full transition-all ${
+                                            className={`w-2.5 h-2.5 rounded-full transition-all ${
                                                 capsLockActive
                                                     ? "bg-emerald-500 shadow-[0_0_8px_#10b981] ring-1 ring-emerald-400"
-                                                    : "bg-gray-300 dark:bg-gray-700 shadow-inner"
+                                                    : "bg-gray-300 dark:bg-gray-700"
                                             }`}
                                         />
                                     </div>
 
                                     {/* Scroll Lock LED */}
-                                    <div className='flex flex-col items-center gap-1'>
-                                        <span className='text-[8px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
-                                            Scroll Lock
+                                    <div className='flex flex-col items-center gap-1 min-w-0'>
+                                        <span className='text-[9px] font-bold font-mono text-gray-500 dark:text-gray-400 uppercase tracking-tight leading-none'>
+                                            SCROLL
                                         </span>
                                         <span
-                                            className={`w-2 h-2 rounded-full transition-all ${
+                                            className={`w-2.5 h-2.5 rounded-full transition-all ${
                                                 scrollLockActive
                                                     ? "bg-emerald-500 shadow-[0_0_8px_#10b981] ring-1 ring-emerald-400"
-                                                    : "bg-gray-300 dark:bg-gray-700 shadow-inner"
+                                                    : "bg-gray-300 dark:bg-gray-700"
                                             }`}
                                         />
                                     </div>
@@ -866,7 +942,9 @@ export default function KeyboardTesterContent() {
                                 <div className='h-3.5' />
 
                                 {/* 4x5 CSS Grid for Numpad Keys (aligned with Rows 1 to 5) */}
-                                <div className='grid grid-cols-4 gap-1.5'>{NUMPAD_GRID_KEYS.map(renderKey)}</div>
+                                <div className='grid grid-cols-4 grid-rows-5 gap-1.5 w-full'>
+                                    {NUMPAD_GRID_KEYS.map(renderKey)}
+                                </div>
                             </div>
                         </div>
                     )}
