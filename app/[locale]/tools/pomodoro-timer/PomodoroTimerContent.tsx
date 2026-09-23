@@ -340,17 +340,17 @@ export default function PomodoroTimerContent() {
                 </div>
 
                 {/* Primary Action Controls */}
-                <div className='flex items-center gap-3 mt-8'>
+                <div className='flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-4 mt-8 w-full max-w-md'>
                     <Button
                         onClick={() => setIsRunning(!isRunning)}
                         variant='primary'
                         size='lg'
-                        className={`px-10 py-3.5 cursor-pointer text-sm font-black shadow-md rounded-2xl ${
+                        className={`flex-1 min-w-[125px] sm:min-w-[135px] h-12 flex items-center justify-center text-sm font-bold shadow-md rounded-2xl cursor-pointer transition-all ${
                             mode === "work"
-                                ? "bg-blue-600 hover:bg-blue-700"
+                                ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25"
                                 : mode === "shortBreak"
-                                ? "bg-emerald-600 hover:bg-emerald-700"
-                                : "bg-purple-600 hover:bg-purple-700"
+                                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/25"
+                                : "bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/25"
                         }`}
                     >
                         {isRunning ? `⏸️ ${t.pause}` : `▶️ ${t.start}`}
@@ -362,8 +362,8 @@ export default function PomodoroTimerContent() {
                             setTimeLeft(currentTotalSec);
                         }}
                         variant='secondary'
-                        size='md'
-                        className='cursor-pointer text-xs font-bold'
+                        size='lg'
+                        className='flex-1 min-w-[125px] sm:min-w-[135px] h-12 flex items-center justify-center text-sm font-bold rounded-2xl cursor-pointer transition-all border border-gray-200/80 dark:border-gray-700/80'
                     >
                         🔄 {t.reset}
                     </Button>
@@ -374,8 +374,8 @@ export default function PomodoroTimerContent() {
                             else switchMode("work");
                         }}
                         variant='secondary'
-                        size='md'
-                        className='cursor-pointer text-xs font-bold'
+                        size='lg'
+                        className='flex-1 min-w-[125px] sm:min-w-[135px] h-12 flex items-center justify-center text-sm font-bold rounded-2xl cursor-pointer transition-all border border-gray-200/80 dark:border-gray-700/80'
                     >
                         ⏭️ {t.skip}
                     </Button>
