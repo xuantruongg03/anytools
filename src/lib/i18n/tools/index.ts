@@ -59,6 +59,16 @@ import { svgOptimizerTranslations } from "./svg-optimizer";
 import { audioConverterTranslations } from "./audio-converter";
 import { markdownToPdfTranslations } from "./markdown-to-pdf";
 import { pomodoroTimerTranslations } from "./pomodoro-timer";
+import { barcodeGeneratorTranslations } from "./barcode-generator";
+import { glassmorphismGeneratorTranslations } from "./glassmorphism-generator";
+import { bmiCalculatorTranslations } from "./bmi-calculator";
+import { yamlJsonConverterTranslations } from "./yaml-json-converter";
+import { invoiceGeneratorTranslations } from "./invoice-generator";
+import { imageWatermarkTranslations } from "./image-watermark";
+import { textFancyFontTranslations } from "./text-fancy-font";
+import { urlParserTranslations } from "./url-parser";
+import { dateCalculatorTranslations } from "./date-calculator";
+import { aspectRatioTranslations } from "./aspect-ratio-calculator";
 
 export const toolsTranslations = {
     en: {
@@ -123,6 +133,16 @@ export const toolsTranslations = {
         audioConverter: audioConverterTranslations.en,
         markdownToPdf: markdownToPdfTranslations.en,
         pomodoroTimer: pomodoroTimerTranslations.en,
+        barcodeGenerator: barcodeGeneratorTranslations.en,
+        glassmorphismGenerator: glassmorphismGeneratorTranslations.en,
+        bmiCalculator: bmiCalculatorTranslations.en,
+        yamlJsonConverter: yamlJsonConverterTranslations.en,
+        invoiceGenerator: invoiceGeneratorTranslations.en,
+        imageWatermark: imageWatermarkTranslations.en,
+        textFancyFont: textFancyFontTranslations.en,
+        urlParser: urlParserTranslations.en,
+        dateCalculator: dateCalculatorTranslations.en,
+        aspectRatioCalculator: aspectRatioTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -186,5 +206,15 @@ export const toolsTranslations = {
         audioConverter: audioConverterTranslations.vi,
         markdownToPdf: markdownToPdfTranslations.vi,
         pomodoroTimer: pomodoroTimerTranslations.vi,
+        barcodeGenerator: barcodeGeneratorTranslations.vi,
+        glassmorphismGenerator: glassmorphismGeneratorTranslations.vi,
+        bmiCalculator: bmiCalculatorTranslations.vi,
+        yamlJsonConverter: yamlJsonConverterTranslations.vi,
+        invoiceGenerator: invoiceGeneratorTranslations.vi,
+        imageWatermark: imageWatermarkTranslations.vi,
+        textFancyFont: textFancyFontTranslations.vi,
+        urlParser: urlParserTranslations.vi,
+        dateCalculator: dateCalculatorTranslations.vi,
+        aspectRatioCalculator: aspectRatioTranslations.vi,
     },
 };

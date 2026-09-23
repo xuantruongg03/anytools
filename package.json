@@ -25,6 +25,8 @@
     "html-minifier-terser": "^7.2.0",
     "html2pdf.js": "^0.12.1",
     "imagetracerjs": "^1.2.6",
+    "js-yaml": "^5.4.2",
+    "jsbarcode": "^3.12.3",
     "jspdf": "^3.0.4",
     "jsqr": "^1.4.0",
     "jszip": "^3.10.1",
@@ -49,6 +51,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/crypto-js": "^4.2.2",
+    "@types/js-yaml": "^4.0.9",
+    "@types/jsbarcode": "^3.11.4",
     "@types/node": "^20",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
