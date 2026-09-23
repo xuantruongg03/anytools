@@ -134,6 +134,7 @@ export default async function KeyboardTesterPage({ params }: Props) {
             <ToolPageLayout
                 title={t.name}
                 description={t.description}
+                maxWidth='max-w-[1440px]'
             >
                 <KeyboardTesterContent />
 

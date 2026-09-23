@@ -512,7 +512,9 @@ export default function KeyboardTesterContent() {
         }
 
         const isNumpad = keyDef.code.startsWith("Numpad") || keyDef.code === "NumLock";
-        const widthCls = isNumpad ? "w-full" : (keyDef.widthClass || "w-[38px] sm:w-[46px]");
+        const widthCls = isNumpad
+            ? (keyDef.code === "Numpad0" ? "w-full" : "w-full min-w-[38px] sm:min-w-[46px]")
+            : (keyDef.widthClass || "w-[38px] sm:w-[46px]");
         const heightCls = (keyDef.gridSpan && keyDef.gridSpan.includes("row-span-2"))
             ? ""
             : (keyDef.heightClass || "h-[38px] sm:h-[46px]");
@@ -571,7 +573,7 @@ export default function KeyboardTesterContent() {
     };
 
     return (
-        <div className='flex flex-col items-center justify-center w-full max-w-6xl mx-auto space-y-6'>
+        <div className='flex flex-col items-center justify-center w-full max-w-[1440px] mx-auto space-y-6'>
             {/* Top Controls Toolbar */}
             <div className='w-full bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4'>
                 <div className='flex flex-wrap items-center gap-3 text-xs'>
@@ -730,14 +732,14 @@ export default function KeyboardTesterContent() {
 
             {/* REALISTIC PHYSICAL KEYBOARD CHASSIS (Matches Image 2) */}
             <div
-                className={`w-full p-4 sm:p-7 pt-8 pb-9 rounded-[32px] sm:rounded-[42px] border-4 shadow-2xl overflow-x-auto select-none transition-colors ${
+                className={`w-full px-2.5 sm:px-3.5 pt-6 pb-7 sm:pt-7 sm:pb-8 rounded-[28px] sm:rounded-[36px] border-4 shadow-2xl overflow-x-auto select-none transition-colors ${
                     theme === "classic"
                         ? "bg-[#e8eaed] dark:bg-[#20242c] border-[#cbd2db] dark:border-[#333a46] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.22)]"
                         : "bg-gray-950 border-gray-800 shadow-[0_25px_60px_rgba(0,0,0,0.8)]"
                 }`}
             >
                 <div
-                    className={`min-w-[940px] flex items-start gap-4 mx-auto justify-center pt-3 pb-3 transition-transform origin-top ${
+                    className={`w-max min-w-full flex items-start gap-2.5 sm:gap-3 mx-auto justify-center pt-2 pb-2 transition-transform origin-top ${
                         fitToScreen
                             ? "scale-[0.4] sm:scale-[0.6] md:scale-[0.8] lg:scale-100 -my-24 sm:-my-14 md:-my-6 lg:my-0"
                             : ""
@@ -746,7 +748,7 @@ export default function KeyboardTesterContent() {
                     {/* ==================================================== */}
                     {/* COLUMN 1: ZONE 1 (F-Row) + ZONE 2 (Main Typing Area) */}
                     {/* ==================================================== */}
-                    <div className='flex flex-col gap-3.5'>
+                    <div className='flex flex-col gap-3.5 shrink-0'>
                         {/* ZONE 1: Khu vực phím chức năng (Function Row) */}
                         {layout !== "60" && (
                             <div className='relative'>
@@ -823,7 +825,7 @@ export default function KeyboardTesterContent() {
                     {/* COLUMN 2: ZONE 3 (Navigation & Control Area)         */}
                     {/* ==================================================== */}
                     {layout !== "60" && (
-                        <div className='relative w-[140px] sm:w-[166px]'>
+                        <div className='relative w-[140px] sm:w-[166px] shrink-0'>
                             <div
                                 className={`flex flex-col p-2 rounded-2xl transition-all ${
                                     showZones
@@ -873,7 +875,7 @@ export default function KeyboardTesterContent() {
                     {/* COLUMN 3: ZONE 4 (Numpad Area + LED Indicators)      */}
                     {/* ==================================================== */}
                     {layout === "full" && (
-                        <div className='relative w-[184px] sm:w-[218px]'>
+                        <div className='relative w-[184px] sm:w-[218px] shrink-0'>
                             {/* Image 2 Callout Tag for Zone 4 */}
                             {showZones && (
                                 <div className='absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center pointer-events-none'>

@@ -16,6 +16,7 @@ interface ToolPageLayoutProps {
     title: string;
     description: string;
     children: ReactNode;
+    maxWidth?: string;
 }
 
 /**
@@ -23,7 +24,7 @@ interface ToolPageLayoutProps {
  * Features a modern studio header, ambient lighting, quick action bar,
  * breadcrumbs with icons, and automatic JSON-LD SEO schema.
  */
-export default function ToolPageLayout({ title, description, children }: ToolPageLayoutProps) {
+export default function ToolPageLayout({ title, description, children, maxWidth = "max-w-6xl" }: ToolPageLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const pathname = usePathname();
     const { locale } = useLanguage();
@@ -108,7 +109,7 @@ export default function ToolPageLayout({ title, description, children }: ToolPag
 
                 {/* Main Studio Content */}
                 <div className='flex-1 min-w-0 transition-all duration-300'>
-                    <div className='container max-w-6xl mx-auto px-4 py-6 md:py-8'>
+                    <div className={`container ${maxWidth} mx-auto px-2 sm:px-4 py-6 md:py-8`}>
                     {/* Top Bar: Breadcrumbs & Mobile Sidebar Button */}
                     <div className='flex items-center justify-between gap-3 mb-6 flex-wrap'>
                         {/* Breadcrumbs */}
