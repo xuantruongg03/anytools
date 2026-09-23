@@ -69,6 +69,14 @@ import { textFancyFontTranslations } from "./text-fancy-font";
 import { urlParserTranslations } from "./url-parser";
 import { dateCalculatorTranslations } from "./date-calculator";
 import { aspectRatioTranslations } from "./aspect-ratio-calculator";
+import { unitConverterTranslations } from "./unit-converter";
+import { neumorphismTranslations } from "./neumorphism-generator";
+import { clipPathTranslations } from "./clip-path-generator";
+import { socialPostTranslations } from "./social-post-generator";
+import { chartGeneratorTranslations } from "./chart-generator";
+import { passwordStrengthTranslations } from "./password-strength-checker";
+import { screenTesterTranslations } from "./screen-tester";
+import { ambientNoiseTranslations } from "./ambient-noise-generator";
 
 export const toolsTranslations = {
     en: {
@@ -143,6 +151,14 @@ export const toolsTranslations = {
         urlParser: urlParserTranslations.en,
         dateCalculator: dateCalculatorTranslations.en,
         aspectRatioCalculator: aspectRatioTranslations.en,
+        unitConverter: unitConverterTranslations.en,
+        neumorphismGenerator: neumorphismTranslations.en,
+        clipPathGenerator: clipPathTranslations.en,
+        socialPostGenerator: socialPostTranslations.en,
+        chartGenerator: chartGeneratorTranslations.en,
+        passwordStrengthChecker: passwordStrengthTranslations.en,
+        screenTester: screenTesterTranslations.en,
+        ambientNoiseGenerator: ambientNoiseTranslations.en,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -216,5 +232,13 @@ export const toolsTranslations = {
         urlParser: urlParserTranslations.vi,
         dateCalculator: dateCalculatorTranslations.vi,
         aspectRatioCalculator: aspectRatioTranslations.vi,
+        unitConverter: unitConverterTranslations.vi,
+        neumorphismGenerator: neumorphismTranslations.vi,
+        clipPathGenerator: clipPathTranslations.vi,
+        socialPostGenerator: socialPostTranslations.vi,
+        chartGenerator: chartGeneratorTranslations.vi,
+        passwordStrengthChecker: passwordStrengthTranslations.vi,
+        screenTester: screenTesterTranslations.vi,
+        ambientNoiseGenerator: ambientNoiseTranslations.vi,
     },
 };

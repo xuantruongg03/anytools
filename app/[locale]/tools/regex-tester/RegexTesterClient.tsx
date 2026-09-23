@@ -316,6 +316,447 @@ const CHEATSHEET: { categoryEn: string; categoryVi: string; items: CheatsheetIte
     },
 ];
 
+export interface RegexAstNode {
+    id: string;
+    type: "anchor" | "group" | "charset" | "literal" | "quantifier" | "alternation" | "meta";
+    raw: string;
+    titleEn: string;
+    titleVi: string;
+    descEn: string;
+    descVi: string;
+    badgeEn: string;
+    badgeVi: string;
+    icon: string;
+    bgClass: string;
+    borderClass: string;
+    textClass: string;
+}
+
+export function parseRegexToAst(p: string): RegexAstNode[] {
+    const nodes: RegexAstNode[] = [];
+    if (!p) return nodes;
+
+    let i = 0;
+    let groupCount = 0;
+
+    while (i < p.length) {
+        const char = p[i];
+
+        // 1. Escaped sequences
+        if (char === "\\") {
+            const next = p[i + 1] || "";
+            if (next === "d") {
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "meta",
+                    raw: "\\d",
+                    titleEn: "Digit [0-9]",
+                    titleVi: "Chữ số [0-9]",
+                    descEn: "Matches any decimal digit character from 0 through 9",
+                    descVi: "Khớp bất kỳ chữ số thập phân nào từ 0 đến 9",
+                    badgeEn: "Digit",
+                    badgeVi: "Số",
+                    icon: "🔢",
+                    bgClass: "bg-blue-500/10 dark:bg-blue-500/20",
+                    borderClass: "border-blue-400 dark:border-blue-600",
+                    textClass: "text-blue-600 dark:text-blue-400",
+                });
+                i += 2;
+                continue;
+            }
+            if (next === "D") {
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "meta",
+                    raw: "\\D",
+                    titleEn: "Non-digit [^0-9]",
+                    titleVi: "Không phải chữ số [^0-9]",
+                    descEn: "Matches any character that is NOT a decimal digit",
+                    descVi: "Khớp mọi ký tự ngoại trừ chữ số",
+                    badgeEn: "Non-digit",
+                    badgeVi: "Không chữ số",
+                    icon: "🔤",
+                    bgClass: "bg-blue-500/10 dark:bg-blue-500/20",
+                    borderClass: "border-blue-400 dark:border-blue-600",
+                    textClass: "text-blue-600 dark:text-blue-400",
+                });
+                i += 2;
+                continue;
+            }
+            if (next === "w") {
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "meta",
+                    raw: "\\w",
+                    titleEn: "Word Char [a-zA-Z0-9_]",
+                    titleVi: "Ký tự từ [a-zA-Z0-9_]",
+                    descEn: "Matches any alphanumeric character or underscore",
+                    descVi: "Khớp chữ cái, chữ số hoặc dấu gạch dưới",
+                    badgeEn: "Word",
+                    badgeVi: "Từ ngữ",
+                    icon: "🔤",
+                    bgClass: "bg-indigo-500/10 dark:bg-indigo-500/20",
+                    borderClass: "border-indigo-400 dark:border-indigo-600",
+                    textClass: "text-indigo-600 dark:text-indigo-400",
+                });
+                i += 2;
+                continue;
+            }
+            if (next === "W") {
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "meta",
+                    raw: "\\W",
+                    titleEn: "Non-word Character",
+                    titleVi: "Không phải ký tự từ",
+                    descEn: "Matches any non-word character [^a-zA-Z0-9_]",
+                    descVi: "Khớp mọi ký tự ngoại trừ chữ cái, chữ số, gạch dưới",
+                    badgeEn: "Non-word",
+                    badgeVi: "Phi từ ngữ",
+                    icon: "🔤",
+                    bgClass: "bg-indigo-500/10 dark:bg-indigo-500/20",
+                    borderClass: "border-indigo-400 dark:border-indigo-600",
+                    textClass: "text-indigo-600 dark:text-indigo-400",
+                });
+                i += 2;
+                continue;
+            }
+            if (next === "s") {
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "meta",
+                    raw: "\\s",
+                    titleEn: "Whitespace [ \\t\\r\\n\\f]",
+                    titleVi: "Khoảng trắng [ \\t\\r\\n\\f]",
+                    descEn: "Matches space, tab, line break, or form feed",
+                    descVi: "Khớp dấu cách, phím tab hoặc dấu ngắt dòng",
+                    badgeEn: "Space",
+                    badgeVi: "Khoảng trắng",
+                    icon: "␣",
+                    bgClass: "bg-teal-500/10 dark:bg-teal-500/20",
+                    borderClass: "border-teal-400 dark:border-teal-600",
+                    textClass: "text-teal-600 dark:text-teal-400",
+                });
+                i += 2;
+                continue;
+            }
+            if (next === "S") {
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "meta",
+                    raw: "\\S",
+                    titleEn: "Non-whitespace",
+                    titleVi: "Không phải khoảng trắng",
+                    descEn: "Matches any non-whitespace character",
+                    descVi: "Khớp mọi ký tự ngoại trừ khoảng trắng",
+                    badgeEn: "Non-space",
+                    badgeVi: "Không khoảng trắng",
+                    icon: "␣",
+                    bgClass: "bg-teal-500/10 dark:bg-teal-500/20",
+                    borderClass: "border-teal-400 dark:border-teal-600",
+                    textClass: "text-teal-600 dark:text-teal-400",
+                });
+                i += 2;
+                continue;
+            }
+            if (next === "b" || next === "B") {
+                const isWordB = next === "b";
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "anchor",
+                    raw: `\\${next}`,
+                    titleEn: isWordB ? "Word Boundary (\\b)" : "Non-word Boundary (\\B)",
+                    titleVi: isWordB ? "Ranh giới từ (\\b)" : "Không phải ranh giới từ (\\B)",
+                    descEn: isWordB ? "Matches position between word and non-word" : "Matches non-boundary position",
+                    descVi: isWordB ? "Khớp tại điểm tiếp giáp giữa ký tự từ và phi từ" : "Khớp vị trí nằm trong lòng một từ",
+                    badgeEn: "Boundary",
+                    badgeVi: "Ranh giới",
+                    icon: "🧱",
+                    bgClass: "bg-emerald-500/10 dark:bg-emerald-500/20",
+                    borderClass: "border-emerald-400 dark:border-emerald-600",
+                    textClass: "text-emerald-600 dark:text-emerald-400",
+                });
+                i += 2;
+                continue;
+            }
+            // Escaped punctuation like \., \/, \[, \(, \$, etc.
+            nodes.push({
+                id: `node-${i}`,
+                type: "literal",
+                raw: `\\${next}`,
+                titleEn: `Escaped Literal '${next}'`,
+                titleVi: `Ký tự thoát chuỗi '${next}'`,
+                descEn: `Matches literal character '${next}'`,
+                descVi: `Khớp chính xác ký tự '${next}'`,
+                badgeEn: "Literal",
+                badgeVi: "Ký tự",
+                icon: "🔤",
+                bgClass: "bg-gray-500/10 dark:bg-gray-500/20",
+                borderClass: "border-gray-400 dark:border-gray-600",
+                textClass: "text-gray-700 dark:text-gray-300",
+            });
+            i += 2;
+            continue;
+        }
+
+        // 2. Anchors
+        if (char === "^") {
+            nodes.push({
+                id: `node-${i}`,
+                type: "anchor",
+                raw: "^",
+                titleEn: "Start of Line / String (^)",
+                titleVi: "Bắt đầu chuỗi / dòng (^)",
+                descEn: "Matches beginning of input or line",
+                descVi: "Khớp ngay tại vị trí bắt đầu dòng hoặc chuỗi văn bản",
+                badgeEn: "Start Anchor",
+                badgeVi: "Neo đầu dòng",
+                icon: "⏮️",
+                bgClass: "bg-emerald-500/10 dark:bg-emerald-500/20",
+                borderClass: "border-emerald-400 dark:border-emerald-600",
+                textClass: "text-emerald-600 dark:text-emerald-400",
+            });
+            i++;
+            continue;
+        }
+
+        if (char === "$") {
+            nodes.push({
+                id: `node-${i}`,
+                type: "anchor",
+                raw: "$",
+                titleEn: "End of Line / String ($)",
+                titleVi: "Kết thúc chuỗi / dòng ($)",
+                descEn: "Matches end of input or line",
+                descVi: "Khớp ngay tại vị trí kết thúc dòng hoặc chuỗi văn bản",
+                badgeEn: "End Anchor",
+                badgeVi: "Neo cuối dòng",
+                icon: "⏭️",
+                bgClass: "bg-emerald-500/10 dark:bg-emerald-500/20",
+                borderClass: "border-emerald-400 dark:border-emerald-600",
+                textClass: "text-emerald-600 dark:text-emerald-400",
+            });
+            i++;
+            continue;
+        }
+
+        // 3. Dot .
+        if (char === ".") {
+            nodes.push({
+                id: `node-${i}`,
+                type: "meta",
+                raw: ".",
+                titleEn: "Wildcard (.) Any Character",
+                titleVi: "Ký tự đại diện (.) Mọi ký tự",
+                descEn: "Matches any single character except newline",
+                descVi: "Khớp bất kỳ một ký tự nào (ngoại trừ ký tự ngắt dòng)",
+                badgeEn: "Wildcard",
+                badgeVi: "Đại diện",
+                icon: "🎯",
+                bgClass: "bg-cyan-500/10 dark:bg-cyan-500/20",
+                borderClass: "border-cyan-400 dark:border-cyan-600",
+                textClass: "text-cyan-600 dark:text-cyan-400",
+            });
+            i++;
+            continue;
+        }
+
+        // 4. Character Set [...]
+        if (char === "[") {
+            let closeIdx = p.indexOf("]", i + 1);
+            while (closeIdx !== -1 && p[closeIdx - 1] === "\\") {
+                closeIdx = p.indexOf("]", closeIdx + 1);
+            }
+            if (closeIdx === -1) closeIdx = p.length - 1;
+            const fullCharset = p.slice(i, closeIdx + 1);
+            const isNegated = fullCharset.startsWith("[^");
+            nodes.push({
+                id: `node-${i}`,
+                type: "charset",
+                raw: fullCharset,
+                titleEn: isNegated ? "Negated Character Set [^...]" : "Character Set [...]",
+                titleVi: isNegated ? "Bộ ký tự phủ định [^...]" : "Tập hợp ký tự [...]",
+                descEn: isNegated
+                    ? `Matches any character NOT listed inside ${fullCharset}`
+                    : `Matches any single character contained within ${fullCharset}`,
+                descVi: isNegated
+                    ? `Khớp bất kỳ ký tự nào KHÔNG nằm trong danh sách ${fullCharset}`
+                    : `Khớp một ký tự bất kỳ nằm trong danh sách ${fullCharset}`,
+                badgeEn: isNegated ? "Negated Set" : "Char Set",
+                badgeVi: isNegated ? "Bộ phủ định" : "Tập ký tự",
+                icon: "📋",
+                bgClass: "bg-purple-500/10 dark:bg-purple-500/20",
+                borderClass: "border-purple-400 dark:border-purple-600",
+                textClass: "text-purple-600 dark:text-purple-400",
+            });
+            i = closeIdx + 1;
+            continue;
+        }
+
+        // 5. Groups (...)
+        if (char === "(") {
+            let depth = 1;
+            let j = i + 1;
+            while (j < p.length && depth > 0) {
+                if (p[j] === "\\") { j += 2; continue; }
+                if (p[j] === "(") depth++;
+                if (p[j] === ")") depth--;
+                j++;
+            }
+            const groupRaw = p.slice(i, j);
+            groupCount++;
+
+            let gType = `Capturing Group #${groupCount}`;
+            let gTypeVi = `Nhóm bắt giữ #${groupCount}`;
+            let icon = "📦";
+            if (groupRaw.startsWith("(?:")) {
+                gType = "Non-capturing Group";
+                gTypeVi = "Nhóm không bắt giữ (?:...)";
+                icon = "🔒";
+            } else if (groupRaw.startsWith("(?=")) {
+                gType = "Positive Lookahead (?=...)";
+                gTypeVi = "Nhìn trước khẳng định (?=...)";
+                icon = "👁️";
+            } else if (groupRaw.startsWith("(?!")) {
+                gType = "Negative Lookahead (?!...)";
+                gTypeVi = "Nhìn trước phủ định (?!...)";
+                icon = "🚫";
+            } else if (groupRaw.startsWith("(?<=")) {
+                gType = "Positive Lookbehind (?<=...)";
+                gTypeVi = "Nhìn sau khẳng định (?<=...)";
+                icon = "⏪";
+            } else if (groupRaw.startsWith("(?<!")) {
+                gType = "Negative Lookbehind (?<!...)";
+                gTypeVi = "Nhìn sau phủ định (?<!...)";
+                icon = "🚷";
+            } else if (groupRaw.startsWith("(?<")) {
+                const nameMatch = groupRaw.match(/^\(\?<([^>]+)>/);
+                const name = nameMatch ? nameMatch[1] : "name";
+                gType = `Named Group '${name}'`;
+                gTypeVi = `Nhóm đặt tên '${name}'`;
+                icon = "🏷️";
+            }
+
+            nodes.push({
+                id: `node-${i}`,
+                type: "group",
+                raw: groupRaw,
+                titleEn: gType,
+                titleVi: gTypeVi,
+                descEn: `Encapsulates subpattern: ${groupRaw.length > 30 ? groupRaw.slice(0, 30) + "..." : groupRaw}`,
+                descVi: `Đóng gói nhóm biểu thức con: ${groupRaw.length > 30 ? groupRaw.slice(0, 30) + "..." : groupRaw}`,
+                badgeEn: "Group",
+                badgeVi: "Nhóm con",
+                icon,
+                bgClass: "bg-indigo-500/10 dark:bg-indigo-500/20",
+                borderClass: "border-indigo-400 dark:border-indigo-600",
+                textClass: "text-indigo-600 dark:text-indigo-400",
+            });
+            i = j;
+            continue;
+        }
+
+        // 6. Quantifiers (+, *, ?, {n,m})
+        if (char === "+" || char === "*" || char === "?") {
+            const isLazy = p[i + 1] === "?";
+            const raw = isLazy ? char + "?" : char;
+            const qTitle = char === "+" ? "One or more (1+)" : char === "*" ? "Zero or more (0+)" : "Zero or one (Optional)";
+            const qTitleVi = char === "+" ? "1 hoặc nhiều lần (1+)" : char === "*" ? "0 hoặc nhiều lần (0+)" : "0 hoặc 1 lần (Tùy chọn)";
+            nodes.push({
+                id: `node-${i}`,
+                type: "quantifier",
+                raw,
+                titleEn: `${qTitle} ${isLazy ? "(Lazy)" : "(Greedy)"}`,
+                titleVi: `${qTitleVi} ${isLazy ? "(Lười biếng/Lazy)" : "(Tham lam/Greedy)"}`,
+                descEn: `Repeats preceding element ${raw}`,
+                descVi: `Lặp lại thành phần đứng liền trước ${raw}`,
+                badgeEn: "Quantifier",
+                badgeVi: "Lượng từ",
+                icon: "🔁",
+                bgClass: "bg-amber-500/10 dark:bg-amber-500/20",
+                borderClass: "border-amber-400 dark:border-amber-600",
+                textClass: "text-amber-600 dark:text-amber-400",
+            });
+            i += isLazy ? 2 : 1;
+            continue;
+        }
+
+        if (char === "{") {
+            const closeBrace = p.indexOf("}", i);
+            if (closeBrace !== -1) {
+                const isLazy = p[closeBrace + 1] === "?";
+                const end = isLazy ? closeBrace + 2 : closeBrace + 1;
+                const raw = p.slice(i, end);
+                nodes.push({
+                    id: `node-${i}`,
+                    type: "quantifier",
+                    raw,
+                    titleEn: `Repeats interval ${raw}`,
+                    titleVi: `Lặp lại theo khoảng ${raw}`,
+                    descEn: `Matches quantified range ${raw}`,
+                    descVi: `Khớp theo số lượng chỉ định ${raw}`,
+                    badgeEn: "Quantifier",
+                    badgeVi: "Lượng từ",
+                    icon: "🔁",
+                    bgClass: "bg-amber-500/10 dark:bg-amber-500/20",
+                    borderClass: "border-amber-400 dark:border-amber-600",
+                    textClass: "text-amber-600 dark:text-amber-400",
+                });
+                i = end;
+                continue;
+            }
+        }
+
+        // 7. Alternation |
+        if (char === "|") {
+            nodes.push({
+                id: `node-${i}`,
+                type: "alternation",
+                raw: "|",
+                titleEn: "Alternation (OR)",
+                titleVi: "Phép toán HOẶC (OR)",
+                descEn: "Matches either the pattern before or after the bar",
+                descVi: "Khớp biểu thức bên trái HOẶC biểu thức bên phải",
+                badgeEn: "OR Branch",
+                badgeVi: "Nhánh Hoặc",
+                icon: "🔀",
+                bgClass: "bg-rose-500/10 dark:bg-rose-500/20",
+                borderClass: "border-rose-400 dark:border-rose-600",
+                textClass: "text-rose-600 dark:text-rose-400",
+            });
+            i++;
+            continue;
+        }
+
+        // 8. Literals: gather consecutive literal characters
+        let lit = "";
+        const specialTokens = new Set(["\\", "^", "$", ".", "[", "(", ")", "+", "*", "?", "{", "|"]);
+        while (i < p.length && !specialTokens.has(p[i])) {
+            lit += p[i];
+            i++;
+        }
+        if (lit) {
+            nodes.push({
+                id: `node-${i - lit.length}`,
+                type: "literal",
+                raw: lit,
+                titleEn: `Literal '${lit}'`,
+                titleVi: `Chuỗi ký tự '${lit}'`,
+                descEn: `Matches exact characters "${lit}"`,
+                descVi: `Khớp chính xác chuỗi ký tự "${lit}"`,
+                badgeEn: "Literal",
+                badgeVi: "Ký tự",
+                icon: "🔤",
+                bgClass: "bg-slate-500/10 dark:bg-slate-500/20",
+                borderClass: "border-slate-300 dark:border-slate-700",
+                textClass: "text-slate-800 dark:text-slate-200",
+            });
+        }
+    }
+
+    return nodes;
+}
+
 export default function RegexTesterClient() {
     const { locale } = useLanguage();
     const isVi = locale === "vi";
@@ -327,7 +768,7 @@ export default function RegexTesterClient() {
     const [testString, setTestString] = useState(
         "Welcome to AnyTools!\nContact our support at lexuantruong0981@gmail.com for inquiries.\nInvalid email: user@domain without tld or invalid#email.com"
     );
-    const [viewMode, setViewMode] = useState<"highlight" | "matches" | "code" | "matrix" | "cheatsheet">("highlight");
+    const [viewMode, setViewMode] = useState<"highlight" | "matches" | "code" | "matrix" | "cheatsheet" | "visualizer">("highlight");
     const [selectedLanguage, setSelectedLanguage] = useState<SupportedLang>("java");
     const [selectedCategory, setSelectedCategory] = useState<string>("All");
     const [error, setError] = useState("");
@@ -503,6 +944,28 @@ export default function RegexTesterClient() {
         return currentLangSpec.getCodeSnippet(pattern, flags, testString);
     }, [currentLangSpec, pattern, flags, testString]);
 
+    const astNodes = useMemo(() => {
+        try {
+            return parseRegexToAst(pattern);
+        } catch {
+            return [];
+        }
+    }, [pattern]);
+
+    const handleCopyAstMarkdown = () => {
+        if (astNodes.length === 0) return;
+        const md = [
+            `# Regex AST Breakdown: \`/${pattern}/${flags}\``,
+            "",
+            `| Step | Token | Type | Description |`,
+            `| :--- | :--- | :--- | :--- |`,
+            ...astNodes.map((n, i) => `| #${i + 1} | \`${n.raw}\` | ${isVi ? n.badgeVi : n.badgeEn} | ${isVi ? n.descVi : n.descEn} |`),
+            "",
+            `*Generated by AnyTools Regex Tester & Visualizer*`
+        ].join("\n");
+        handleCopyText(md, isVi ? "Bảng giải thích AST Markdown" : "AST Markdown Explanation");
+    };
+
     return (
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
             {/* Left 2 Columns: Main Testing Studio */}
@@ -660,6 +1123,7 @@ export default function RegexTesterClient() {
                         <div className='flex flex-wrap gap-2'>
                             {[
                                 { id: "highlight", labelEn: "Visual Highlight", labelVi: "Xem Trực Quan", icon: "🎨" },
+                                { id: "visualizer", labelEn: `Railroad AST (${astNodes.length})`, labelVi: `Sơ Đồ Đường Ray (${astNodes.length})`, icon: "🛤️" },
                                 { id: "matches", labelEn: `Matches (${totalMatches})`, labelVi: `Khớp (${totalMatches})`, icon: "🎯" },
                                 { id: "code", labelEn: "Code Generator", labelVi: "Sinh Mã Code", icon: "💻" },
                                 { id: "matrix", labelEn: "11 Languages Matrix", labelVi: "Bảng 11 Ngôn Ngữ", icon: "🌐" },
@@ -735,6 +1199,146 @@ export default function RegexTesterClient() {
                                             {isVi ? "Chưa có văn bản để kiểm thử..." : "No test text provided..."}
                                         </span>
                                     )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tab: Regex Railroad AST Visualizer */}
+                    {viewMode === "visualizer" && (
+                        <div className='space-y-6'>
+                            {/* Summary Bar */}
+                            <div className='flex flex-wrap items-center justify-between gap-3 p-4 bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-purple-50/80 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/30 rounded-xl border border-blue-200/80 dark:border-blue-800/60'>
+                                <div className='flex items-center gap-3'>
+                                    <span className='text-2xl'>🛤️</span>
+                                    <div>
+                                        <h4 className='text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2'>
+                                            <span>{isVi ? "Sơ đồ luồng phân giải cú pháp (AST Railroad)" : "Regex Syntax Railroad & AST Breakdown"}</span>
+                                            <span className='text-[11px] font-mono px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'>
+                                                {astNodes.length} {isVi ? "nút phân tích" : "AST nodes"}
+                                            </span>
+                                        </h4>
+                                        <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+                                            {isVi
+                                                ? "Mô phỏng chu trình thực thi của máy trạng thái hữu hạn từng bước một từ điểm bắt đầu đến điểm kết thúc."
+                                                : "Visualizes the finite state automaton execution pipeline step-by-step from start to match."}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <button
+                                        type='button'
+                                        onClick={handleCopyAstMarkdown}
+                                        className='px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold border border-gray-200 dark:border-gray-700 transition-colors shadow-sm cursor-pointer'
+                                    >
+                                        📋 {isVi ? "Xuất Markdown AST" : "Export Markdown AST"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Railroad SVG Track Canvas */}
+                            <div className='bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 shadow-inner overflow-x-auto'>
+                                <div className='flex items-center justify-between pb-3 mb-4 border-b border-slate-800 text-xs text-slate-400 font-mono'>
+                                    <span>// RAILROAD FLOW DIAGRAM</span>
+                                    <span>FLAGS: /{flags}/</span>
+                                </div>
+
+                                {astNodes.length === 0 ? (
+                                    <div className='py-12 text-center text-slate-500'>
+                                        <span className='text-3xl block mb-2'>🛤️</span>
+                                        <span>{isVi ? "Vui lòng nhập biểu thức Regex để dựng sơ đồ luồng" : "Enter a regex pattern to generate the railroad AST"}</span>
+                                    </div>
+                                ) : (
+                                    <div className='flex items-center gap-2 py-4 min-w-max px-2'>
+                                        {/* Start point */}
+                                        <div className='flex items-center gap-2'>
+                                            <div className='flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 text-xs font-bold shrink-0 shadow-lg shadow-emerald-500/20' title='Start of Pattern'>
+                                                ▶
+                                            </div>
+                                            <div className='w-6 h-0.5 bg-gradient-to-r from-emerald-500 to-blue-500' />
+                                        </div>
+
+                                        {/* Sequential Railroad Nodes */}
+                                        {astNodes.map((node, idx) => (
+                                            <div key={node.id} className='flex items-center gap-2'>
+                                                <div className={`p-3 rounded-xl border ${node.borderClass} ${node.bgClass} flex flex-col items-center justify-center min-w-[130px] max-w-[220px] transition-all hover:scale-105 shadow-md`}>
+                                                    <div className='flex items-center justify-between w-full mb-1 text-[10px] opacity-75'>
+                                                        <span className='font-mono font-bold'>#{idx + 1}</span>
+                                                        <span className='font-semibold uppercase tracking-wider'>{isVi ? node.badgeVi : node.badgeEn}</span>
+                                                    </div>
+                                                    <div className='text-sm mb-1'>{node.icon}</div>
+                                                    <code className='font-mono font-bold text-xs px-2 py-1 rounded bg-black/40 text-amber-300 break-all text-center border border-white/10 mb-1 max-w-full truncate' title={node.raw}>
+                                                        {node.raw}
+                                                    </code>
+                                                    <span className='text-[11px] text-center font-medium text-slate-200 line-clamp-1' title={isVi ? node.titleVi : node.titleEn}>
+                                                        {isVi ? node.titleVi : node.titleEn}
+                                                    </span>
+                                                </div>
+
+                                                {/* Connecting track line */}
+                                                <div className='w-6 h-0.5 bg-blue-500/60 relative'>
+                                                    <div className='absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-400' />
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* End Point */}
+                                        <div className='flex items-center gap-2'>
+                                            <div className='flex items-center justify-center w-8 h-8 rounded-full bg-rose-500/20 border-2 border-rose-400 text-rose-400 text-xs font-bold shrink-0 shadow-lg shadow-rose-500/20' title='Match Complete'>
+                                                ●
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Sequential AST Node Cards */}
+                            <div className='space-y-3'>
+                                <h4 className='text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center justify-between'>
+                                    <span>{isVi ? "Giải Thích Từng Khối Cú Pháp (Node Details)" : "Step-by-Step Node Explanations"}</span>
+                                    <span>{astNodes.length} {isVi ? "thành phần" : "elements"}</span>
+                                </h4>
+
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                                    {astNodes.map((node, idx) => (
+                                        <div
+                                            key={node.id}
+                                            className='p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/60 flex flex-col justify-between hover:border-blue-400 dark:hover:border-blue-600 transition-all'
+                                        >
+                                            <div className='space-y-2'>
+                                                <div className='flex items-center justify-between'>
+                                                    <div className='flex items-center gap-2'>
+                                                        <span className='w-6 h-6 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center text-xs font-bold font-mono'>
+                                                            {idx + 1}
+                                                        </span>
+                                                        <span className='font-semibold text-xs text-gray-900 dark:text-gray-100'>
+                                                            {isVi ? node.titleVi : node.titleEn}
+                                                        </span>
+                                                    </div>
+                                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${node.bgClass} ${node.textClass} border ${node.borderClass}`}>
+                                                        {isVi ? node.badgeVi : node.badgeEn}
+                                                    </span>
+                                                </div>
+
+                                                <div className='flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700'>
+                                                    <code className='font-mono font-bold text-xs text-blue-600 dark:text-blue-400 break-all select-all'>
+                                                        {node.raw}
+                                                    </code>
+                                                    <button
+                                                        type='button'
+                                                        onClick={() => handleCopyText(node.raw, `Token ${node.raw}`)}
+                                                        className='text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 cursor-pointer ml-2 shrink-0'
+                                                    >
+                                                        Copy
+                                                    </button>
+                                                </div>
+
+                                                <p className='text-xs text-gray-600 dark:text-gray-300 leading-relaxed'>
+                                                    {isVi ? node.descVi : node.descEn}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
