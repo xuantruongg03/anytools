@@ -26,6 +26,26 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 // In-memory fallback if Redis is unavailable
 const memoryIpRateLimit = new Map<string, number>();
 
+// Per-user in-memory mutex to serialize concurrent deduction calls within the same process
+const deductionMutex = new Map<string, Promise<void>>();
+
+/**
+ * Acquires a per-user async mutex. Returns a release function.
+ * Used to serialize concurrent deductUserCredit calls for the same Node.js process.
+ */
+function acquireUserMutex(userId: string): Promise<() => void> {
+    let resolvePrev!: () => void;
+    const prev = deductionMutex.get(userId) ?? Promise.resolve();
+    const next = prev.then(() => new Promise<void>((resolve) => { resolvePrev = resolve; }));
+    deductionMutex.set(userId, next);
+    return prev.then(() => resolvePrev);
+}
+
+/** Generates a unique lock token: timestamp + random suffix */
+function generateLockToken(): string {
+    return `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
 let sheetsClient: sheets_v4.Sheets | null = null;
 
 function getSheetsClient(): sheets_v4.Sheets | null {
@@ -83,12 +103,29 @@ export async function ensureCreditsSheetsExist(): Promise<void> {
             });
             await sheets.spreadsheets.values.update({
                 spreadsheetId: SPREADSHEET_ID!,
-                range: `${USERS_SHEET_NAME}!A1:F1`,
+                range: `${USERS_SHEET_NAME}!A1:G1`,
                 valueInputOption: "USER_ENTERED",
                 requestBody: {
-                    values: [["User_ID", "Credits", "Total_Downloaded", "Created_IP", "Created_At", "Updated_At"]],
+                    values: [["User_ID", "Credits", "Total_Downloaded", "Created_IP", "Created_At", "Updated_At", "Lock_Token"]],
                 },
             });
+        } else {
+            // Migrate existing sheet: ensure G1 header exists (Lock_Token column)
+            try {
+                const headerRes = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID!,
+                    range: `${USERS_SHEET_NAME}!G1`,
+                });
+                const g1 = headerRes.data.values?.[0]?.[0]?.toString().trim();
+                if (!g1 || g1 !== "Lock_Token") {
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID!,
+                        range: `${USERS_SHEET_NAME}!G1`,
+                        valueInputOption: "USER_ENTERED",
+                        requestBody: { values: [["Lock_Token"]] },
+                    });
+                }
+            } catch (_) { /* non-fatal: sheet might not support G1 yet */ }
         }
         verifiedSheets.add(USERS_SHEET_NAME);
 
@@ -240,7 +277,16 @@ export async function getUserCredits(userId: string, clientIp: string = "unknown
 }
 
 /**
- * Trừ 1 credit khi người dùng chọn Tải ngay tức thì
+ * Trừ 1 credit khi người dùng chọn Tải ngay tức thì.
+ *
+ * Concurrency strategy (no Redis available):
+ *  - Layer 1: In-process Promise mutex  → serializes requests on the same Node.js instance
+ *  - Layer 2: Sheets optimistic lock (column G: Lock_Token)
+ *      1. Write a unique token to G{row}
+ *      2. Wait 250 ms so concurrent writers can also finish their write
+ *      3. Re-read G{row} — whoever wrote LAST wins (Sheets serializes writes)
+ *      4. If our token is still there → we own the lock → deduct credits
+ *      5. If overwritten → another request won → return "retry"
  */
 export async function deductUserCredit(userId: string): Promise<{
     success: boolean;
@@ -254,22 +300,28 @@ export async function deductUserCredit(userId: string): Promise<{
 
     await ensureCreditsSheetsExist();
 
+    // Layer 1: In-process mutex (same Node.js process)
+    const releaseUserMutex = await acquireUserMutex(userId);
+
     try {
+        // ── Step 1: Read the full row (A:G) ──────────────────────────────────
         const res = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID!,
-            range: `${USERS_SHEET_NAME}!A:F`,
+            range: `${USERS_SHEET_NAME}!A:G`,
         });
 
         const rows = res.data.values || [];
         let rowIndex = -1;
         let currentCredits = 0;
         let totalDownloaded = 0;
+        let existingLockToken = "";
 
         for (let i = 1; i < rows.length; i++) {
             if (rows[i][0]?.toString().trim().toUpperCase() === userId.trim().toUpperCase()) {
-                rowIndex = i + 1; // 1-based index cho Sheets
+                rowIndex = i + 1; // 1-based for Sheets API
                 currentCredits = parseInt(rows[i][1] || "0", 10);
                 totalDownloaded = parseInt(rows[i][2] || "0", 10);
+                existingLockToken = rows[i][6]?.toString().trim() || "";
                 break;
             }
         }
@@ -278,40 +330,112 @@ export async function deductUserCredit(userId: string): Promise<{
             return { success: false, remainingCredits: 0, error: "Tài khoản không tồn tại" };
         }
 
-        if (currentCredits < 1) {
-            return { success: false, remainingCredits: currentCredits, error: "Bạn đã hết lượt tải nhanh (0 credit)" };
+        // ── Step 2: Check for an unexpired lock left by a previous request ───
+        // Lock format: "<token>:<expires_ms>"  (expires after 15 seconds)
+        const LOCK_TTL_MS = 15_000;
+        if (existingLockToken) {
+            const parts = existingLockToken.split(":");
+            const expiresAt = parseInt(parts[1] || "0", 10);
+            if (!isNaN(expiresAt) && Date.now() < expiresAt) {
+                // An active lock exists from a concurrent request
+                return { success: false, remainingCredits: currentCredits, error: "Another deduction is in progress. Please retry." };
+            }
         }
 
-        const newCredits = currentCredits - 1;
-        const newDownloaded = totalDownloaded + 1;
-        const now = getVnTimeString();
+        // ── Step 3: Write OUR lock token to column G ─────────────────────────
+        const myToken = generateLockToken();
+        const myLockValue = `${myToken}:${Date.now() + LOCK_TTL_MS}`;
 
-        // Cập nhật lại cột Credits (B), Total_Downloaded (C), Updated_At (F)
         await sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID!,
+            range: `${USERS_SHEET_NAME}!G${rowIndex}`,
+            valueInputOption: "USER_ENTERED",
+            requestBody: { values: [[myLockValue]] },
+        });
+
+        // ── Step 4: Wait for any concurrent writers to also finish ────────────
+        await new Promise((r) => setTimeout(r, 250));
+
+        // ── Step 5: Re-read column G to verify we still own the lock ─────────
+        const verify = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID!,
+            range: `${USERS_SHEET_NAME}!G${rowIndex}`,
+        });
+        const actualToken = verify.data.values?.[0]?.[0]?.toString().trim() || "";
+
+        if (actualToken !== myLockValue) {
+            // Another concurrent request wrote after us and now owns the lock
+            return { success: false, remainingCredits: currentCredits, error: "Another deduction is in progress. Please retry." };
+        }
+
+        // ── Step 6: We own the lock — re-verify credits before deducting ─────
+        // Re-read credits to get the freshest value (another winner might have
+        // already deducted before our lock was acquired on a previous attempt)
+        const fresh = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID!,
             range: `${USERS_SHEET_NAME}!B${rowIndex}:C${rowIndex}`,
-            valueInputOption: "USER_ENTERED",
-            requestBody: {
-                values: [[newCredits, newDownloaded]],
-            },
         });
+        const freshCredits = parseInt(fresh.data.values?.[0]?.[0]?.toString() || "0", 10);
+        const freshDownloaded = parseInt(fresh.data.values?.[0]?.[1]?.toString() || "0", 10);
 
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID!,
-            range: `${USERS_SHEET_NAME}!F${rowIndex}`,
-            valueInputOption: "USER_ENTERED",
-            requestBody: {
-                values: [[now]],
-            },
-        });
+        if (freshCredits < 1) {
+            // Credits already gone (another tab deducted while we were acquiring the lock)
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: SPREADSHEET_ID!,
+                range: `${USERS_SHEET_NAME}!G${rowIndex}`,
+                valueInputOption: "USER_ENTERED",
+                requestBody: { values: [[""]] },
+            });
+            return { success: false, remainingCredits: freshCredits, error: "Bạn đã hết lượt tải nhanh (0 credit)" };
+        }
 
-        return {
-            success: true,
-            remainingCredits: newCredits,
-        };
+        // ── Step 7: Deduct and release lock ──────────────────────────────────
+        const newCredits = freshCredits - 1;
+        const newDownloaded = freshDownloaded + 1;
+        const now = getVnTimeString();
+
+        // Write credits + clear lock in parallel
+        await Promise.all([
+            sheets.spreadsheets.values.update({
+                spreadsheetId: SPREADSHEET_ID!,
+                range: `${USERS_SHEET_NAME}!B${rowIndex}:C${rowIndex}`,
+                valueInputOption: "USER_ENTERED",
+                requestBody: { values: [[newCredits, newDownloaded]] },
+            }),
+            sheets.spreadsheets.values.update({
+                spreadsheetId: SPREADSHEET_ID!,
+                range: `${USERS_SHEET_NAME}!F${rowIndex}:G${rowIndex}`,
+                valueInputOption: "USER_ENTERED",
+                requestBody: { values: [[now, ""]] }, // clear lock in same write
+            }),
+        ]);
+
+        return { success: true, remainingCredits: newCredits };
+
     } catch (error) {
         console.error("[Credits] Failed to deduct credit:", error);
+        // Attempt to clear the lock even on error
+        try {
+            const res2 = await sheets.spreadsheets.values.get({
+                spreadsheetId: SPREADSHEET_ID!,
+                range: `${USERS_SHEET_NAME}!A:A`,
+            });
+            const rows2 = res2.data.values || [];
+            for (let i = 1; i < rows2.length; i++) {
+                if (rows2[i][0]?.toString().trim().toUpperCase() === userId.trim().toUpperCase()) {
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID!,
+                        range: `${USERS_SHEET_NAME}!G${i + 1}`,
+                        valueInputOption: "USER_ENTERED",
+                        requestBody: { values: [[""]] },
+                    });
+                    break;
+                }
+            }
+        } catch (_) { /* best-effort */ }
         return { success: false, remainingCredits: 0, error: "Lỗi hệ thống khi trừ credit" };
+    } finally {
+        releaseUserMutex();
     }
 }
 

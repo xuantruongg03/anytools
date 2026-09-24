@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserCredits } from "@/lib/credits-sheets";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+    "Pragma": "no-cache",
 };
 
 export async function OPTIONS() {
