@@ -77,6 +77,7 @@ import { chartGeneratorTranslations } from "./chart-generator";
 import { passwordStrengthTranslations } from "./password-strength-checker";
 import { screenTesterTranslations } from "./screen-tester";
 import { ambientNoiseTranslations } from "./ambient-noise-generator";
+import { bulkIpLookupTranslations } from "./bulk-ip-lookup";
 
 export const toolsTranslations = {
     en: {
@@ -159,6 +160,7 @@ export const toolsTranslations = {
         passwordStrengthChecker: passwordStrengthTranslations.en,
         screenTester: screenTesterTranslations.en,
         ambientNoiseGenerator: ambientNoiseTranslations.en,
+        bulkIpLookup: bulkIpLookupTranslations.en.bulkIpLookup,
     },
     vi: {
         ...newToolsTranslations.vi,
@@ -240,5 +242,6 @@ export const toolsTranslations = {
         passwordStrengthChecker: passwordStrengthTranslations.vi,
         screenTester: screenTesterTranslations.vi,
         ambientNoiseGenerator: ambientNoiseTranslations.vi,
+        bulkIpLookup: bulkIpLookupTranslations.vi.bulkIpLookup,
     },
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ipLookupTranslations } from "@/lib/i18n/tools/ip-lookup";
 import Button from "@/components/ui/Button";
@@ -209,6 +210,25 @@ export default function IpLookupClient() {
 
     return (
         <div className='space-y-6'>
+            {/* Promo to Bulk IP Lookup */}
+            <div className='flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 text-xs sm:text-sm text-blue-900 dark:text-blue-100 flex-wrap gap-2'>
+                <div className='flex items-center gap-2'>
+                    <span className='text-lg'>🗺️</span>
+                    <span>
+                        {locale === "vi"
+                            ? "Cần tra cứu vị trí nhiều địa chỉ IP cùng lúc?"
+                            : "Need to lookup multiple IP locations at once?"}
+                    </span>
+                </div>
+                <Link
+                    href={`/${locale}/tools/bulk-ip-lookup`}
+                    className='inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline'
+                >
+                    <span>{locale === "vi" ? "Mở Tra Cứu IP Hàng Loạt & Bản Đồ" : "Open Bulk IP Lookup & Map"}</span>
+                    <span>→</span>
+                </Link>
+            </div>
+
             {/* Main IP Display */}
             <div className='bg-linear-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white'>
                 <div className='text-center'>

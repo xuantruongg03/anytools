@@ -88,6 +88,7 @@ export const toolsConfig: ToolCategory[] = [
         key: "security",
         icon: "🔒",
         tools: [
+            { href: "/tools/bulk-ip-lookup", icon: "🗺️", key: "bulkIpLookup", updatedAt: "2026-09-25" },
             { href: "/tools/dns-lookup", icon: "🌐", key: "dnsLookup", updatedAt: "2026-05-18" },
             { href: "/tools/ip-lookup", icon: "🔍", key: "ipLookup", updatedAt: "2026-09-08" },
             { href: "/tools/password-generator", icon: "🔑", key: "passwordGenerator", updatedAt: "2026-05-20" },
