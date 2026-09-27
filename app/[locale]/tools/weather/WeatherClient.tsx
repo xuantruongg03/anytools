@@ -126,7 +126,7 @@ export default function WeatherClient() {
             <div className='bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6'>
                 <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
                     <div>
-                        <h1 className='text-3xl font-bold text-gray-900 dark:text-white mb-2'>{weather_t.name}</h1>
+                        <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-2'>{weather_t.name}</h2>
                         <p className='text-gray-600 dark:text-gray-400'>{weather_t.description}</p>
                     </div>
 

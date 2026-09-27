@@ -16,10 +16,31 @@ interface IndexNowResponse {
 }
 
 /**
- * Submit a single URL to IndexNow
+ * Submit a single URL to IndexNow using Streaming mode (HTTP GET)
+ * Recommended by Bing/IndexNow over batch mode for real-time indexing
  */
 export async function submitUrlToIndexNow(url: string): Promise<IndexNowResponse> {
-    return submitUrlsToIndexNow([url]);
+    const keyLocation = `https://${SITE_HOST}/${INDEXNOW_KEY}.txt`;
+    const endpoint = `https://www.bing.com/indexnow?url=${encodeURIComponent(url)}&key=${INDEXNOW_KEY}&keyLocation=${encodeURIComponent(keyLocation)}`;
+
+    try {
+        const response = await fetch(endpoint, {
+            method: "GET",
+        });
+
+        if (response.status === 200 || response.status === 202) {
+            return {
+                success: true,
+                statusCode: response.status,
+                message: response.status === 200 ? "URL submitted successfully (Streaming)" : "URL accepted for processing (Streaming)",
+            };
+        }
+
+        // Fallback to POST if GET returned error
+        return submitUrlsToIndexNow([url]);
+    } catch {
+        return submitUrlsToIndexNow([url]);
+    }
 }
 
 /**

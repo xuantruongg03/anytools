@@ -12,7 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
-    const title = isVi ? `Mã Hóa & Giải Mã Văn Bản - AES Encryption Tool Miễn Phí ${getCurrentYear()}` : `Text Encryption & Decryption - Free AES Encryption Tool ${getCurrentYear()}`;
+    const title = isVi ? `Mã Hóa & Giải Mã Văn Bản AES ${getCurrentYear()}` : `Text Encryption & Decryption AES ${getCurrentYear()}`;
     const description = isVi ? "Công cụ mã hóa văn bản miễn phí với AES-256, ROT13, Caesar cipher. Bảo vệ dữ liệu an toàn, xử lý 100% trên trình duyệt." : "Free text encryption tool with AES-256, ROT13, Caesar cipher. Secure your data with strong encryption. 100% browser-based.";
 
     return {

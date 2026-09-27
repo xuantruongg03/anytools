@@ -2,13 +2,12 @@ import { MetadataRoute } from "next";
 import { apps } from "@/constants/apps";
 import { allTools } from "@/config/tools";
 
+export const revalidate = 86400; // Refresh sitemap daily
+
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = "https://anytools.online";
     const locales = ["en", "vi"];
     const defaultLocale = "en";
-
-    // All tools - dynamically derived from toolsConfig to prevent 404s and sync automatically
-    const tools = allTools.map((tool) => tool.href.replace("/tools/", ""));
 
     const sitemap: MetadataRoute.Sitemap = [];
 
@@ -116,18 +115,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
 
     // Add all tools for each locale
-    tools.forEach((tool) => {
+    allTools.forEach((tool) => {
+        const slug = tool.href.replace("/tools/", "");
+        const lastMod = tool.updatedAt ? new Date(tool.updatedAt) : new Date();
         locales.forEach((locale) => {
             sitemap.push({
-                url: `${baseUrl}/${locale}/tools/${tool}`,
-                lastModified: new Date(),
+                url: `${baseUrl}/${locale}/tools/${slug}`,
+                lastModified: lastMod,
                 changeFrequency: "weekly",
                 priority: 0.9,
                 alternates: {
                     languages: {
-                        en: `${baseUrl}/en/tools/${tool}`,
-                        vi: `${baseUrl}/vi/tools/${tool}`,
-                        "x-default": `${baseUrl}/${defaultLocale}/tools/${tool}`,
+                        en: `${baseUrl}/en/tools/${slug}`,
+                        vi: `${baseUrl}/vi/tools/${slug}`,
+                        "x-default": `${baseUrl}/${defaultLocale}/tools/${slug}`,
                     },
                 },
             });

@@ -13,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     const isVi = locale === "vi";
     const title = isVi 
-        ? `Tạo Dữ Liệu Giả - Lorem Ipsum & Fake Data Generator Miễn Phí ${getCurrentYear()}` 
-        : `Fake Data Generator - Lorem Ipsum & Test Data Generator Free ${getCurrentYear()}`;
+        ? `Tạo Dữ Liệu Giả - Mock & Test Data ${getCurrentYear()}` 
+        : `Fake Data Generator - Mock & Test Data ${getCurrentYear()}`;
     const description = isVi 
         ? "Công cụ tạo dữ liệu giả miễn phí. Lorem Ipsum, tên người, email, địa chỉ, số điện thoại, UUID, ngày tháng. Hoàn hảo cho testing và development." 
         : "Free fake data generator tool. Create Lorem Ipsum, names, emails, addresses, phone numbers, UUIDs, dates. Perfect for testing and development.";

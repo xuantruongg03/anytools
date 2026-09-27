@@ -3,7 +3,7 @@ import AboutContent from "./AboutContent";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: "About AnyTools - Free Online Developer Tools & Open Source Project",
+        title: "About AnyTools - Free Developer Tools",
         description: "Learn about AnyTools - a 100% free and open-source collection of online tools for developers, designers, and creators. Contribute new tools, fix bugs, or support the project.",
         keywords: [
             // English keywords

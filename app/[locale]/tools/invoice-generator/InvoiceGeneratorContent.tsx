@@ -326,9 +326,9 @@ export default function InvoiceGeneratorContent() {
                         </div>
 
                         <div className='text-right'>
-                            <h1 className='text-2xl sm:text-3xl font-black tracking-widest text-blue-600 uppercase font-mono'>
+                            <div className='text-2xl sm:text-3xl font-black tracking-widest text-blue-600 uppercase font-mono'>
                                 INVOICE
-                            </h1>
+                            </div>
                             <div className='text-xs font-mono font-bold text-gray-700 mt-1'>
                                 #{invoiceNumber}
                             </div>

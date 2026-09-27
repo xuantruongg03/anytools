@@ -2,7 +2,7 @@ export const browserExtensionsTranslations = {
     en: {
         browserExtensions: {
             meta: {
-                title: "Browser Extensions Collection - Useful Chrome, Firefox & Edge Extensions",
+                title: "Browser Extensions Collection - Useful Web Tools",
                 description: "A curated collection of useful browser extensions for Chrome, Firefox, and Edge. Find productivity tools, developer utilities, and more.",
                 keywords: ["browser extensions", "chrome extensions", "firefox addons", "edge extensions", "productivity extensions", "developer tools", "useful extensions", "free extensions"],
             },
@@ -74,7 +74,7 @@ export const browserExtensionsTranslations = {
     vi: {
         browserExtensions: {
             meta: {
-                title: "Bộ Sưu Tập Extension Trình Duyệt - Chrome, Firefox & Edge Extensions Hữu Ích",
+                title: "Bộ Sưu Tập Extension Trình Duyệt Tiện Ích",
                 description: "Bộ sưu tập các extension trình duyệt hữu ích cho Chrome, Firefox và Edge. Tìm công cụ năng suất, tiện ích developer và nhiều hơn nữa.",
                 keywords: ["extension trình duyệt", "chrome extensions", "firefox addons", "edge extensions", "extension năng suất", "công cụ developer", "extension hữu ích", "extension miễn phí"],
             },

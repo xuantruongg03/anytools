@@ -223,9 +223,9 @@ export default function SocialPostGeneratorContent() {
         <div className='max-w-6xl mx-auto space-y-8'>
             {/* Header info */}
             <div className='text-center space-y-2'>
-                <h1 className='text-3xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-3'>
+                <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-3'>
                     <span>📱</span> {t.name}
-                </h1>
+                </h2>
                 <p className='text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto'>
                     {t.description}
                 </p>

@@ -489,9 +489,9 @@ export default function TeamGeneratorClient() {
 
                     {/* Printable Header for print view */}
                     <div className='hidden print:block text-center mb-6'>
-                        <h1 className='text-2xl font-black uppercase tracking-wider text-gray-900'>
+                        <h2 className='text-2xl font-black uppercase tracking-wider text-gray-900'>
                             {isVi ? "DANH SÁCH PHÂN CHIA NHÓM" : "CLASSROOM TEAM ASSIGNMENTS"}
-                        </h1>
+                        </h2>
                         <p className='text-sm text-gray-600 mt-1'>
                             {isVi ? "Tổng số" : "Total"}: {parsedNames.length} {t.membersCount} | {teams.length} {t.teamPrefix}
                         </p>
