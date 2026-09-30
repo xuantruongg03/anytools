@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processPaymentWebhook } from "@/lib/credits-sheets";
+import { sendPaymentErrorEmail } from "@/lib/utils/email-service";
 import crypto from "crypto";
 
 const BMAC_SECRET = 
@@ -117,10 +118,23 @@ export async function POST(request: NextRequest) {
 
         if (!userId) {
             console.warn("[BuyMeACoffee Webhook] No valid USER_ID found in note:", content);
+            const errMsg = "No USER_ID found in note. Please ensure note contains NAP USER_XXXX";
+
+            sendPaymentErrorEmail({
+                transId: `BMAC_${transId}`,
+                amount,
+                currency: "USD",
+                content: `BMAC: ${content}`,
+                bankCode: "BUYMEACOFFEE",
+                userId: null,
+                reason: errMsg,
+                gateway: "BuyMeACoffee",
+            }).catch((err) => console.error("[BMAC Email Error]:", err));
+
             return NextResponse.json(
                 {
                     success: false,
-                    error: "No USER_ID found in note. Please ensure note contains NAP USER_XXXX",
+                    error: errMsg,
                     receivedContent: content,
                     transId,
                 },
@@ -143,6 +157,19 @@ export async function POST(request: NextRequest) {
         });
 
         if (!result.success) {
+            if (result.message !== "Giao dịch này đã được xử lý trước đó") {
+                sendPaymentErrorEmail({
+                    transId: `BMAC_${transId}`,
+                    amount,
+                    currency: "USD",
+                    content: `BMAC: ${content} (${supporterName})`,
+                    bankCode: "BUYMEACOFFEE",
+                    userId,
+                    reason: result.message,
+                    gateway: "BuyMeACoffee",
+                }).catch((err) => console.error("[BMAC Email Error]:", err));
+            }
+
             return NextResponse.json(
                 { success: false, error: result.message },
                 { status: 400, headers: CORS_HEADERS }

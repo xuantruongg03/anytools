@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processPaymentWebhook } from "@/lib/credits-sheets";
+import { sendPaymentErrorEmail } from "@/lib/utils/email-service";
 
 const WEBHOOK_SECRET = process.env.PAYMENT_WEBHOOK_SECRET || process.env.ADMIN_SECRET || "adminsupersecretkey123456";
 
@@ -91,11 +92,25 @@ export async function POST(request: NextRequest) {
         for (const tx of transactions) {
             const userId = extractUserId(tx.content);
             if (!userId) {
+                const failureMsg = `Không tìm thấy mã User (USER_XXXX) trong nội dung: "${tx.content}"`;
                 results.push({
                     transId: tx.transId,
                     success: false,
-                    message: `Không tìm thấy mã User (USER_XXXX) trong nội dung: "${tx.content}"`,
+                    message: failureMsg,
                 });
+
+                // Tự động gửi mail thông báo cho Admin để can thiệp hỗ trợ khách
+                sendPaymentErrorEmail({
+                    transId: tx.transId,
+                    amount: tx.amount,
+                    currency: "VND",
+                    content: tx.content,
+                    bankCode: tx.bankCode,
+                    userId: null,
+                    reason: failureMsg,
+                    gateway: tx.bankCode || "SePay/Casso",
+                }).catch((err) => console.error("[Payment Email Error]:", err));
+
                 continue;
             }
 
@@ -106,6 +121,22 @@ export async function POST(request: NextRequest) {
                 content: tx.content,
                 bankCode: tx.bankCode,
             });
+
+            if (!res.success) {
+                // Nếu lỗi thật sự (không phải do trùng lặp lặp lại của webhook)
+                if (res.message !== "Giao dịch này đã được xử lý trước đó") {
+                    sendPaymentErrorEmail({
+                        transId: tx.transId,
+                        amount: tx.amount,
+                        currency: "VND",
+                        content: tx.content,
+                        bankCode: tx.bankCode,
+                        userId: userId,
+                        reason: res.message,
+                        gateway: tx.bankCode || "SePay/Casso",
+                    }).catch((err) => console.error("[Payment Email Error]:", err));
+                }
+            }
 
             results.push({
                 transId: tx.transId,
@@ -121,6 +152,14 @@ export async function POST(request: NextRequest) {
         });
     } catch (error: any) {
         console.error("[Webhook Error]:", error);
+
+        sendPaymentErrorEmail({
+            transId: "SYSTEM_EXCEPTION",
+            content: "Lỗi hệ thống khi nhận webhook thanh toán",
+            reason: error?.message || "Internal server error",
+            gateway: "Webhook",
+        }).catch((err) => console.error("[Payment Email Error]:", err));
+
         return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
     }
 }

@@ -127,23 +127,30 @@ export function verifyPassword(password: string, storedHash: string, salt: strin
 }
 
 /**
- * Initialize or retrieve the single Admin Credentials from the encrypted file server.
- * Credentials are read dynamically from server environment variables (ADMIN_VAULT_USERNAME, ADMIN_VAULT_PASSWORD)
- * and persisted in encrypted form (AES-256-GCM). NO plain-text passwords exist in the source code.
+ * Timing-safe string comparison using SHA-256 digests.
+ * Digests are always 32 bytes, preventing timing side-channel attacks and length leakage.
+ */
+function safeStringCompare(a: string, b: string): boolean {
+    const hashA = crypto.createHash("sha256").update(a).digest();
+    const hashB = crypto.createHash("sha256").update(b).digest();
+    return crypto.timingSafeEqual(hashA, hashB);
+}
+
+/**
+ * Initialize or retrieve the single Admin Credentials.
+ * Credentials are read dynamically from server environment variables:
+ * - VERCEL_ADMIN_VAULT_USERNAME / ADMIN_VAULT_USERNAME
+ * - VERCEL_ADMIN_VAULT_PASSWORD / ADMIN_VAULT_PASSWORD
+ * On serverless platforms (e.g. Vercel), disk writes are read-only (EROFS), so in-memory fallback is strictly handled.
  */
 export async function getOrInitAdminCredentials(): Promise<AdminCredentials> {
-    if (!fs.existsSync(VAULT_DIR)) {
-        fs.mkdirSync(VAULT_DIR, { recursive: true });
-    }
+    const envUser = process.env.ADMIN_VAULT_USERNAME?.trim() || "vault_admin";
+    const envPass = process.env.ADMIN_VAULT_PASSWORD?.trim() || crypto.randomBytes(16).toString("hex");
 
     if (!fs.existsSync(VAULT_FILE_PATH)) {
-        // Read from private server environment or generate strong random credentials
-        const initialUser = process.env.ADMIN_VAULT_USERNAME || "vault_admin";
-        const initialPassword = process.env.ADMIN_VAULT_PASSWORD || crypto.randomBytes(16).toString("hex");
-
-        const { hash, salt } = hashPassword(initialPassword);
+        const { hash, salt } = hashPassword(envPass);
         const initialCreds: AdminCredentials = {
-            username: initialUser,
+            username: envUser,
             passwordHash: hash,
             salt: salt,
             createdAt: new Date().toISOString(),
@@ -151,8 +158,17 @@ export async function getOrInitAdminCredentials(): Promise<AdminCredentials> {
             allowedIps: ["*"],
         };
 
-        const encrypted = encryptData(JSON.stringify(initialCreds));
-        fs.writeFileSync(VAULT_FILE_PATH, JSON.stringify(encrypted, null, 2), "utf8");
+        try {
+            if (!fs.existsSync(VAULT_DIR)) {
+                fs.mkdirSync(VAULT_DIR, { recursive: true });
+            }
+            const encrypted = encryptData(JSON.stringify(initialCreds));
+            fs.writeFileSync(VAULT_FILE_PATH, JSON.stringify(encrypted, null, 2), "utf8");
+        } catch {
+            // Read-only filesystem in serverless environments (e.g. Vercel)
+            // Silently continue with in-memory credentials derived from env
+        }
+
         return initialCreds;
     }
 
@@ -163,35 +179,77 @@ export async function getOrInitAdminCredentials(): Promise<AdminCredentials> {
         const decryptedJson = decryptData(blob);
         return JSON.parse(decryptedJson) as AdminCredentials;
     } catch (error) {
-        console.error("❌ [Admin Vault] Error reading or decrypting admin vault file:", error);
-        throw new Error("Failed to decrypt admin credentials vault file");
+        console.error("⚠️ [Admin Vault] Could not read vault file, falling back to environment credentials:", error);
+        const { hash, salt } = hashPassword(envPass);
+        return {
+            username: envUser,
+            passwordHash: hash,
+            salt: salt,
+            createdAt: new Date().toISOString(),
+            role: "super_admin",
+            allowedIps: ["*"],
+        };
     }
 }
 
 /**
- * Update Admin Credentials (e.g. record last login timestamp)
+ * Update Admin Credentials (e.g. record last login timestamp).
+ * Safely ignores file write failures on serverless read-only platforms.
  */
 export async function saveAdminCredentials(creds: AdminCredentials): Promise<void> {
-    if (!fs.existsSync(VAULT_DIR)) {
-        fs.mkdirSync(VAULT_DIR, { recursive: true });
+    try {
+        if (!fs.existsSync(VAULT_DIR)) {
+            fs.mkdirSync(VAULT_DIR, { recursive: true });
+        }
+        const encrypted = encryptData(JSON.stringify(creds));
+        fs.writeFileSync(VAULT_FILE_PATH, JSON.stringify(encrypted, null, 2), "utf8");
+    } catch {
+        // Read-only filesystem on serverless platforms (e.g. Vercel), safely ignore
     }
-    const encrypted = encryptData(JSON.stringify(creds));
-    fs.writeFileSync(VAULT_FILE_PATH, JSON.stringify(encrypted, null, 2), "utf8");
 }
 
 /**
- * Check if the given login attempt matches the single master admin
+ * Check if the given login attempt matches the single master admin.
+ * First checks directly against environment variables (fast, resilient, serverless-friendly),
+ * then falls back to encrypted vault storage.
  */
 export async function validateAdminLogin(username: string, password: string): Promise<boolean> {
     try {
+        const envUser = process.env.ADMIN_VAULT_USERNAME?.trim();
+        const envPass = process.env.ADMIN_VAULT_PASSWORD?.trim();
+
+        // 1. Direct environment variable validation (Ideal for Serverless / Vercel)
+        if (envUser && envPass) {
+            const isUserValid = safeStringCompare(username.trim(), envUser);
+            const isPassValid = safeStringCompare(password, envPass);
+
+            if (isUserValid && isPassValid) {
+                // Update credentials timestamp in background if filesystem is writable
+                try {
+                    const creds = await getOrInitAdminCredentials();
+                    creds.lastLoginAt = new Date().toISOString();
+                    await saveAdminCredentials(creds);
+                } catch {
+                    // Ignore on read-only environments
+                }
+                return true;
+            }
+            return false;
+        }
+
+        // 2. Fallback to encrypted file vault (for local development or file-based deployments)
         const creds = await getOrInitAdminCredentials();
-        if (username.trim() !== creds.username) {
+        if (!safeStringCompare(username.trim(), creds.username.trim())) {
             return false;
         }
         const isValid = verifyPassword(password, creds.passwordHash, creds.salt);
         if (isValid) {
-            creds.lastLoginAt = new Date().toISOString();
-            await saveAdminCredentials(creds);
+            try {
+                creds.lastLoginAt = new Date().toISOString();
+                await saveAdminCredentials(creds);
+            } catch {
+                // Ignore read-only write failures
+            }
         }
         return isValid;
     } catch (err) {
