@@ -15,10 +15,13 @@ const EXCLUDE_LOG_PATHS = [
     "/robots.txt",
     "/sitemap.xml",
     "/api", // API có logging riêng
+    "/sys-vault", // Admin vault confidentiality
 ];
 
 function shouldLogPageView(pathname: string): boolean {
     if (!ENABLE_PAGE_VIEW_LOGGING) return false;
+    // Strict admin vault privacy: Never log any sys-vault URLs regardless of locale prefix
+    if (pathname.includes("/sys-vault")) return false;
     return !EXCLUDE_LOG_PATHS.some((path) => pathname.startsWith(path));
 }
 

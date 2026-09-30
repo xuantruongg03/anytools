@@ -116,6 +116,19 @@ export const extensions: Extension[] = [
         author: "xuantruongg03",
         tags: ["scribd", "downloader", "education", "pdf"],
     },
+    {
+        id: "jp-hover",
+        name: "JP Furigana Hover - Phiên âm Tiếng Nhật",
+        description: {
+            en: "",
+            vi: "Cung cấp công cụ tra cứu phiên âm Furigana, Hán-Việt, phát âm và dịch câu tiếng Nhật trực tiếp trên trang web khi người dùng rê chuột hoặc bôi đen văn bản.",
+        },
+        category: "utility",
+        // chromeUrl: "https://chromewebstore.google.com/detail/scribd-downloader/eacdahapcjihlkdpofanaopnmhloegip",
+        edgeUrl: "https://microsoftedge.microsoft.com/addons/detail/lfcjlfldigcjoafgmajccnfbgmpjdpin",
+        author: "xuantruongg03",
+        tags: ["jp", "hover", "education", "transcribe"],
+    },
 ];
 
 // Helper function to get extensions by category

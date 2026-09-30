@@ -1,0 +1,1512 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import {
+    TelemetryEvent,
+    TelemetrySummaryStats,
+    CreditTransaction,
+    CreditTransactionSummary,
+} from "@/lib/telemetry/types";
+
+interface DarkboardClientProps {
+    locale: string;
+    secretSlug: string;
+    tabToken?: string;
+    initialAuthenticated: boolean;
+}
+
+export default function DarkboardClient({
+    locale,
+    secretSlug,
+    tabToken,
+    initialAuthenticated,
+}: DarkboardClientProps) {
+    const isVi = locale === "vi";
+
+    // Auth State
+    const [isAuthenticated, setIsAuthenticated] = useState(initialAuthenticated);
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [loginError, setLoginError] = useState<string | null>(null);
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    // Active Module Tab: Telemetry Downloads vs Credit Transactions
+    const [activeTab, setActiveTab] = useState<"telemetry" | "transactions">("telemetry");
+
+    // Dashboard Filter & Data State
+    const [extensionId, setExtensionId] = useState<string>("scribd-downloader");
+    const [timeframe, setTimeframe] = useState<"1h" | "24h" | "7d" | "30d" | "all">("24h");
+    const [statusFilter, setStatusFilter] = useState<"all" | "anomalies_only" | "fast_bypass" | "multi_ip">("all");
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const [stats, setStats] = useState<TelemetrySummaryStats | null>(null);
+    const [events, setEvents] = useState<TelemetryEvent[]>([]);
+    const [transactionStats, setTransactionStats] = useState<CreditTransactionSummary | null>(null);
+    const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [autoRefresh, setAutoRefresh] = useState(true);
+    const [lastUpdated, setLastUpdated] = useState<string>("");
+
+    // Modal & Interactive State
+    const [selectedEvent, setSelectedEvent] = useState<TelemetryEvent | null>(null);
+    const [selectedTransaction, setSelectedTransaction] = useState<CreditTransaction | null>(null);
+
+    // Load Telemetry Data (Pure Real Google Sheets)
+    const fetchTelemetry = useCallback(async () => {
+        if (!isAuthenticated) return;
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams({
+                extensionId,
+                timeframe,
+                status: statusFilter,
+                q: searchQuery,
+            });
+            const authHeaders: Record<string, string> = { "x-vault-slug": secretSlug };
+            if (tabToken) {
+                authHeaders["x-vault-tab-token"] = tabToken;
+            }
+            const res = await fetch(`/api/admin-vault/stats?${params.toString()}`, {
+                headers: authHeaders,
+            });
+            if (res.status === 401 || res.status === 404) {
+                setIsAuthenticated(false);
+                return;
+            }
+            const data = await res.json();
+            if (data.success) {
+                setStats(data.stats);
+                setEvents(data.filteredEvents || []);
+                if (data.transactionStats) {
+                    setTransactionStats(data.transactionStats);
+                }
+                if (data.transactions) {
+                    setTransactions(data.transactions);
+                }
+                setLastUpdated(new Date().toLocaleTimeString(isVi ? "vi-VN" : "en-US"));
+            }
+        } catch (err) {
+            console.error("Failed to load telemetry:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated, extensionId, timeframe, statusFilter, searchQuery, isVi, secretSlug, tabToken]);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchTelemetry();
+        }
+    }, [isAuthenticated, fetchTelemetry]);
+
+    // Auto-refresh interval (every 12 seconds)
+    useEffect(() => {
+        if (!isAuthenticated || !autoRefresh) return;
+        const interval = setInterval(() => {
+            fetchTelemetry();
+        }, 12000);
+        return () => clearInterval(interval);
+    }, [isAuthenticated, autoRefresh, fetchTelemetry]);
+
+    // Handle Login
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoginError(null);
+        setIsLoggingIn(true);
+
+        try {
+            const loginHeaders: Record<string, string> = {
+                "Content-Type": "application/json",
+                "x-vault-slug": secretSlug,
+            };
+            if (tabToken) {
+                loginHeaders["x-vault-tab-token"] = tabToken;
+            }
+            const res = await fetch("/api/admin-vault/auth", {
+                method: "POST",
+                headers: loginHeaders,
+                body: JSON.stringify({ username, password }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setIsAuthenticated(true);
+                setPassword("");
+            } else {
+                setLoginError(data.error || (isVi ? "Đăng nhập thất bại. Kiểm tra thông tin mã hóa." : "Login failed. Check your encrypted vault credentials."));
+            }
+        } catch {
+            setLoginError(isVi ? "Lỗi kết nối tới Cổng Bảo Mật Vault." : "Connection failed to Admin Vault Gate.");
+        } finally {
+            setIsLoggingIn(false);
+        }
+    };
+
+    // Handle Logout
+    const handleLogout = async () => {
+        const logoutHeaders: Record<string, string> = { "x-vault-slug": secretSlug };
+        if (tabToken) {
+            logoutHeaders["x-vault-tab-token"] = tabToken;
+        }
+        await fetch("/api/admin-vault/auth", {
+            method: "DELETE",
+            headers: logoutHeaders,
+        });
+        setIsAuthenticated(false);
+    };
+
+    // Export CSV Report
+    const handleExportCsv = () => {
+        if (activeTab === "transactions") {
+            if (!transactions.length) return;
+            const headers = isVi
+                ? ["Thoi_Gian", "Ma_Giao_Dich", "Ma_User", "So_Tien_VND", "Credits_Cong", "Ngan_Hang", "Noi_Dung"]
+                : ["Timestamp", "Trans_ID", "User_ID", "Amount_VND", "Credits_Added", "Bank_Code", "Content"];
+
+            const rows = transactions.map((t) => [
+                t.createdAt,
+                t.id,
+                t.userId,
+                t.amount,
+                t.creditsAdded,
+                t.bankCode,
+                `"${(t.content || "").replace(/"/g, '""')}"`,
+            ]);
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `credits-transactions-audit-${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            return;
+        }
+
+        if (!events.length) return;
+        const headers = isVi
+            ? ["Thoi_Gian", "Tien_Ich", "Ma_User", "Dia_Chi_IP", "Quoc_Gia", "So_Trang", "Thoi_Gian_Cho_s", "Nguong_Uoc_Tinh_s", "Bat_Thuong", "Diem_Rui_Ro"]
+            : ["Timestamp", "Extension", "User_ID", "IP", "Country", "Pages", "Elapsed_s", "Est_Min_s", "Anomalies", "Risk_Score"];
+
+        const rows = events.map((e) => [
+            e.createdAt,
+            e.extensionId,
+            e.clientUserId,
+            e.ip,
+            e.country || "Unknown",
+            e.pages || 1,
+            e.elapsedSeconds,
+            e.estimatedMinSeconds || 30,
+            e.anomalies.join(" | ") || (isVi ? "Hop_Le" : "None"),
+            e.riskScore,
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `telemetry-audit-${extensionId}-${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    // Anomaly translation helper
+    const translateAnomaly = (type: string) => {
+        if (!isVi) return type;
+        switch (type) {
+            case "FAST_BYPASS":
+                return "Vượt tốc độ động (< T_min)";
+            case "MULTI_IP":
+                return "Đổi nhiều IP";
+            case "RATE_BURST":
+                return "Tải dồn dập (Spam)";
+            case "IP_FARM":
+                return "Cày user ảo (1 IP)";
+            case "DOC_SPAM":
+                return "Tải lặp 1 tài liệu";
+            case "MISSING_INIT":
+                return "Không qua bước Init";
+            case "TAMPERED_NONCE":
+                return "Mã Nonce giả mạo";
+            default:
+                return type;
+        }
+    };
+
+    // ==========================================
+    // RENDER: LOGIN FORM (If not authenticated)
+    // ==========================================
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-[#07090e] text-gray-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+                {/* Cyberpunk Grid Background */}
+                <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
+                <div className="absolute -top-40 -right-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-red-500/10 rounded-full blur-3xl"></div>
+
+                <div className="w-full max-w-md bg-[#0f1422]/90 border border-gray-800/80 rounded-3xl p-8 shadow-2xl backdrop-blur-xl relative z-10">
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 text-cyan-400 mb-4 shadow-lg shadow-cyan-500/10">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white uppercase flex items-center justify-center gap-2">
+                            <span>{isVi ? "Cổng Xác Thực Quản Trị" : "Admin Vault Gate"}</span>
+                        </h1>
+                        <p className="text-xs text-gray-400 mt-2 tracking-wide font-mono">
+                            {isVi ? "TRUNG TÂM GIÁM SÁT TELEMETRY & BẤT THƯỜNG" : "SECURE TELEMETRY & ANOMALY VAULT"}
+                        </p>
+                        <div className="inline-block mt-3 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono">
+                            {isVi ? "Mã hóa File Server AES-256-GCM" : "AES-256-GCM Encrypted Server File Storage"}
+                        </div>
+                    </div>
+
+                    {loginError && (
+                        <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2 font-mono">
+                            <span>⚠️</span>
+                            <span>{loginError}</span>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleLogin} className="space-y-5">
+                        <div>
+                            <label className="block text-xs font-mono uppercase tracking-wider text-gray-300 mb-1.5">
+                                {isVi ? "Tên Đăng Nhập Quản Trị" : "Master Admin ID"}
+                            </label>
+                            <input
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="anytools_admin"
+                                required
+                                className="w-full px-4 py-3 bg-[#090d16] border border-gray-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-mono uppercase tracking-wider text-gray-300 mb-1.5">
+                                {isVi ? "Mật Khẩu Quản Trị" : "Master Password"}
+                            </label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••••••••••"
+                                required
+                                className="w-full px-4 py-3 bg-[#090d16] border border-gray-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isLoggingIn}
+                            className="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                            {isLoggingIn ? (
+                                <span>{isVi ? "Đang xác thực chữ ký Master..." : "Verifying Master Signature..."}</span>
+                            ) : (
+                                <>
+                                    <span>{isVi ? "Giải Mã & Truy Cập Darkboard" : "Decrypt & Access Darkboard"}</span>
+                                    <span>→</span>
+                                </>
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="mt-6 pt-5 border-t border-gray-800/80 text-center">
+                        <div className="text-[11px] text-gray-500 font-mono">
+                            {isVi ? "Bảo vệ bởi Giới Hạn Tần Suất IP & Tuyến Đường Mã Hóa Ẩn Danh" : "Protected by IP Rate Limiting & Dynamic Route Cloaking"}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // RENDER: DARKBOARD MAIN DASHBOARD
+    // ==========================================
+    return (
+        <div className="min-h-screen bg-[#07090e] text-gray-100 font-sans pb-16">
+            {/* Top Security Status Bar */}
+            <header className="sticky top-0 z-40 bg-[#0c101d]/90 backdrop-blur-md border-b border-gray-800/80 px-4 sm:px-8 py-3.5">
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    {/* Brand & Security Badges */}
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
+                            <span className="text-lg">🛡️</span>
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-base font-black text-white uppercase tracking-wide">
+                                    {isVi ? "ANYTOOLS // BẢNG ĐIỀU KHIỂN BẢO MẬT (DARKBOARD)" : "ANYTOOLS // DARKBOARD"}
+                                </h1>
+                                <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono">
+                                    {isVi ? "KHO DỮ LIỆU TELEMETRY" : "TELEMETRY VAULT"}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] text-gray-400 font-mono mt-0.5">
+                                <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span>{isVi ? "Kênh Telemetry Trực Tiếp (Mã Hóa AES-256)" : "Live Telemetry Stream (AES-256 Encrypted)"}</span>
+                                </span>
+                                <span>•</span>
+                                <span>Token: {secretSlug.slice(0, 10)}...</span>
+                                <span>•</span>
+                                <span>{isVi ? "Cập nhật:" : "Updated:"} {lastUpdated || (isVi ? "Thời gian thực" : "Live")}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Controls & Actions */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+
+                        {/* Extension Selector */}
+                        <select
+                            value={extensionId}
+                            onChange={(e) => setExtensionId(e.target.value)}
+                            className="bg-[#121829] border border-gray-700/80 text-gray-200 text-xs rounded-xl px-3 py-2 font-mono focus:outline-none focus:border-cyan-500"
+                        >
+                            <option value="scribd-downloader">📑 Scribd Downloader</option>
+                            <option value="studocu-downloader">🎓 Studocu Downloader</option>
+                            <option value="all">{isVi ? "🌐 Tất cả tiện ích" : "🌐 All Extensions"}</option>
+                        </select>
+
+                        {/* Timeframe Selector */}
+                        <div className="flex bg-[#121829] border border-gray-700/80 rounded-xl p-0.5 text-xs font-mono">
+                            {[
+                                { key: "1h", label: isVi ? "1h" : "1h" },
+                                { key: "24h", label: isVi ? "Theo ngày (24h)" : "24h (Daily)" },
+                                { key: "7d", label: isVi ? "7 ngày" : "7d" },
+                                { key: "30d", label: isVi ? "30 ngày" : "30d" },
+                                { key: "all", label: isVi ? "Toàn bộ" : "All" },
+                            ].map((tf) => (
+                                <button
+                                    key={tf.key}
+                                    onClick={() => setTimeframe(tf.key as any)}
+                                    className={`px-2.5 py-1.5 rounded-lg transition-all ${
+                                        timeframe === tf.key
+                                            ? "bg-cyan-500 text-white font-bold shadow-sm"
+                                            : "text-gray-400 hover:text-white"
+                                    }`}
+                                >
+                                    {tf.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Auto Refresh Toggle */}
+                        <button
+                            onClick={() => setAutoRefresh(!autoRefresh)}
+                            title={isVi ? "Tự động làm mới mỗi 12 giây" : "Auto-refresh every 12s"}
+                            className={`p-2 rounded-xl border text-xs transition-all ${
+                                autoRefresh
+                                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                                    : "bg-gray-800/40 border-gray-700 text-gray-400"
+                            }`}
+                        >
+                            <svg className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+
+                        {/* Export CSV */}
+                        <button
+                            onClick={handleExportCsv}
+                            className="px-3 py-2 bg-[#121829] hover:bg-gray-800 border border-gray-700/80 text-gray-300 text-xs rounded-xl font-mono flex items-center gap-1.5 transition-all"
+                        >
+                            <span>📥</span>
+                            <span>{isVi ? "Xuất Báo Cáo CSV" : "Audit CSV"}</span>
+                        </button>
+
+                        {/* Logout */}
+                        <button
+                            onClick={handleLogout}
+                            className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-xl font-mono transition-all"
+                        >
+                            {isVi ? "Khóa Vault" : "Lock Vault"}
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-8 mt-6 space-y-6">
+
+                {/* TOP MODULE SWITCHER: TELEMETRY DOWNLOADS VS CREDIT TRANSACTIONS */}
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-800 pb-4">
+                    <div className="flex items-center gap-2 bg-[#0e1322] border border-gray-800/80 rounded-2xl p-1.5 font-mono text-xs shadow-inner">
+                        <button
+                            onClick={() => setActiveTab("telemetry")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                                activeTab === "telemetry"
+                                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/20"
+                                    : "text-gray-400 hover:text-white"
+                            }`}
+                        >
+                            <span>📊</span>
+                            <span>{isVi ? "Thống Kê Lượt Tải & Bất Thường" : "Downloads & Telemetry"}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px]">
+                                {stats?.totalDownloads || 0}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("transactions")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                                activeTab === "transactions"
+                                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/20"
+                                    : "text-gray-400 hover:text-white"
+                            }`}
+                        >
+                            <span>💳</span>
+                            <span>{isVi ? "Giao Dịch Nạp Credit (Doanh Thu)" : "Credit Transactions"}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px]">
+                                {transactionStats?.totalTransactions || 0}
+                            </span>
+                        </button>
+                    </div>
+
+                    {activeTab === "transactions" && (
+                        <div className="flex items-center gap-3 text-xs font-mono text-emerald-400">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>
+                                {isVi ? "Tổng doanh thu:" : "Total revenue:"}{" "}
+                                <strong className="text-white text-sm">
+                                    {(transactionStats?.totalRevenue || 0).toLocaleString()} đ
+                                </strong>
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                {/* TELEMETRY VIEW */}
+                {activeTab === "telemetry" && (
+                    <div className="space-y-6">
+                        {/* 🚨 CRITICAL ANOMALY ALERT TICKER */}
+                {stats && stats.totalAnomalies > 0 && (
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-950/70 via-rose-950/50 to-orange-950/60 border border-red-500/40 p-4 sm:p-5 shadow-xl shadow-red-950/30">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                                <span className="relative flex h-3.5 w-3.5 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500"></span>
+                                </span>
+                                <div>
+                                    <h3 className="text-sm sm:text-base font-bold text-red-200 flex items-center gap-2">
+                                        <span>{isVi ? "CẢNH BÁO BẤT THƯỜNG:" : "ANOMALY WARNING:"}</span>
+                                        <span>
+                                            {isVi
+                                                ? `Phát hiện ${stats.totalAnomalies} hành vi đáng ngờ trong khung ${timeframe}`
+                                                : `${stats.totalAnomalies} suspicious actions detected in ${timeframe}`}
+                                        </span>
+                                    </h3>
+                                    <p className="text-xs text-red-300/80 mt-0.5">
+                                        {isVi
+                                            ? `Ghi nhận ${stats.fastBypassCount} lượt tải bỏ qua thời gian chờ 30 giây & ${stats.multiIpCount} người dùng nhảy qua nhiều địa chỉ IP.`
+                                            : `Detected ${stats.fastBypassCount} downloads bypassing the mandatory 30-second wait & ${stats.multiIpCount} users jumping across multiple IPs.`}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    onClick={() => setStatusFilter("fast_bypass")}
+                                    className="px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-200 text-xs font-mono font-bold transition-all"
+                                >
+                                    {isVi ? `Lọc Tải Nhanh < 30s (${stats.fastBypassCount})` : `Filter Fast Bypass (${stats.fastBypassCount})`}
+                                </button>
+                                <button
+                                    onClick={() => setStatusFilter("multi_ip")}
+                                    className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-xs font-mono font-bold transition-all"
+                                >
+                                    {isVi ? `Lọc User Đổi IP (${stats.multiIpCount})` : `Filter Multi-IP (${stats.multiIpCount})`}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* KPI METRIC CARDS (6 CARDS) */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                    {/* Card 1: Total Downloads */}
+                    <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-4 shadow-sm">
+                        <div className="text-[11px] font-mono uppercase text-gray-400">
+                            {isVi ? "Tổng Lượt Tải" : "Total Downloads"}
+                        </div>
+                        <div className="text-2xl font-black text-white mt-1">
+                            {stats?.totalDownloads.toLocaleString() || 0}
+                        </div>
+                        <div className="text-[10px] text-emerald-400 font-mono mt-1">
+                            {isVi ? "Yêu cầu hợp lệ" : "Compliant Handshakes"}
+                        </div>
+                    </div>
+
+                    {/* Card 2: Total Anomalies */}
+                    <div className="bg-[#0f1422] border border-red-900/40 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-red-500/10 rounded-bl-full"></div>
+                        <div className="text-[11px] font-mono uppercase text-red-300">
+                            {isVi ? "Phát Hiện Bất Thường" : "Anomalies Detected"}
+                        </div>
+                        <div className="text-2xl font-black text-red-400 mt-1">
+                            {stats?.totalAnomalies.toLocaleString() || 0}
+                        </div>
+                        <div className="text-[10px] text-red-400/80 font-mono mt-1">
+                            {isVi ? `${stats?.anomalyPercentage || 0}% trên tổng lưu lượng` : `${stats?.anomalyPercentage || 0}% of all traffic`}
+                        </div>
+                    </div>
+
+                    {/* Card 3: 30s Fast Bypass Violations */}
+                    <div className="bg-[#0f1422] border border-orange-900/40 rounded-2xl p-4 shadow-sm">
+                        <div className="text-[11px] font-mono uppercase text-orange-300">
+                            {isVi ? "Gian Lận < 30s" : "< 30s Fast Bypass"}
+                        </div>
+                        <div className="text-2xl font-black text-orange-400 mt-1">
+                            {stats?.fastBypassCount.toLocaleString() || 0}
+                        </div>
+                        <div className="text-[10px] text-orange-400/80 font-mono mt-1">
+                            {isVi ? "Vi phạm quy tắc chờ" : "Critical Bypass Rule"}
+                        </div>
+                    </div>
+
+                    {/* Card 4: Multi-IP Users */}
+                    <div className="bg-[#0f1422] border border-yellow-900/40 rounded-2xl p-4 shadow-sm">
+                        <div className="text-[11px] font-mono uppercase text-yellow-300">
+                            {isVi ? "User Đổi Nhiều IP" : "Multi-IP Abusers"}
+                        </div>
+                        <div className="text-2xl font-black text-yellow-400 mt-1">
+                            {stats?.multiIpCount.toLocaleString() || 0}
+                        </div>
+                        <div className="text-[10px] text-yellow-400/80 font-mono mt-1">
+                            {isVi ? "≥ 3 IP mỗi tài khoản" : "≥ 3 IPs per User"}
+                        </div>
+                    </div>
+
+                    {/* Card 5: Active Unique Users */}
+                    <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-4 shadow-sm">
+                        <div className="text-[11px] font-mono uppercase text-gray-400">
+                            {isVi ? "User Hoạt Động" : "Unique Users"}
+                        </div>
+                        <div className="text-2xl font-black text-white mt-1">
+                            {stats?.activeUsersCount.toLocaleString() || 0}
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono mt-1">
+                            {isVi ? `${stats?.flaggedUsersCount || 0} user bị gắn cờ` : `${stats?.flaggedUsersCount || 0} flagged users`}
+                        </div>
+                    </div>
+
+                    {/* Card 6: Average Wait Time */}
+                    <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-4 shadow-sm">
+                        <div className="text-[11px] font-mono uppercase text-gray-400">
+                            {isVi ? "Thời Gian Chờ TB" : "Avg Wait Time"}
+                        </div>
+                        <div className="text-2xl font-black text-cyan-400 mt-1">
+                            {stats?.averageWaitSeconds || 32.5}s
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono mt-1">
+                            {isVi ? "Ước tính động: 30s + số trang (init data)" : "Dynamic: 30s + page init data"}
+                        </div>
+                    </div>
+                </div>
+
+
+
+                {/* CHARTS SECTION */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left: Activity Timeline (2 cols) */}
+                    <div className="lg:col-span-2 bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-sm font-bold text-white tracking-wide">
+                                    {isVi ? "Dòng Thời Gian Hoạt Động & Đột Biến Bất Thường" : "Activity & Anomaly Spikes Timeline"}
+                                </h3>
+                                <p className="text-xs text-gray-400">
+                                    {isVi ? "Tương quan giữa lượt tải bình thường và các yêu cầu đáng ngờ theo thời gian" : "Normal downloads vs anomalous requests over time"}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-4 text-[11px] font-mono">
+                                <span className="flex items-center gap-1.5 text-emerald-400">
+                                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> {isVi ? "Bình thường" : "Normal"}
+                                </span>
+                                <span className="flex items-center gap-1.5 text-red-400">
+                                    <span className="w-2.5 h-2.5 rounded-sm bg-red-500"></span> {isVi ? "Bất thường" : "Anomalies"}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Interactive Bar Timeline */}
+                        <div className="h-48 w-full flex items-end gap-2 pt-6 pb-2 border-b border-gray-800">
+                            {stats?.timeline && stats.timeline.length > 0 ? (
+                                stats.timeline.map((item, idx) => {
+                                    const total = item.normalDownloads + item.anomalousDownloads;
+                                    const normalH = total > 0 ? Math.max(8, (item.normalDownloads / 20) * 100) : 4;
+                                    const anomalyH = total > 0 ? Math.max(8, (item.anomalousDownloads / 20) * 100) : 0;
+                                    return (
+                                        <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative h-full justify-end">
+                                             {/* Tooltip */}
+                                            <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-[10px] font-mono text-white pointer-events-none z-20 whitespace-nowrap shadow-lg">
+                                                {isVi ? "Thời gian:" : "Time:"} {item.time} | {isVi ? "Chuẩn:" : "Normal:"} {item.normalDownloads} | {isVi ? "Lỗi:" : "Anomaly:"} {item.anomalousDownloads}
+                                            </div>
+
+                                            {/* Anomaly Bar segment */}
+                                            {item.anomalousDownloads > 0 && (
+                                                <div
+                                                    style={{ height: `${Math.min(anomalyH, 60)}%` }}
+                                                    className="w-full bg-red-500 rounded-t-sm transition-all group-hover:bg-red-400"
+                                                ></div>
+                                            )}
+                                            {/* Normal Bar segment */}
+                                            <div
+                                                style={{ height: `${Math.min(normalH, 80)}%` }}
+                                                className="w-full bg-emerald-500/80 rounded-t-sm transition-all group-hover:bg-emerald-400"
+                                            ></div>
+                                            <span className="text-[9px] font-mono text-gray-500 truncate w-full text-center mt-1">
+                                                {item.time}
+                                            </span>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-mono">
+                                    {isVi ? "Đang thu thập dữ liệu thời gian thực..." : "Collecting telemetry timeline data..."}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Dynamic Safety Threshold Gauge */}
+                        <div className="mt-4 pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                            <div className="flex items-center gap-2">
+                                <span className="text-orange-400 font-mono font-bold">
+                                    {isVi ? "Quy định an toàn:" : "Rule Boundary:"}
+                                </span>
+                                <span className="text-gray-300 text-[11px]">
+                                    {isVi
+                                        ? "Mô hình ước tính động: T_min = 30.0s đếm ngược + thời gian init data (tỷ lệ thuận theo số trang tài liệu và tài liệu tiếp theo). Vi phạm khi Δt < T_min."
+                                        : "Dynamic estimation model: T_min = 30.0s countdown + data init latency (scaled by current & next doc pages). Flagged when Δt < T_min."}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] font-mono">
+                                <span className="text-red-400 font-bold">
+                                    {stats?.fastBypassCount || 0} {isVi ? "vụ vi phạm" : "violations"}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right: Anomaly Type & Geo Distribution (1 col) */}
+                    <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-5">
+                        <div>
+                            <h3 className="text-sm font-bold text-white tracking-wide">
+                                {isVi ? "Phân Loại Bất Thường" : "Anomaly Breakdown"}
+                            </h3>
+                            <p className="text-xs text-gray-400">
+                                {isVi ? "Phân tích bởi Anomaly Engine" : "Classified by Anomaly Engine"}
+                            </p>
+
+                            <div className="mt-3 space-y-2 font-mono text-xs">
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-[#141b2d] border border-red-500/20">
+                                    <span className="text-red-300">{isVi ? "Vượt tốc độ động (< T_min)" : "FAST_BYPASS (< T_min)"}</span>
+                                    <span className="font-bold text-red-400">{stats?.anomalyBreakdown?.FAST_BYPASS || 0}</span>
+                                </div>
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-[#141b2d] border border-yellow-500/20">
+                                    <span className="text-yellow-300">{isVi ? "Đổi nhiều IP (Proxy)" : "MULTI_IP (Hopping)"}</span>
+                                    <span className="font-bold text-yellow-400">{stats?.anomalyBreakdown?.MULTI_IP || 0}</span>
+                                </div>
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-[#141b2d] border border-orange-500/20">
+                                    <span className="text-orange-300">{isVi ? "Tải dồn dập (Spam/Cào)" : "RATE_BURST (Spam)"}</span>
+                                    <span className="font-bold text-orange-400">{stats?.anomalyBreakdown?.RATE_BURST || 0}</span>
+                                </div>
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-[#141b2d] border border-purple-500/20">
+                                    <span className="text-purple-300">{isVi ? "Cày user ảo trên 1 IP" : "IP_FARM (Botnet)"}</span>
+                                    <span className="font-bold text-purple-400">{stats?.anomalyBreakdown?.IP_FARM || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Top Countries */}
+                        <div className="pt-3 border-t border-gray-800">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+                                {isVi ? "Top Quốc Gia & Khu Vực" : "Top Geolocation"}
+                            </h4>
+                            <div className="space-y-1.5 text-xs">
+                                {stats?.topCountries && stats.topCountries.length > 0 ? (
+                                    stats.topCountries.slice(0, 4).map((c, i) => (
+                                        <div key={i} className="flex items-center justify-between text-gray-300">
+                                            <span>{c.country}</span>
+                                            <span className="font-mono text-gray-400">{c.count} {isVi ? "lượt tải" : "downloads"}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <span className="text-gray-500 text-xs">{isVi ? "Chưa có dữ liệu" : "No geo data"}</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* TOP ABUSERS & SUSPICIOUS ENTITIES RADAR */}
+                {stats?.topAbusers && stats.topAbusers.length > 0 && (
+                    <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                    <span>🎯 {isVi ? "Đối tượng Nghi vấn & Tải nhiều nhất" : "Top Flagged Entities & Heavy Downloaders"}</span>
+                                </h3>
+                                <p className="text-xs text-gray-400">
+                                    {isVi
+                                        ? "Người dùng có điểm rủi ro cao nhất, xoay proxy hoặc cố tình bypass tốc độ"
+                                        : "Users exhibiting highest risk scores, proxy usage, or speed bypasses"}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs font-mono">
+                                <thead>
+                                    <tr className="border-b border-gray-800 text-gray-400">
+                                        <th className="pb-3 font-semibold">{isVi ? "Mã Client User ID" : "Client User ID"}</th>
+                                        <th className="pb-3 font-semibold">{isVi ? "Điểm Rủi Ro" : "Risk Score"}</th>
+                                        <th className="pb-3 font-semibold">{isVi ? "Cờ Vi Phạm" : "Flagged Anomalies"}</th>
+                                        <th className="pb-3 font-semibold">{isVi ? "IP Ghi Nhận" : "Recorded IPs"}</th>
+                                        <th className="pb-3 font-semibold">{isVi ? "Lượt Tải" : "Downloads"}</th>
+                                        <th className="pb-3 font-semibold">{isVi ? "Hoạt Động Gần Nhất" : "Last Active"}</th>
+                                        <th className="pb-3 font-semibold text-right">{isVi ? "Hành Động" : "Inspect"}</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800/60">
+                                    {stats.topAbusers.map((abuser, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-800/40 transition-colors">
+                                            <td className="py-3 font-bold text-white">{abuser.clientUserId}</td>
+                                            <td className="py-3">
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                    abuser.riskScore >= 75
+                                                        ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                                                        : "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40"
+                                                }`}>
+                                                    {abuser.riskScore}/100
+                                                </span>
+                                            </td>
+                                            <td className="py-3">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {abuser.anomalies.map((an, i) => (
+                                                        <span key={i} className="px-1.5 py-0.5 bg-gray-800 text-gray-300 rounded text-[9px]">
+                                                            {translateAnomaly(an)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                            <td className="py-3 text-cyan-300">
+                                                {abuser.ips.length} IPs ({abuser.ips.slice(0, 2).join(", ")}{abuser.ips.length > 2 ? "..." : ""})
+                                            </td>
+                                            <td className="py-3 text-gray-300">{abuser.totalDownloads}</td>
+                                            <td className="py-3 text-gray-400">
+                                                {new Date(abuser.lastSeen).toLocaleTimeString(isVi ? "vi-VN" : "en-US")}
+                                            </td>
+                                            <td className="py-3 text-right">
+                                                <button
+                                                    onClick={() => setSearchQuery(abuser.clientUserId)}
+                                                    className="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 rounded-lg text-[10px] transition-all"
+                                                >
+                                                    {isVi ? "Xem Nhật Ký" : "View Logs"}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* LIVE TELEMETRY LOG EXPLORER TABLE */}
+                <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div>
+                            <h3 className="text-sm font-bold text-white tracking-wide">
+                                {isVi ? "Nhật Ký Sự Kiện Telemetry & Kiểm Toán Thời Gian Thực" : "Live Telemetry Event Logs & Audit Trail"}
+                            </h3>
+                            <p className="text-xs text-gray-400">
+                                {isVi
+                                    ? "Kiểm tra chi tiết từng phiên handshake, thời gian chờ thực tế và dấu vết client"
+                                    : "Full inspection of handshake sessions, exact elapsed times, and client footprints"}
+                            </p>
+                        </div>
+
+                        {/* Search & Status Filters */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* Search Input */}
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder={isVi ? "Tìm User ID, IP, tài liệu..." : "Search User ID, IP, Doc..."}
+                                    className="bg-[#121829] border border-gray-700/80 rounded-xl px-3 py-1.5 pl-8 text-xs text-gray-200 placeholder-gray-500 font-mono focus:outline-none focus:border-cyan-500 w-52 sm:w-64"
+                                />
+                                <span className="absolute left-2.5 top-2 text-gray-500 text-xs">🔍</span>
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery("")}
+                                        className="absolute right-2.5 top-1.5 text-gray-500 hover:text-white text-xs"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Status Filter Buttons */}
+                            <div className="flex bg-[#121829] border border-gray-700/80 rounded-xl p-0.5 text-xs font-mono">
+                                {[
+                                    { key: "all", label: isVi ? "Tất cả" : "All" },
+                                    { key: "anomalies_only", label: isVi ? "Bất thường" : "Anomalies" },
+                                    { key: "fast_bypass", label: isVi ? "Vượt Tốc Độ" : "Fast Bypass" },
+                                    { key: "multi_ip", label: isVi ? "Nhiều IP" : "Multi-IP" },
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.key}
+                                        onClick={() => setStatusFilter(tab.key as any)}
+                                        className={`px-2.5 py-1 rounded-lg transition-all ${
+                                            statusFilter === tab.key
+                                                ? "bg-cyan-500 text-white font-bold"
+                                                : "text-gray-400 hover:text-white"
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Table View */}
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs font-mono">
+                            <thead>
+                                <tr className="border-b border-gray-800 text-gray-400">
+                                    <th className="pb-3 font-semibold">{isVi ? "Thời Gian" : "Timestamp"}</th>
+                                    <th className="pb-3 font-semibold">{isVi ? "Tiện Ích" : "Extension"}</th>
+                                    <th className="pb-3 font-semibold">{isVi ? "Mã User ID" : "Client User ID"}</th>
+                                    <th className="pb-3 font-semibold">{isVi ? "Địa Chỉ IP" : "IP Address"}</th>
+                                    <th className="pb-3 font-semibold">{isVi ? "Khu Vực / Trình Duyệt" : "Geo / Browser"}</th>
+                                    <th className="pb-3 font-semibold">{isVi ? "Số Trang & Thời Gian (Δt)" : "Pages & Elapsed (Δt)"}</th>
+                                    <th className="pb-3 font-semibold">{isVi ? "Cờ Bất Thường" : "Anomaly Flags"}</th>
+                                    <th className="pb-3 font-semibold">{isVi ? "Rủi Ro" : "Risk"}</th>
+                                    <th className="pb-3 font-semibold text-right">{isVi ? "Chi Tiết" : "Details"}</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-800/60">
+                                {events.length > 0 ? (
+                                    events.map((event) => {
+                                        const isFastBypass = event.anomalies.includes("FAST_BYPASS");
+                                        const isAnomalous = event.anomalies.length > 0;
+                                        const requiredMin = event.estimatedMinSeconds || 30;
+                                        return (
+                                            <tr
+                                                key={event.id}
+                                                className={`hover:bg-gray-800/40 transition-colors ${
+                                                    isFastBypass
+                                                        ? "bg-red-950/20"
+                                                        : isAnomalous
+                                                        ? "bg-amber-950/10"
+                                                        : ""
+                                                }`}
+                                            >
+                                                <td className="py-3 text-gray-400 whitespace-nowrap">
+                                                    {new Date(event.createdAt).toLocaleTimeString(isVi ? "vi-VN" : "en-US")}
+                                                </td>
+                                                <td className="py-3 text-gray-300 whitespace-nowrap">
+                                                    {event.extensionId}
+                                                </td>
+                                                <td className="py-3 font-bold text-white whitespace-nowrap">
+                                                    {event.clientUserId.slice(0, 14)}...
+                                                </td>
+                                                <td className="py-3 text-cyan-300 whitespace-nowrap">
+                                                    {event.ip}
+                                                </td>
+                                                <td className="py-3 text-gray-300 whitespace-nowrap">
+                                                    {event.country || "Unknown"} ({event.browser})
+                                                </td>
+                                                <td className="py-3 whitespace-nowrap">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
+                                                                isFastBypass
+                                                                    ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                                                                    : event.elapsedSeconds >= requiredMin
+                                                                    ? "bg-emerald-500/20 text-emerald-300"
+                                                                    : "bg-gray-800 text-gray-300"
+                                                            }`}>
+                                                                {event.elapsedSeconds > 0 ? `${event.elapsedSeconds}s` : "Init"}
+                                                            </span>
+                                                            <span className="text-[10px] text-amber-300/80 font-mono">
+                                                                {event.pages || 1} {isVi ? "trang" : "pgs"}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[9px] text-gray-500 font-mono">
+                                                            {isVi ? `Yêu cầu: ≥ ${requiredMin}s` : `Min req: ≥ ${requiredMin}s`}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3">
+                                                    {event.anomalies.length > 0 ? (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {event.anomalies.map((a, i) => (
+                                                                <span
+                                                                    key={i}
+                                                                    className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                                                        a === "FAST_BYPASS"
+                                                                            ? "bg-red-600 text-white"
+                                                                            : "bg-amber-500/30 text-amber-200 border border-amber-500/40"
+                                                                    }`}
+                                                                >
+                                                                    {translateAnomaly(a)}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-emerald-400/80 text-[11px]">
+                                                            {isVi ? "✅ Đạt chuẩn" : "✅ Compliant"}
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="py-3">
+                                                    <span className={`font-bold ${
+                                                        event.riskScore >= 75
+                                                            ? "text-red-400"
+                                                            : event.riskScore >= 40
+                                                            ? "text-yellow-400"
+                                                            : "text-gray-500"
+                                                    }`}>
+                                                        {event.riskScore}/100
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 text-right">
+                                                    <button
+                                                        onClick={() => setSelectedEvent(event)}
+                                                        className="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-[10px] transition-all"
+                                                    >
+                                                        {isVi ? "Xem" : "Inspect"}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan={9} className="py-8 text-center text-gray-500">
+                                            {isVi ? "Không có sự kiện nào khớp với tiêu chí đã chọn." : "No events match the selected criteria."}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            )}
+
+                {/* CREDIT TRANSACTIONS VIEW */}
+                {activeTab === "transactions" && (
+                    <div className="space-y-6">
+                        {/* FINANCIAL KPI CARDS (4 CARDS) */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Card 1: Total Revenue */}
+                            <div className="bg-[#0f1422] border border-emerald-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-emerald-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Tổng Doanh Thu" : "Total Revenue"}</span>
+                                    <span className="text-base">💰</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-white mt-2">
+                                    {(transactionStats?.totalRevenue || 0).toLocaleString()} <span className="text-base text-emerald-400 font-bold">đ</span>
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-1">
+                                    {isVi ? `Ghi nhận trong khung: ${timeframe}` : `Logged in timeframe: ${timeframe}`}
+                                </div>
+                            </div>
+
+                            {/* Card 2: Total Transactions */}
+                            <div className="bg-[#0f1422] border border-cyan-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-cyan-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Số Giao Dịch Nạp" : "Total Transactions"}</span>
+                                    <span className="text-base">🧾</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-cyan-300 mt-2">
+                                    {(transactionStats?.totalTransactions || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-1">
+                                    {isVi ? "Giao dịch thành công" : "Successful payments"}
+                                </div>
+                            </div>
+
+                            {/* Card 3: Total Credits Added */}
+                            <div className="bg-[#0f1422] border border-amber-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-amber-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Credits Đã Bán" : "Credits Purchased"}</span>
+                                    <span className="text-base">⚡</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-amber-300 mt-2">
+                                    {(transactionStats?.totalCreditsAdded || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-1">
+                                    {isVi ? "Lượt tải nhanh đã cấp" : "Fast download credits"}
+                                </div>
+                            </div>
+
+                            {/* Card 4: Average Order Value */}
+                            <div className="bg-[#0f1422] border border-purple-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-purple-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Giá Trị Đơn TB (AOV)" : "Average Order (AOV)"}</span>
+                                    <span className="text-base">📈</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-purple-300 mt-2">
+                                    {(transactionStats?.averageTransactionValue || 0).toLocaleString()} <span className="text-base text-purple-400 font-bold">đ</span>
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-1">
+                                    {isVi ? "Trung bình / lượt nạp" : "Per transaction average"}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* CHARTS: REVENUE TIMELINE & BANK DISTRIBUTION */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Revenue Timeline (2 cols) */}
+                            <div className="lg:col-span-2 bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                            <span>📊</span>
+                                            <span>{isVi ? "Dòng Doanh Thu Nạp Credit Theo Thời Gian" : "Revenue Timeline & Volume"}</span>
+                                        </h3>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {isVi ? "Doanh số và khối lượng giao dịch mua credits theo từng mốc thời gian" : "Revenue and purchase volume over time"}
+                                        </p>
+                                    </div>
+                                    <div className="text-xs font-mono text-emerald-400 font-bold">
+                                        {(transactionStats?.totalRevenue || 0).toLocaleString()} đ
+                                    </div>
+                                </div>
+
+                                {/* Timeline Bar Chart */}
+                                <div className="h-48 w-full flex items-end gap-2 pt-6 pb-2 border-b border-gray-800">
+                                    {transactionStats?.timeline && transactionStats.timeline.length > 0 ? (
+                                        transactionStats.timeline.map((item, idx) => {
+                                            const maxRev = Math.max(...transactionStats.timeline.map((t) => t.revenue), 1);
+                                            const h = Math.max(8, (item.revenue / maxRev) * 100);
+                                            return (
+                                                <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative h-full justify-end">
+                                                    <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-[10px] font-mono text-white pointer-events-none z-20 whitespace-nowrap shadow-lg">
+                                                        {item.time} | {item.revenue.toLocaleString()} đ ({item.transactionsCount} GD / {item.creditsCount} cr)
+                                                    </div>
+                                                    <div
+                                                        style={{ height: `${Math.min(h, 85)}%` }}
+                                                        className="w-full bg-gradient-to-t from-emerald-600 to-teal-400 rounded-t-sm transition-all group-hover:from-emerald-500 group-hover:to-teal-300"
+                                                    ></div>
+                                                    <span className="text-[9px] font-mono text-gray-500 truncate w-full text-center mt-1">
+                                                        {item.time}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-mono">
+                                            {isVi ? "Chưa có dữ liệu dòng doanh thu trong khoảng thời gian này." : "No transaction timeline data for this timeframe."}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mt-3 flex items-center justify-between text-xs text-gray-400 font-mono">
+                                    <span>{isVi ? "Kênh tích hợp: SePay, Casso, Buy Me a Coffee" : "Payment Gateways: SePay, Casso, Buy Me a Coffee"}</span>
+                                    <span className="text-emerald-400 font-bold">{transactionStats?.totalCreditsAdded || 0} credits</span>
+                                </div>
+                            </div>
+
+                            {/* Bank Breakdown & Top Spenders (1 col) */}
+                            <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-5">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                        <span>🏦</span>
+                                        <span>{isVi ? "Kênh & Ngân Hàng Thanh Toán" : "Payment Gateways"}</span>
+                                    </h3>
+                                    <p className="text-xs text-gray-400 mt-0.5">
+                                        {isVi ? "Phân bổ phương thức thanh toán" : "Gateway distribution"}
+                                    </p>
+
+                                    <div className="mt-3 space-y-2 font-mono text-xs">
+                                        {transactionStats && Object.keys(transactionStats.bankBreakdown).length > 0 ? (
+                                            Object.entries(transactionStats.bankBreakdown).map(([bank, data]) => (
+                                                <div key={bank} className="flex items-center justify-between p-2 rounded-xl bg-[#141b2d] border border-gray-800">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                                                        <span className="text-white font-bold">{bank}</span>
+                                                        <span className="text-gray-400 text-[10px]">({data.count} GD)</span>
+                                                    </div>
+                                                    <span className="font-bold text-emerald-400">{data.totalAmount.toLocaleString()} đ</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-xs text-gray-500 p-2">
+                                                {isVi ? "Chưa có giao dịch" : "No gateway data"}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Top Spenders */}
+                                <div className="pt-2 border-t border-gray-800">
+                                    <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider mb-2 font-mono flex items-center justify-between">
+                                        <span>{isVi ? "Top Khách Hàng Nạp Nhiều" : "Top Purchasers"}</span>
+                                        <span>💎</span>
+                                    </h4>
+                                    <div className="space-y-1.5 font-mono text-xs">
+                                        {transactionStats && transactionStats.topSpenders.length > 0 ? (
+                                            transactionStats.topSpenders.slice(0, 5).map((s, idx) => (
+                                                <div key={idx} className="flex items-center justify-between p-1.5 rounded-lg bg-[#141b2d]/60 text-[11px]">
+                                                    <span className="text-cyan-300 truncate max-w-[120px]">{s.userId}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-amber-400">+{s.totalCredits} cr</span>
+                                                        <span className="font-bold text-white">{s.totalSpent.toLocaleString()} đ</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-xs text-gray-500 py-1">
+                                                {isVi ? "Chưa có dữ liệu người nạp" : "No purchaser data"}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* TRANSACTIONS LEDGER TABLE */}
+                        <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                        <span>🧾</span>
+                                        <span>{isVi ? "Sổ Cái Giao Dịch Mua Credit (Credits_Transactions)" : "Credit Transactions Ledger"}</span>
+                                    </h3>
+                                    <p className="text-xs text-gray-400">
+                                        {isVi ? "Dữ liệu thời gian thực được đồng bộ từ Google Sheets" : "Real-time ledger synced from Google Sheets"}
+                                    </p>
+                                </div>
+
+                                {/* Search in Transactions */}
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder={isVi ? "Tìm mã GD, User ID, Bank..." : "Search Trans ID, User, Bank..."}
+                                        className="w-full sm:w-64 px-3 py-1.5 bg-[#121829] border border-gray-700/80 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 font-mono"
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery("")}
+                                            className="absolute right-2.5 top-1.5 text-gray-500 hover:text-white text-xs cursor-pointer"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Table */}
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-xs font-mono">
+                                    <thead>
+                                        <tr className="border-b border-gray-800 text-gray-400">
+                                            <th className="pb-3 font-semibold">{isVi ? "Thời Gian" : "Timestamp"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Mã Giao Dịch" : "Trans ID"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Mã User ID" : "User ID"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Số Tiền (VND)" : "Amount (VND)"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Credits Nhận" : "Credits Added"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Kênh / Ngân Hàng" : "Gateway / Bank"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Nội Dung Chuyển Khoản" : "Content / Memo"}</th>
+                                            <th className="pb-3 font-semibold text-right">{isVi ? "Chi Tiết" : "Action"}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800/60">
+                                        {transactions.length > 0 ? (
+                                            transactions.map((tx) => (
+                                                <tr key={tx.id} className="hover:bg-gray-800/40 transition-colors">
+                                                    <td className="py-3 text-gray-400 whitespace-nowrap">
+                                                        {new Date(tx.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US")}
+                                                    </td>
+                                                    <td className="py-3 font-bold text-white whitespace-nowrap">
+                                                        {tx.id}
+                                                    </td>
+                                                    <td className="py-3 text-cyan-300 font-bold whitespace-nowrap">
+                                                        {tx.userId}
+                                                    </td>
+                                                    <td className="py-3 text-emerald-400 font-bold whitespace-nowrap">
+                                                        +{tx.amount.toLocaleString()} đ
+                                                    </td>
+                                                    <td className="py-3 whitespace-nowrap">
+                                                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold text-[11px] border border-amber-500/30">
+                                                            +{tx.creditsAdded} cr
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 whitespace-nowrap">
+                                                        <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 font-bold text-[10px] border border-blue-500/30">
+                                                            {tx.bankCode}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 text-gray-300 max-w-xs truncate" title={tx.content}>
+                                                        {tx.content || "—"}
+                                                    </td>
+                                                    <td className="py-3 text-right">
+                                                        <button
+                                                            onClick={() => setSelectedTransaction(tx)}
+                                                            className="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-[10px] transition-all cursor-pointer"
+                                                        >
+                                                            {isVi ? "Xem" : "Inspect"}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={8} className="py-12 text-center text-gray-500">
+                                                    <div className="flex flex-col items-center justify-center gap-2">
+                                                        <span className="text-3xl">💳</span>
+                                                        <span className="text-sm font-bold text-gray-400">
+                                                            {isVi ? "Chưa có giao dịch nạp tiền nào được ghi nhận" : "No credit purchase transactions recorded"}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 max-w-md">
+                                                            {isVi
+                                                                ? "Dữ liệu từ Google Sheet 'Credits_Transactions' sẽ tự động hiển thị tại đây khi người dùng nạp tiền qua cổng thanh toán."
+                                                                : "Transactions logged in Google Sheet 'Credits_Transactions' will automatically appear here."}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
+
+            {/* EVENT DETAIL FORENSIC MODAL */}
+            {selectedEvent && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-2xl bg-[#0f1422] border border-gray-700 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                            <div>
+                                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                    <span>🔬 {isVi ? "Phân Tích Pháp Y Sự Kiện Telemetry" : "Event Forensic Breakdown"}</span>
+                                    {selectedEvent.anomalies.length > 0 && (
+                                        <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-mono">
+                                            {isVi ? "Rủi ro:" : "Risk:"} {selectedEvent.riskScore}/100
+                                        </span>
+                                    )}
+                                </h3>
+                                <p className="text-xs text-gray-400 font-mono">ID: {selectedEvent.id}</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedEvent(null)}
+                                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-300 cursor-pointer"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Tiện ích & Loại yêu cầu" : "Extension & Type"}</div>
+                                <div className="text-white font-bold mt-0.5">
+                                    {selectedEvent.extensionId} ({selectedEvent.meta?.downloadType || "free"})
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Mã Client User ID" : "Client User ID"}</div>
+                                <div className="text-cyan-300 font-bold mt-0.5 truncate">{selectedEvent.clientUserId}</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Địa chỉ IP & Khu vực" : "Client IP & Geolocation"}</div>
+                                <div className="text-white mt-0.5 truncate">{selectedEvent.ip} ({selectedEvent.city ? `${selectedEvent.city}, ` : ""}{selectedEvent.country})</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Thời gian chờ thực tế (Δt)" : "Waiting Elapsed Time (Δt)"}</div>
+                                <div className={`font-bold mt-0.5 ${
+                                    selectedEvent.elapsedSeconds < (selectedEvent.estimatedMinSeconds || 30)
+                                        ? "text-red-400"
+                                        : "text-emerald-400"
+                                }`}>
+                                    {selectedEvent.elapsedSeconds}s ({isVi ? `T_min ước tính: ≥ ${selectedEvent.estimatedMinSeconds || 30}s` : `Est min: ≥ ${selectedEvent.estimatedMinSeconds || 30}s`})
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Số trang tài liệu (Hiện tại / Trước)" : "Document Pages (Current / Prev)"}</div>
+                                <div className="text-amber-300 font-bold mt-0.5">
+                                    {selectedEvent.pages || 1} {isVi ? "trang" : "pgs"}
+                                    {selectedEvent.meta?.prevDocPages ? (
+                                        <span className="text-gray-400 font-normal ml-1">
+                                            ({isVi ? "Trước:" : "Prev:"} {selectedEvent.meta.prevDocPages} {isVi ? "trang" : "pgs"})
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-500 font-normal ml-1">
+                                            ({isVi ? "Lượt đầu tiên" : "First download"})
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Tỷ lệ tốc độ hoàn thành" : "Completion Speed Ratio"}</div>
+                                <div className={`font-bold mt-0.5 ${(selectedEvent.meta?.speedRatioPercentage ?? 100) < 100 ? "text-red-400" : "text-emerald-400"}`}>
+                                    {selectedEvent.meta?.speedRatioPercentage ?? 100}%
+                                    <span className="text-[10px] text-gray-400 font-normal ml-1.5">
+                                        ({selectedEvent.elapsedSeconds}s / {selectedEvent.estimatedMinSeconds || 30}s)
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Consecutive download timestamps */}
+                            <div className="p-3 rounded-xl bg-[#141b2d] sm:col-span-2">
+                                <div className="text-gray-400">{isVi ? "Mốc thời gian bắt đầu liên tiếp (t_prev → t_curr)" : "Consecutive Start Timestamps (t_prev → t_curr)"}</div>
+                                <div className="text-gray-300 text-[11px] mt-1 flex flex-wrap items-center gap-2">
+                                    <span>
+                                        {isVi ? "Bắt đầu tài liệu trước:" : "Prev start:"}{" "}
+                                        <strong className="text-white">
+                                            {selectedEvent.meta?.prevDownloadAt
+                                                ? new Date(selectedEvent.meta.prevDownloadAt).toLocaleTimeString(isVi ? "vi-VN" : "en-US")
+                                                : (isVi ? "Chưa có lượt trước" : "None")}
+                                        </strong>
+                                    </span>
+                                    <span className="text-gray-500">→</span>
+                                    <span>
+                                        {isVi ? "Bắt đầu tài liệu này:" : "Current start:"}{" "}
+                                        <strong className="text-white">
+                                            {new Date(selectedEvent.createdAt).toLocaleTimeString(isVi ? "vi-VN" : "en-US")}
+                                        </strong>
+                                    </span>
+                                    <span className="text-gray-500">•</span>
+                                    <span className="text-cyan-300">
+                                        Δt = {selectedEvent.elapsedSeconds}s
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Dynamic Physical Principle Note */}
+                            <div className="p-3 rounded-xl bg-[#161c2e] border border-cyan-500/20 sm:col-span-2 text-[11px] text-gray-300 leading-relaxed">
+                                <span className="text-cyan-400 font-bold block mb-0.5">
+                                    💡 {isVi ? "Mô hình ước tính vật lý động (Dynamic Estimation Model):" : "Dynamic Physical Model:"}
+                                </span>
+                                {isVi
+                                    ? "Ngưỡng tối thiểu T_min = 30s (đếm ngược bắt buộc) + thời gian init data (tỷ lệ thuận theo số trang tài liệu). Tài liệu càng nhiều trang thì extension càng cần nhiều thời gian chuẩn bị dữ liệu manifest và tải ảnh trước khi bộ đếm 30s bắt đầu chạy."
+                                    : "Minimum threshold T_min = 30s (mandatory countdown) + page init latency (proportional to document page counts). Documents with more pages physically require more time to parse manifests and cache canvas assets before countdown initiates."}
+                            </div>
+
+                            <div className="p-3 rounded-xl bg-[#141b2d] sm:col-span-2">
+                                <div className="text-gray-400">{isVi ? "Mã Nonce Handshake" : "Handshake Session Nonce"}</div>
+                                <div className="text-gray-300 text-[11px] mt-0.5 truncate">
+                                    {selectedEvent.sessionNonce || (isVi ? "KHÔNG CÓ NONCE (Yêu cầu trực tiếp chưa qua xác thực)" : "MISSING_NONCE (Unverified direct request)")}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d] sm:col-span-2">
+                                <div className="text-gray-400">{isVi ? "Hash / Tiêu đề tài liệu" : "Document Hash / Title"}</div>
+                                <div className="text-gray-200 mt-0.5 break-all">{selectedEvent.docTitle || selectedEvent.docIdHash}</div>
+                            </div>
+                        </div>
+
+                        {/* Raw JSON inspection */}
+                        <div>
+                            <div className="text-xs font-mono text-gray-400 mb-1">
+                                {isVi ? "Dữ liệu Payload Gốc (JSON Telemetry):" : "Raw Telemetry Payload:"}
+                            </div>
+                            <pre className="p-3 rounded-xl bg-[#090d16] border border-gray-800 text-[11px] font-mono text-gray-300 overflow-x-auto max-h-48">
+                                {JSON.stringify(selectedEvent, null, 2)}
+                            </pre>
+                        </div>
+
+                        <div className="pt-2 flex justify-end gap-2">
+                            <button
+                                onClick={() => setSelectedEvent(null)}
+                                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-mono cursor-pointer"
+                            >
+                                {isVi ? "Đóng" : "Close"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TRANSACTION DETAIL FORENSIC MODAL */}
+            {selectedTransaction && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-xl bg-[#0f1422] border border-gray-700 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-mono">
+                        <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                            <div>
+                                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                    <span>💳 {isVi ? "Chi Tiết Giao Dịch Mua Credit" : "Credit Purchase Audit"}</span>
+                                </h3>
+                                <p className="text-xs text-gray-400 font-mono mt-0.5">ID: {selectedTransaction.id}</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedTransaction(null)}
+                                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-300 cursor-pointer"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Mã Khách Hàng (User ID)" : "User ID"}</div>
+                                <div className="text-cyan-300 font-bold mt-1 text-sm">{selectedTransaction.userId}</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Số Tiền Thanh Toán" : "Payment Amount"}</div>
+                                <div className="text-emerald-400 font-bold mt-1 text-sm">
+                                    {selectedTransaction.amount.toLocaleString()} đ
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Credits Được Cộng" : "Credits Added"}</div>
+                                <div className="text-amber-400 font-bold mt-1 text-sm">+{selectedTransaction.creditsAdded} credits</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Ngân Hàng / Kênh" : "Bank / Gateway"}</div>
+                                <div className="text-white font-bold mt-1">{selectedTransaction.bankCode}</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d] col-span-2">
+                                <div className="text-gray-400">{isVi ? "Thời Gian Ghi Nhận" : "Timestamp"}</div>
+                                <div className="text-gray-200 mt-1">
+                                    {new Date(selectedTransaction.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US")}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d] col-span-2">
+                                <div className="text-gray-400">{isVi ? "Nội Dung Chuyển Khoản" : "Transfer Memo"}</div>
+                                <div className="text-gray-200 mt-1 break-all bg-[#090d16] p-2.5 rounded-lg border border-gray-800">
+                                    {selectedTransaction.content || (isVi ? "Không có nội dung" : "No memo")}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div className="text-xs font-mono text-gray-400 mb-1">
+                                {isVi ? "Dữ liệu Payload Gốc (JSON):" : "Raw JSON Data:"}
+                            </div>
+                            <pre className="p-3 rounded-xl bg-[#090d16] border border-gray-800 text-[11px] font-mono text-gray-300 overflow-x-auto max-h-36">
+                                {JSON.stringify(selectedTransaction, null, 2)}
+                            </pre>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                onClick={() => setSelectedTransaction(null)}
+                                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-mono cursor-pointer"
+                            >
+                                {isVi ? "Đóng" : "Close"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
