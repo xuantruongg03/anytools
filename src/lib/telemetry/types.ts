@@ -41,6 +41,7 @@ export interface TelemetryEvent {
     elapsedSeconds: number; // Measured duration between init and complete (or consecutive downloads)
     estimatedMinSeconds?: number; // Dynamic physical minimum duration estimated from page counts
     pages?: number; // Number of document pages
+    downloadType?: "free" | "credit" | string; // Free (requires 30s wait) vs Credit (skip 30s countdown, only data init)
     clientReportedSeconds?: number;
     anomalies: AnomalyType[];
     riskScore: number; // 0 - 100

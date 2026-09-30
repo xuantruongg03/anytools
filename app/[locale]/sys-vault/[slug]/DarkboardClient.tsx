@@ -500,8 +500,8 @@ export default function DarkboardClient({
                                     </h3>
                                     <p className="text-xs text-red-300/80 mt-0.5">
                                         {isVi
-                                            ? `Ghi nhận ${stats.fastBypassCount} lượt tải bỏ qua thời gian chờ 30 giây & ${stats.multiIpCount} người dùng nhảy qua nhiều địa chỉ IP.`
-                                            : `Detected ${stats.fastBypassCount} downloads bypassing the mandatory 30-second wait & ${stats.multiIpCount} users jumping across multiple IPs.`}
+                                            ? `Ghi nhận ${stats.fastBypassCount} lượt tải Free bỏ qua 30s đếm ngược & ${stats.multiIpCount} người dùng nhảy qua nhiều địa chỉ IP.`
+                                            : `Detected ${stats.fastBypassCount} free downloads bypassing mandatory 30s countdown & ${stats.multiIpCount} users jumping across multiple IPs.`}
                                     </p>
                                 </div>
                             </div>
@@ -511,7 +511,7 @@ export default function DarkboardClient({
                                     onClick={() => setStatusFilter("fast_bypass")}
                                     className="px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-200 text-xs font-mono font-bold transition-all"
                                 >
-                                    {isVi ? `Lọc Tải Nhanh < 30s (${stats.fastBypassCount})` : `Filter Fast Bypass (${stats.fastBypassCount})`}
+                                    {isVi ? `Lọc Tải Free < 30s (${stats.fastBypassCount})` : `Filter Fast Bypass (${stats.fastBypassCount})`}
                                 </button>
                                 <button
                                     onClick={() => setStatusFilter("multi_ip")}
@@ -556,13 +556,13 @@ export default function DarkboardClient({
                     {/* Card 3: 30s Fast Bypass Violations */}
                     <div className="bg-[#0f1422] border border-orange-900/40 rounded-2xl p-4 shadow-sm">
                         <div className="text-[11px] font-mono uppercase text-orange-300">
-                            {isVi ? "Gian Lận < 30s" : "< 30s Fast Bypass"}
+                            {isVi ? "Gian Lận < 30s (Free)" : "< 30s Fast Bypass (Free)"}
                         </div>
                         <div className="text-2xl font-black text-orange-400 mt-1">
                             {stats?.fastBypassCount.toLocaleString() || 0}
                         </div>
                         <div className="text-[10px] text-orange-400/80 font-mono mt-1">
-                            {isVi ? "Vi phạm quy tắc chờ" : "Critical Bypass Rule"}
+                            {isVi ? "Bỏ qua đếm ngược tải Free" : "Free 30s timer bypassed"}
                         </div>
                     </div>
 
@@ -601,7 +601,7 @@ export default function DarkboardClient({
                             {stats?.averageWaitSeconds || 32.5}s
                         </div>
                         <div className="text-[10px] text-gray-400 font-mono mt-1">
-                            {isVi ? "Ước tính động: 30s + số trang (init data)" : "Dynamic: 30s + page init data"}
+                            {isVi ? "Free: 30s + init | Credit: Init only" : "Free: 30s + init | Credit: Init only"}
                         </div>
                     </div>
                 </div>
@@ -912,7 +912,18 @@ export default function DarkboardClient({
                                                     {new Date(event.createdAt).toLocaleTimeString(isVi ? "vi-VN" : "en-US")}
                                                 </td>
                                                 <td className="py-3 text-gray-300 whitespace-nowrap">
-                                                    {event.extensionId}
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span>{event.extensionId}</span>
+                                                        {event.downloadType === "credit" ? (
+                                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                                                💎 Credit
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                                                ⚡ Free (30s)
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="py-3 font-bold text-white whitespace-nowrap">
                                                     {event.clientUserId.slice(0, 14)}...
@@ -940,7 +951,9 @@ export default function DarkboardClient({
                                                             </span>
                                                         </div>
                                                         <span className="text-[9px] text-gray-500 font-mono">
-                                                            {isVi ? `Yêu cầu: ≥ ${requiredMin}s` : `Min req: ≥ ${requiredMin}s`}
+                                                            {event.downloadType === "credit"
+                                                                ? (isVi ? `Init: ≥ ${requiredMin}s (Bỏ qua 30s)` : `Init only: ≥ ${requiredMin}s`)
+                                                                : (isVi ? `Yêu cầu: ≥ ${requiredMin}s (30s + init)` : `Min req: ≥ ${requiredMin}s`)}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -1318,8 +1331,17 @@ export default function DarkboardClient({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
                             <div className="p-3 rounded-xl bg-[#141b2d]">
                                 <div className="text-gray-400">{isVi ? "Tiện ích & Loại yêu cầu" : "Extension & Type"}</div>
-                                <div className="text-white font-bold mt-0.5">
-                                    {selectedEvent.extensionId} ({selectedEvent.meta?.downloadType || "free"})
+                                <div className="text-white font-bold mt-0.5 flex items-center gap-2">
+                                    <span>{selectedEvent.extensionId}</span>
+                                    {selectedEvent.downloadType === "credit" || selectedEvent.meta?.downloadType === "credit" ? (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                            💎 {isVi ? "Tải Credit (Bỏ qua 30s)" : "Credit Download (Skip 30s)"}
+                                        </span>
+                                    ) : (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                            ⚡ {isVi ? "Tải Free (Chờ 30s)" : "Free Download (30s Wait)"}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d]">
@@ -1333,11 +1355,20 @@ export default function DarkboardClient({
                             <div className="p-3 rounded-xl bg-[#141b2d]">
                                 <div className="text-gray-400">{isVi ? "Thời gian chờ thực tế (Δt)" : "Waiting Elapsed Time (Δt)"}</div>
                                 <div className={`font-bold mt-0.5 ${
-                                    selectedEvent.elapsedSeconds < (selectedEvent.estimatedMinSeconds || 30)
+                                    selectedEvent.elapsedSeconds < (selectedEvent.estimatedMinSeconds || (selectedEvent.downloadType === "credit" ? 3 : 30))
                                         ? "text-red-400"
                                         : "text-emerald-400"
                                 }`}>
-                                    {selectedEvent.elapsedSeconds}s ({isVi ? `T_min ước tính: ≥ ${selectedEvent.estimatedMinSeconds || 30}s` : `Est min: ≥ ${selectedEvent.estimatedMinSeconds || 30}s`})
+                                    {selectedEvent.elapsedSeconds}s (
+                                        {isVi
+                                            ? (selectedEvent.downloadType === "credit"
+                                                ? `T_min khởi tạo: ≥ ${selectedEvent.estimatedMinSeconds || 3}s (Không chờ 30s)`
+                                                : `T_min ước tính: ≥ ${selectedEvent.estimatedMinSeconds || 33}s (30s đếm ngược + init)`)
+                                            : (selectedEvent.downloadType === "credit"
+                                                ? `Est init min: ≥ ${selectedEvent.estimatedMinSeconds || 3}s (0s countdown)`
+                                                : `Est min: ≥ ${selectedEvent.estimatedMinSeconds || 33}s (30s + init)`)
+                                        }
+                                    )
                                 </div>
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d]">
@@ -1393,12 +1424,28 @@ export default function DarkboardClient({
 
                             {/* Dynamic Physical Principle Note */}
                             <div className="p-3 rounded-xl bg-[#161c2e] border border-cyan-500/20 sm:col-span-2 text-[11px] text-gray-300 leading-relaxed">
-                                <span className="text-cyan-400 font-bold block mb-0.5">
-                                    💡 {isVi ? "Mô hình ước tính vật lý động (Dynamic Estimation Model):" : "Dynamic Physical Model:"}
+                                <span className="text-cyan-400 font-bold block mb-1">
+                                    💡 {isVi ? "Mô hình ước tính vật lý động (Dynamic Physical Model):" : "Dynamic Physical Model:"}
                                 </span>
-                                {isVi
-                                    ? "Ngưỡng tối thiểu T_min = 30s (đếm ngược bắt buộc) + thời gian init data (tỷ lệ thuận theo số trang tài liệu). Tài liệu càng nhiều trang thì extension càng cần nhiều thời gian chuẩn bị dữ liệu manifest và tải ảnh trước khi bộ đếm 30s bắt đầu chạy."
-                                    : "Minimum threshold T_min = 30s (mandatory countdown) + page init latency (proportional to document page counts). Documents with more pages physically require more time to parse manifests and cache canvas assets before countdown initiates."}
+                                {isVi ? (
+                                    <div className="space-y-1 text-gray-300">
+                                        <p>
+                                            • <strong className="text-blue-300">Tải Miễn Phí (Free):</strong> Ngưỡng tối thiểu <code>T_min = 30s (đếm ngược bắt buộc) + thời gian init data</code> (tỷ lệ thuận theo số trang tài liệu). Hoàn thành &lt; 30s bị cắm cờ Fast Bypass.
+                                        </p>
+                                        <p>
+                                            • <strong className="text-emerald-300">Tải bằng Credit (Premium):</strong> Bỏ qua hoàn toàn bộ đếm 30s (<code>countdown = 0s</code>), người dùng chỉ cần chờ thời gian init data thực tế để chuẩn bị dữ liệu (khoảng 2-5s tùy số trang).
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-1 text-gray-300">
+                                        <p>
+                                            • <strong className="text-blue-300">Free Download:</strong> Minimum threshold <code>T_min = 30s (mandatory countdown) + page init latency</code> (canvas & manifest caching). Downloads under 30s are flagged as Fast Bypass.
+                                        </p>
+                                        <p>
+                                            • <strong className="text-emerald-300">Credit Download:</strong> Completely bypasses the 30s timer (<code>countdown = 0s</code>), only requiring physical document init data latency (~2-5s depending on pages).
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="p-3 rounded-xl bg-[#141b2d] sm:col-span-2">

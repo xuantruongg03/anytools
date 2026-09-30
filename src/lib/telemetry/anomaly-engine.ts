@@ -44,9 +44,14 @@ export async function handleInitHandshake(input: TelemetryIngestInput): Promise<
     sessionNonce: string;
     minWaitSeconds: number;
     timestamp: number;
+    isCredit: boolean;
 }> {
     const now = Date.now();
     const nonce = `vlt_hsk_${crypto.randomBytes(16).toString("hex")}`;
+    const isCredit = input.meta?.downloadType === "credit" || input.meta?.isCredit === true;
+    // Tải bằng Credit: minWaitSeconds = 0 (bỏ qua đếm ngược 30s, chỉ chờ tải init data)
+    // Tải Free: minWaitSeconds = 30 (bắt buộc đếm ngược)
+    const minWaitSeconds = isCredit ? 0 : MANDATORY_WAIT_SECONDS;
 
     const session: HandshakeSession = {
         sessionNonce: nonce,
@@ -62,8 +67,9 @@ export async function handleInitHandshake(input: TelemetryIngestInput): Promise<
 
     return {
         sessionNonce: nonce,
-        minWaitSeconds: MANDATORY_WAIT_SECONDS,
+        minWaitSeconds,
         timestamp: now,
+        isCredit,
     };
 }
 
@@ -77,6 +83,8 @@ export async function processTelemetryEvent(input: TelemetryIngestInput): Promis
     let riskScore = 0;
     let actualElapsedSeconds = 0;
     let initTimestamp: number | undefined = undefined;
+
+    const isCredit = input.meta?.downloadType === "credit" || input.meta?.isCredit === true;
 
     // 1. Verify Handshake & Elapsed Wait Time
     if (input.action === "DOWNLOAD_SUCCESS") {
@@ -100,7 +108,9 @@ export async function processTelemetryEvent(input: TelemetryIngestInput): Promis
                         ? input.elapsedSeconds
                         : serverMeasuredElapsed;
 
-                const minThreshold = Number(process.env.TELEMETRY_VECTOR_DELTA_MIN || "0");
+                // FAST_BYPASS chỉ áp dụng cho lượt tải Free (yêu cầu chờ 30s)
+                // Lượt tải bằng Credit không bị tính là vi phạm tốc độ
+                const minThreshold = isCredit ? 0 : Number(process.env.TELEMETRY_VECTOR_DELTA_MIN || "0");
                 const deltaWeight = Number(process.env.TELEMETRY_VECTOR_DELTA_WEIGHT || "90");
                 if (minThreshold > 0 && actualElapsedSeconds < minThreshold) {
                     anomalies.push("FAST_BYPASS");
@@ -188,12 +198,16 @@ export async function processTelemetryEvent(input: TelemetryIngestInput): Promis
         initTimestamp: initTimestamp,
         completeTimestamp: now,
         elapsedSeconds: actualElapsedSeconds,
+        estimatedMinSeconds: isCredit ? (input.meta?.estimatedMinSeconds || 3.0) : (input.meta?.estimatedMinSeconds || 30.0),
+        pages: input.meta?.pages || 1,
+        downloadType: isCredit ? "credit" : "free",
         clientReportedSeconds: input.elapsedSeconds,
         anomalies: anomalies,
         riskScore: riskScore,
         severity: severity,
         meta: {
             ...input.meta,
+            downloadType: isCredit ? "credit" : "free",
             totalUserDistinctIps: distinctIps.size,
         },
         createdAt: new Date(now).toISOString(),

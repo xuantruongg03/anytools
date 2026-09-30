@@ -226,10 +226,15 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
             list.sort((a, b) => a.timestamp - b.timestamp);
             for (let i = 0; i < list.length; i++) {
                 const curr = list[i];
+                const isCredit = curr.downloadType === "credit";
+                // Tải bằng Credit: Không cần đếm ngược 30s, chỉ chờ thời gian khởi tạo dữ liệu (Init Data)
+                // Tải Free: Bắt buộc cộng thêm 30s đếm ngược
+                const countdownBase = isCredit ? 0.0 : EST_COUNTDOWN_BASE;
+
                 if (i === 0) {
-                    const estMin = Math.round((EST_COUNTDOWN_BASE + EST_INIT_BASE + curr.pages * EST_SEC_PER_PAGE) * 10) / 10;
+                    const estMin = Math.round((countdownBase + EST_INIT_BASE + curr.pages * EST_SEC_PER_PAGE) * 10) / 10;
                     analysisMap.set(curr.index, {
-                        elapsedSeconds: 34.0,
+                        elapsedSeconds: isCredit ? Math.round((EST_INIT_BASE + curr.pages * EST_SEC_PER_PAGE + 0.8) * 10) / 10 : 34.0,
                         estimatedMinSeconds: estMin,
                         currPages: curr.pages,
                         isDynamicSpeedViolation: false,
@@ -241,13 +246,18 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
                     const diffSec = Math.round(((curr.timestamp - prev.timestamp) / 1000) * 10) / 10;
                     const elapsed = diffSec > 0 ? diffSec : 1.0;
 
-                    // Physical Model: Countdown (30s) + Base Init + (Prev Doc Pages * PerPage) + (Next Doc Pages * NextFactor)
+                    // Physical Model: Countdown (30s cho Free, 0s cho Credit) + Base Init + (Prev Doc Pages * PerPage) + (Next Doc Pages * NextFactor)
                     const estimatedMin = Math.round(
-                        (EST_COUNTDOWN_BASE + EST_INIT_BASE + (prev.pages * EST_SEC_PER_PAGE) + (curr.pages * EST_NEXT_PAGE_FACTOR)) * 10
+                        (countdownBase + EST_INIT_BASE + (prev.pages * EST_SEC_PER_PAGE) + (curr.pages * EST_NEXT_PAGE_FACTOR)) * 10
                     ) / 10;
 
-                    const isViolation = curr.downloadType === "free" && elapsed < estimatedMin;
-                    const ratio = Math.round((elapsed / estimatedMin) * 100);
+                    // Chỉ tải Free mới kiểm tra vi phạm đếm ngược 30s!
+                    // Tải Credit chỉ cần đảm bảo thời gian khởi tạo vật lý tối thiểu (không thể là 0s)
+                    const isViolation = isCredit 
+                        ? elapsed < Math.round((EST_INIT_BASE + curr.pages * 0.02) * 10) / 10
+                        : elapsed < estimatedMin;
+
+                    const ratio = Math.round((elapsed / Math.max(1.0, estimatedMin)) * 100);
 
                     analysisMap.set(curr.index, {
                         elapsedSeconds: elapsed,
@@ -351,6 +361,7 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
                 docIdHash: docUrl.replace(/^https?:\/\/[^\/]+\/(document\/)?/, "").slice(0, 30) || "doc",
                 docTitle: docTitle,
                 pages: currPages,
+                downloadType: downloadType,
                 elapsedSeconds: elapsedSeconds,
                 estimatedMinSeconds: estimatedMinSeconds,
                 ip: clientIp,

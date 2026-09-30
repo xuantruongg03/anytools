@@ -4,6 +4,21 @@
  * Copy and include this file or code into your Chrome / Edge / Firefox Extension
  * (e.g. inside background.js or content_script.js).
  * 
+ * Flow quy chuẩn:
+ * 1. TẢI MIỄN PHÍ (Free):
+ *    - Gọi `const res = await telemetry.startInit(docId, "Tiêu đề", "free");`
+ *    - Server phản hồi `res.minWaitSeconds = 30` (yêu cầu bộ đếm ngược 30 giây).
+ *    - Extension hiển thị countdown 30 giây trên UI, đồng thời nạp init data.
+ *    - Khi hết 30 giây và tải xong -> Gọi `await telemetry.recordDownloadSuccess("free");`
+ * 
+ * 2. TẢI BẰNG CREDIT (Premium / Nhanh):
+ *    - Gọi `const res = await telemetry.startInit(docId, "Tiêu đề", "credit");`
+ *    - Server phản hồi `res.minWaitSeconds = 0`, `res.isCredit = true`.
+ *    - Extension KHÔNG CẦN CHỜ 30 GIÂY, bỏ qua hoàn toàn countdown!
+ *    - Chỉ cần chờ extension nạp & khởi tạo xong dữ liệu tài liệu (init data, canvas buffer),
+ *      sau đó lập tức kích hoạt tải và gọi `await telemetry.recordDownloadSuccess("credit");`
+ *    - Không bị tính lỗi FAST_BYPASS gian lận.
+ * 
  * Usage Example:
  * ```ts
  * const telemetry = new ExtensionTelemetryClient({
@@ -12,14 +27,20 @@
  *     apiUrl: "https://anytools.online/api/telemetry/event"
  * });
  * 
- * // Step 1: When user clicks to download a Scribd document
- * await telemetry.startInit(docId, "Document Title");
+ * // Step 1: When user clicks to download (specify "free" or "credit")
+ * const isUsingCredit = userCredits > 0;
+ * const init = await telemetry.startInit(docId, "Document Title", isUsingCredit ? "credit" : "free");
  * 
- * // Step 2: 30-second countdown in UI
- * // ...
+ * if (init.minWaitSeconds > 0) {
+ *     // Free download: run 30s countdown UI
+ *     await start30sCountdownUI();
+ * } else {
+ *     // Credit download: skip 30s countdown, only wait for document init data
+ *     await waitForDocumentInitDataReady();
+ * }
  * 
- * // Step 3: When download completes successfully
- * await telemetry.recordDownloadSuccess();
+ * // Step 2: When download completes successfully
+ * await telemetry.recordDownloadSuccess(isUsingCredit ? "credit" : "free");
  * ```
  */
 
@@ -39,6 +60,7 @@ export class ExtensionTelemetryClient {
     private currentSessionNonce: string | null = null;
     private currentDocIdHash: string | null = null;
     private currentDocTitle: string | null = null;
+    private currentDownloadType: "free" | "credit" = "free";
     private initStartTimestamp: number | null = null;
 
     constructor(config: TelemetryConfig) {
@@ -89,13 +111,21 @@ export class ExtensionTelemetryClient {
     }
 
     /**
-     * Step 1: Handshake Init when user initiates Scribd download
+     * Step 1: Handshake Init when user initiates download
+     * @param docId - Document identifier
+     * @param docTitle - Document title
+     * @param downloadType - "free" (requires 30s wait) | "credit" (0s wait, init data only)
      */
-    async startInit(docId: string, docTitle?: string): Promise<{ sessionNonce: string; minWaitSeconds: number }> {
+    async startInit(
+        docId: string,
+        docTitle?: string,
+        downloadType: "free" | "credit" = "free"
+    ): Promise<{ sessionNonce: string; minWaitSeconds: number; isCredit: boolean }> {
         const uid = await this.getUserId();
         this.initStartTimestamp = Date.now();
         this.currentDocIdHash = "doc_" + docId.replace(/[^a-zA-Z0-9]/g, "_");
-        this.currentDocTitle = docTitle || "Scribd Document";
+        this.currentDocTitle = docTitle || "Document";
+        this.currentDownloadType = downloadType;
 
         try {
             const resp = await fetch(this.apiUrl, {
@@ -108,6 +138,8 @@ export class ExtensionTelemetryClient {
                     clientUserId: uid,
                     docIdHash: this.currentDocIdHash,
                     docTitle: this.currentDocTitle,
+                    downloadType: downloadType,
+                    meta: { downloadType },
                     browser: this.detectBrowser(),
                 }),
             });
@@ -117,23 +149,30 @@ export class ExtensionTelemetryClient {
                 this.currentSessionNonce = data.sessionNonce;
             }
             return {
-                sessionNonce: data.sessionNonce,
-                minWaitSeconds: data.minWaitSeconds || 30,
+                sessionNonce: data.sessionNonce || "",
+                minWaitSeconds: typeof data.minWaitSeconds === "number" ? data.minWaitSeconds : (downloadType === "credit" ? 0 : 30),
+                isCredit: Boolean(data.isCredit || downloadType === "credit"),
             };
         } catch (err) {
             console.warn("[AnyTools Telemetry] Handshake init ping failed (offline fallback):", err);
-            return { sessionNonce: "", minWaitSeconds: 30 };
+            return {
+                sessionNonce: "",
+                minWaitSeconds: downloadType === "credit" ? 0 : 30,
+                isCredit: downloadType === "credit",
+            };
         }
     }
 
     /**
      * Step 2: Download Completion
+     * @param downloadType - Optional override for "free" | "credit"
      */
-    async recordDownloadSuccess(): Promise<void> {
+    async recordDownloadSuccess(downloadType?: "free" | "credit"): Promise<void> {
         if (!this.initStartTimestamp) return;
 
         const uid = await this.getUserId();
         const elapsedSeconds = Math.round(((Date.now() - this.initStartTimestamp) / 1000) * 10) / 10;
+        const effectiveDownloadType = downloadType || this.currentDownloadType || "free";
 
         try {
             await fetch(this.apiUrl, {
@@ -147,7 +186,9 @@ export class ExtensionTelemetryClient {
                     sessionNonce: this.currentSessionNonce,
                     docIdHash: this.currentDocIdHash,
                     docTitle: this.currentDocTitle,
+                    downloadType: effectiveDownloadType,
                     elapsedSeconds: elapsedSeconds,
+                    meta: { downloadType: effectiveDownloadType },
                     browser: this.detectBrowser(),
                 }),
             });
@@ -162,8 +203,9 @@ export class ExtensionTelemetryClient {
     /**
      * Record failure if user cancelled or error occurred
      */
-    async recordDownloadFailed(reason: string): Promise<void> {
+    async recordDownloadFailed(reason: string, downloadType?: "free" | "credit"): Promise<void> {
         const uid = await this.getUserId();
+        const effectiveDownloadType = downloadType || this.currentDownloadType || "free";
         try {
             await fetch(this.apiUrl, {
                 method: "POST",
@@ -175,7 +217,8 @@ export class ExtensionTelemetryClient {
                     clientUserId: uid,
                     sessionNonce: this.currentSessionNonce,
                     docIdHash: this.currentDocIdHash,
-                    meta: { reason },
+                    downloadType: effectiveDownloadType,
+                    meta: { reason, downloadType: effectiveDownloadType },
                     browser: this.detectBrowser(),
                 }),
             });

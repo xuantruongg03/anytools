@@ -42,8 +42,11 @@ export async function POST(request: NextRequest) {
             docTitle,
             elapsedSeconds,
             browser = "chrome",
+            downloadType = "free",
             meta,
         } = body;
+
+        const mergedMeta = { ...(meta || {}), downloadType: meta?.downloadType || downloadType };
 
         if (!action || !clientUserId) {
             return NextResponse.json(
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
                 country,
                 city,
                 browser,
-                meta,
+                meta: mergedMeta,
             });
 
             return NextResponse.json(
@@ -73,6 +76,7 @@ export async function POST(request: NextRequest) {
                     success: true,
                     sessionNonce: initResult.sessionNonce,
                     minWaitSeconds: initResult.minWaitSeconds,
+                    isCredit: initResult.isCredit,
                     timestamp: initResult.timestamp,
                 },
                 { status: 200, headers: corsHeaders }
@@ -94,7 +98,7 @@ export async function POST(request: NextRequest) {
                 country,
                 city,
                 browser,
-                meta,
+                meta: mergedMeta,
             });
 
             return NextResponse.json(
