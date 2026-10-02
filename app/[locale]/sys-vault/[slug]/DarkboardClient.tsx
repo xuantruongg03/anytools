@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
     TelemetryEvent,
     TelemetrySummaryStats,
     CreditTransaction,
     CreditTransactionSummary,
+    UserDirectoryItem,
+    UserSummaryStats,
+    HourlyActivityBucket,
+    DayOfWeekActivity,
+    TopDocumentItem,
 } from "@/lib/telemetry/types";
 
 interface DarkboardClientProps {
@@ -13,6 +18,22 @@ interface DarkboardClientProps {
     secretSlug: string;
     tabToken?: string;
     initialAuthenticated: boolean;
+}
+
+function generateSmoothPath(points: Array<{ x: number; y: number }>): string {
+    if (!points || points.length === 0) return "";
+    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+    if (points.length === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+
+    return points.reduce((acc, point, i, arr) => {
+        if (i === 0) return `M ${point.x} ${point.y}`;
+        const prev = arr[i - 1];
+        const cp1x = prev.x + (point.x - prev.x) / 2.5;
+        const cp1y = prev.y;
+        const cp2x = point.x - (point.x - prev.x) / 2.5;
+        const cp2y = point.y;
+        return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${point.x} ${point.y}`;
+    }, "");
 }
 
 export default function DarkboardClient({
@@ -30,19 +51,28 @@ export default function DarkboardClient({
     const [loginError, setLoginError] = useState<string | null>(null);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-    // Active Module Tab: Telemetry Downloads vs Credit Transactions
-    const [activeTab, setActiveTab] = useState<"telemetry" | "transactions">("telemetry");
+    // Active Module Tab: Overview vs Users vs Telemetry vs Transactions
+    const [activeTab, setActiveTab] = useState<"overview" | "users" | "telemetry" | "transactions">("overview");
+
+    // Chart Presentation States
+    const [overviewChartType, setOverviewChartType] = useState<"line" | "bar">("line");
+    const [userChartMetric, setUserChartMetric] = useState<"new_users" | "cumulative" | "both">("both");
+    const [hoveredUserChartIndex, setHoveredUserChartIndex] = useState<number | null>(null);
+    const [hoveredOverviewIndex, setHoveredOverviewIndex] = useState<number | null>(null);
 
     // Dashboard Filter & Data State
     const [extensionId, setExtensionId] = useState<string>("scribd-downloader");
     const [timeframe, setTimeframe] = useState<"1h" | "24h" | "7d" | "30d" | "all">("24h");
-    const [statusFilter, setStatusFilter] = useState<"all" | "anomalies_only" | "fast_bypass" | "multi_ip">("all");
+    const [statusFilter, setStatusFilter] = useState<"all" | "credit_only" | "free_only" | "anomalies_only" | "fast_bypass" | "multi_ip">("all");
+    const [userFilter, setUserFilter] = useState<"all" | "paying" | "new" | "high_credits" | "risk">("all");
     const [searchQuery, setSearchQuery] = useState("");
 
     const [stats, setStats] = useState<TelemetrySummaryStats | null>(null);
     const [events, setEvents] = useState<TelemetryEvent[]>([]);
     const [transactionStats, setTransactionStats] = useState<CreditTransactionSummary | null>(null);
     const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
+    const [userStats, setUserStats] = useState<UserSummaryStats | null>(null);
+    const [users, setUsers] = useState<UserDirectoryItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>("");
@@ -50,6 +80,7 @@ export default function DarkboardClient({
     // Modal & Interactive State
     const [selectedEvent, setSelectedEvent] = useState<TelemetryEvent | null>(null);
     const [selectedTransaction, setSelectedTransaction] = useState<CreditTransaction | null>(null);
+    const [selectedUser, setSelectedUser] = useState<UserDirectoryItem | null>(null);
 
     // Load Telemetry Data (Pure Real Google Sheets)
     const fetchTelemetry = useCallback(async () => {
@@ -82,6 +113,12 @@ export default function DarkboardClient({
                 }
                 if (data.transactions) {
                     setTransactions(data.transactions);
+                }
+                if (data.userStats) {
+                    setUserStats(data.userStats);
+                }
+                if (data.users) {
+                    setUsers(data.users);
                 }
                 setLastUpdated(new Date().toLocaleTimeString(isVi ? "vi-VN" : "en-US"));
             }
@@ -153,8 +190,50 @@ export default function DarkboardClient({
         setIsAuthenticated(false);
     };
 
+    // Filtered Users List based on userFilter
+    const filteredUsers = useMemo(() => {
+        if (!users.length) return [];
+        return users.filter((u) => {
+            if (userFilter === "paying") return u.isPaying;
+            if (userFilter === "new") return u.isNewInTimeframe;
+            if (userFilter === "high_credits") return u.credits >= 10;
+            if (userFilter === "risk") return u.riskFlags.length > 0;
+            return true;
+        });
+    }, [users, userFilter]);
+
     // Export CSV Report
     const handleExportCsv = () => {
+        if (activeTab === "users") {
+            if (!filteredUsers.length) return;
+            const headers = isVi
+                ? ["Ma_User_ID", "So_Du_Credits", "Tong_Da_Tai", "IP_Dang_Ky", "Khu_Vuc", "Quoc_Gia", "Da_Tung_Nap", "Tong_Chi_Tieu_VND", "So_Giao_Dich", "Ngay_Tham_Gia", "Hoat_Dong_Cuoi"]
+                : ["User_ID", "Credits", "Total_Downloaded", "Created_IP", "City", "Country", "Is_Paying", "Total_Spent_VND", "Transactions_Count", "Created_At", "Updated_At"];
+
+            const rows = filteredUsers.map((u) => [
+                u.userId,
+                u.credits,
+                u.totalDownloaded,
+                u.createdIp,
+                u.city || "Unknown",
+                u.country || "Unknown",
+                u.isPaying ? "YES" : "NO",
+                u.totalSpentVnd,
+                u.transactionCount,
+                u.createdAt,
+                u.updatedAt,
+            ]);
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `users-directory-${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            return;
+        }
+
         if (activeTab === "transactions") {
             if (!transactions.length) return;
             const headers = isVi
@@ -431,51 +510,1256 @@ export default function DarkboardClient({
 
             <main className="max-w-7xl mx-auto px-4 sm:px-8 mt-6 space-y-6">
 
-                {/* TOP MODULE SWITCHER: TELEMETRY DOWNLOADS VS CREDIT TRANSACTIONS */}
+                {/* TOP MODULE SWITCHER: OVERVIEW, USERS, TELEMETRY DOWNLOADS, CREDIT TRANSACTIONS */}
                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-800 pb-4">
-                    <div className="flex items-center gap-2 bg-[#0e1322] border border-gray-800/80 rounded-2xl p-1.5 font-mono text-xs shadow-inner">
+                    <div className="flex flex-wrap items-center gap-2 bg-[#0e1322] border border-gray-800/80 rounded-2xl p-1.5 font-mono text-xs shadow-inner">
+                        <button
+                            onClick={() => setActiveTab("overview")}
+                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                                activeTab === "overview"
+                                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/20"
+                                    : "text-gray-400 hover:text-white"
+                            }`}
+                        >
+                            <span>📈</span>
+                            <span>{isVi ? "Tổng Quan & Tăng Trưởng" : "Overview & Growth"}</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("users")}
+                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                                activeTab === "users"
+                                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold shadow-lg shadow-purple-500/20"
+                                    : "text-gray-400 hover:text-white"
+                            }`}
+                        >
+                            <span>👥</span>
+                            <span>{isVi ? "Quản Lý Người Dùng (CRM)" : "Users Directory"}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px]">
+                                {userStats?.totalUsers || 0}
+                            </span>
+                        </button>
                         <button
                             onClick={() => setActiveTab("telemetry")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                                 activeTab === "telemetry"
                                     ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/20"
                                     : "text-gray-400 hover:text-white"
                             }`}
                         >
-                            <span>📊</span>
-                            <span>{isVi ? "Thống Kê Lượt Tải & Bất Thường" : "Downloads & Telemetry"}</span>
+                            <span>⚡</span>
+                            <span>{isVi ? "Lượt Tải & Bất Thường" : "Downloads & Security"}</span>
                             <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px]">
                                 {stats?.totalDownloads || 0}
                             </span>
                         </button>
                         <button
                             onClick={() => setActiveTab("transactions")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
+                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                                 activeTab === "transactions"
                                     ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/20"
                                     : "text-gray-400 hover:text-white"
                             }`}
                         >
                             <span>💳</span>
-                            <span>{isVi ? "Giao Dịch Nạp Credit (Doanh Thu)" : "Credit Transactions"}</span>
+                            <span>{isVi ? "Giao Dịch Nạp Credit" : "Transactions"}</span>
                             <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px]">
                                 {transactionStats?.totalTransactions || 0}
                             </span>
                         </button>
                     </div>
 
-                    {activeTab === "transactions" && (
-                        <div className="flex items-center gap-3 text-xs font-mono text-emerald-400">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>
-                                {isVi ? "Tổng doanh thu:" : "Total revenue:"}{" "}
-                                <strong className="text-white text-sm">
-                                    {(transactionStats?.totalRevenue || 0).toLocaleString()} đ
-                                </strong>
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+                        <div className="flex items-center gap-1.5 text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-xl">
+                            <span>User mới:</span>
+                            <strong className="text-white font-bold">+{stats?.newUsersCount || 0}</strong>
+                            <span className={`text-[10px] ${stats && stats.userGrowthPercentage >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                                ({stats && stats.userGrowthPercentage >= 0 ? "+" : ""}{stats?.userGrowthPercentage || 0}%)
                             </span>
                         </div>
-                    )}
+                        <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
+                            <span>Doanh thu:</span>
+                            <strong className="text-white font-bold">{(transactionStats?.totalRevenue || 0).toLocaleString()} đ</strong>
+                        </div>
+                    </div>
                 </div>
+
+                {/* OVERVIEW & EXECUTIVE GROWTH TAB */}
+                {activeTab === "overview" && (
+                    <div className="space-y-6">
+                        {/* 4 EXECUTIVE KPI CARDS */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Card 1: New Users & Growth */}
+                            <div className="bg-[#0f1422] border border-purple-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-purple-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Người Dùng Mới" : "New Users"}</span>
+                                    <span className="text-base">👥</span>
+                                </div>
+                                <div className="text-3xl font-black text-white mt-2 flex items-baseline gap-2">
+                                    <span>+{stats?.newUsersCount || 0}</span>
+                                    <span className={`text-xs font-mono font-bold ${
+                                        (stats?.userGrowthPercentage ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400"
+                                    }`}>
+                                        {(stats?.userGrowthPercentage ?? 0) >= 0 ? "↑ +" : "↓ "}
+                                        {stats?.userGrowthPercentage || 0}%
+                                    </span>
+                                </div>
+                                <div className="text-[11px] text-gray-400 font-mono mt-1 flex items-center justify-between">
+                                    <span>{isVi ? "Lũy kế toàn bộ:" : "Total registered:"}</span>
+                                    <strong className="text-purple-300 font-bold">{(userStats?.totalUsers || 0).toLocaleString()} users</strong>
+                                </div>
+                            </div>
+
+                            {/* Card 2: Total Downloads & Free vs Instant */}
+                            <div className="bg-[#0f1422] border border-cyan-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-cyan-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Tổng Lượt Tải" : "Total Downloads"}</span>
+                                    <span className="text-base">⚡</span>
+                                </div>
+                                <div className="text-3xl font-black text-white mt-2">
+                                    {(stats?.totalDownloads || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[11px] text-gray-400 font-mono mt-1 flex items-center justify-between">
+                                    <span className="text-blue-400">{stats?.freeDownloadsCount || 0} Free (30s)</span>
+                                    <span>•</span>
+                                    <span className="text-emerald-400">{stats?.creditDownloadsCount || 0} Credit</span>
+                                </div>
+                            </div>
+
+                            {/* Card 3: Total Revenue & Conversion Rate */}
+                            <div className="bg-[#0f1422] border border-emerald-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-emerald-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Doanh Thu Nạp Credit" : "Revenue"}</span>
+                                    <span className="text-base">💰</span>
+                                </div>
+                                <div className="text-3xl font-black text-white mt-2">
+                                    {(transactionStats?.totalRevenue || 0).toLocaleString()} <span className="text-base text-emerald-400">đ</span>
+                                </div>
+                                <div className="text-[11px] text-gray-400 font-mono mt-1 flex items-center justify-between">
+                                    <span>CR: <strong className="text-emerald-300">{userStats?.conversionRate || 0}%</strong></span>
+                                    <span>•</span>
+                                    <span>{transactionStats?.totalTransactions || 0} GD ({userStats?.payingUsersCount || 0} khách)</span>
+                                </div>
+                            </div>
+
+                            {/* Card 4: Anomalies & Fast Bypass */}
+                            <div className="bg-[#0f1422] border border-rose-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-rose-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Cảnh Báo Bất Thường" : "Anomalies"}</span>
+                                    <span className="text-base">🛡️</span>
+                                </div>
+                                <div className="text-3xl font-black text-rose-400 mt-2">
+                                    {stats?.totalAnomalies || 0}{" "}
+                                    <span className="text-xs font-mono text-gray-400">({stats?.anomalyPercentage || 0}%)</span>
+                                </div>
+                                <div className="text-[11px] text-gray-400 font-mono mt-1 flex items-center justify-between">
+                                    <span className="text-orange-400">{stats?.fastBypassCount || 0} Bypass &lt;30s</span>
+                                    <span>•</span>
+                                    <span className="text-yellow-400">{stats?.multiIpCount || 0} Đa IP</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ROW 1: COMBINED TIMELINE & 24H PEAK HEATMAP */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Left: Combined Activity & User Timeline (2 cols) */}
+                            <div className="lg:col-span-2 bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                            <span>{overviewChartType === "line" ? "📈" : "📊"}</span>
+                                            <span>{isVi ? "Biểu Đồ Lượt Tải & Người Dùng Mới Theo Thời Gian" : "Downloads & New Users Timeline"}</span>
+                                        </h3>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {isVi ? "Tương quan trực quan giữa tải Free (30s), tải Credit và số lượng User mới" : "Free vs Credit downloads and new user registration trends"}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        {/* Chart Type Toggle */}
+                                        <div className="flex bg-[#141b2d] p-0.5 rounded-xl border border-gray-800 text-[11px] font-mono">
+                                            <button
+                                                type="button"
+                                                onClick={() => setOverviewChartType("line")}
+                                                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                                                    overviewChartType === "line"
+                                                        ? "bg-purple-600 text-white font-bold shadow-md shadow-purple-500/30"
+                                                        : "text-gray-400 hover:text-white"
+                                                }`}
+                                            >
+                                                <span>📈</span>
+                                                <span>{isVi ? "Đường Kẻ" : "Line"}</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setOverviewChartType("bar")}
+                                                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                                                    overviewChartType === "bar"
+                                                        ? "bg-purple-600 text-white font-bold shadow-md shadow-purple-500/30"
+                                                        : "text-gray-400 hover:text-white"
+                                                }`}
+                                            >
+                                                <span>📊</span>
+                                                <span>{isVi ? "Cột" : "Bars"}</span>
+                                            </button>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono">
+                                            <span className="flex items-center gap-1.5 text-blue-400">
+                                                <span className="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> {isVi ? "Tải Free" : "Free"}
+                                            </span>
+                                            <span className="flex items-center gap-1.5 text-emerald-400">
+                                                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> {isVi ? "Tải Credit" : "Credit"}
+                                            </span>
+                                            <span className="flex items-center gap-1.5 text-purple-400">
+                                                <span className="w-2.5 h-2.5 rounded-sm bg-purple-500"></span> {isVi ? "User Mới" : "New User"}
+                                            </span>
+                                            <span className="flex items-center gap-1.5 text-rose-400">
+                                                <span className="w-2.5 h-2.5 rounded-sm bg-rose-500"></span> {isVi ? "Bất thường" : "Anomaly"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {overviewChartType === "line" ? (
+                                    /* DẠNG ĐƯỜNG KẺ (SVG LINE CHART) */
+                                    <div className="h-56 w-full relative pt-2 pb-2 border-b border-gray-800">
+                                        {stats?.timeline && stats.timeline.length > 0 ? (() => {
+                                            const tl = stats.timeline;
+                                            const N = tl.length;
+                                            const maxVal = Math.max(
+                                                ...tl.map((t) => Math.max(t.freeDownloads, t.creditDownloads, t.newUsers, t.anomalousDownloads)),
+                                                5
+                                            );
+                                            const w = 720;
+                                            const h = 160;
+                                            const paddingLeft = 38;
+                                            const paddingTop = 15;
+
+                                            const freePts = tl.map((d, i) => ({
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                y: paddingTop + h - (d.freeDownloads / maxVal) * h,
+                                                val: d.freeDownloads,
+                                                time: d.time,
+                                            }));
+                                            const creditPts = tl.map((d, i) => ({
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                y: paddingTop + h - (d.creditDownloads / maxVal) * h,
+                                                val: d.creditDownloads,
+                                                time: d.time,
+                                            }));
+                                            const userPts = tl.map((d, i) => ({
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                y: paddingTop + h - (d.newUsers / maxVal) * h,
+                                                val: d.newUsers,
+                                                time: d.time,
+                                            }));
+                                            const anomalyPts = tl.map((d, i) => ({
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                y: paddingTop + h - (d.anomalousDownloads / maxVal) * h,
+                                                val: d.anomalousDownloads,
+                                                time: d.time,
+                                            }));
+
+                                            const pathFree = generateSmoothPath(freePts);
+                                            const pathCredit = generateSmoothPath(creditPts);
+                                            const pathUser = generateSmoothPath(userPts);
+                                            const pathAnomaly = generateSmoothPath(anomalyPts);
+
+                                            const areaUser = userPts.length > 0
+                                                ? `${pathUser} L ${userPts[userPts.length - 1].x} ${paddingTop + h} L ${userPts[0].x} ${paddingTop + h} Z`
+                                                : "";
+
+                                            const activePt = hoveredOverviewIndex !== null && hoveredOverviewIndex < N ? tl[hoveredOverviewIndex] : null;
+                                            const activeX = hoveredOverviewIndex !== null ? paddingLeft + (hoveredOverviewIndex / Math.max(1, N - 1)) * (w - paddingLeft) : null;
+
+                                            return (
+                                                <div className="relative w-full h-full">
+                                                    <svg viewBox={`0 0 ${w + 10} ${h + 40}`} className="w-full h-full overflow-visible">
+                                                        <defs>
+                                                            <linearGradient id="userOverviewGrad" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="0%" stopColor="#a855f7" stopOpacity="0.35" />
+                                                                <stop offset="100%" stopColor="#a855f7" stopOpacity="0.0" />
+                                                            </linearGradient>
+                                                        </defs>
+
+                                                        {/* Horizontal Grid lines */}
+                                                        {[0, 0.25, 0.5, 0.75, 1].map((p, gIdx) => {
+                                                            const y = paddingTop + h * (1 - p);
+                                                            const valLabel = Math.round(maxVal * p);
+                                                            return (
+                                                                <g key={gIdx}>
+                                                                    <line
+                                                                        x1={paddingLeft}
+                                                                        y1={y}
+                                                                        x2={w}
+                                                                        y2={y}
+                                                                        stroke="#1f293d"
+                                                                        strokeDasharray="4 4"
+                                                                    />
+                                                                    <text x={paddingLeft - 8} y={y + 3} textAnchor="end" fill="#64748b" fontSize="9" fontFamily="monospace">
+                                                                        {valLabel}
+                                                                    </text>
+                                                                </g>
+                                                            );
+                                                        })}
+
+                                                        {/* Area glow under user growth line */}
+                                                        {areaUser && <path d={areaUser} fill="url(#userOverviewGrad)" />}
+
+                                                        {/* Dynamic Lines */}
+                                                        <path d={pathFree} fill="none" stroke="#3b82f6" strokeWidth="2.5" />
+                                                        <path d={pathCredit} fill="none" stroke="#10b981" strokeWidth="2.5" />
+                                                        <path d={pathUser} fill="none" stroke="#c084fc" strokeWidth="3" style={{ filter: "drop-shadow(0 0 5px rgba(192, 132, 252, 0.6))" }} />
+                                                        <path d={pathAnomaly} fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="3 3" />
+
+                                                        {/* Active vertical cursor line */}
+                                                        {activeX !== null && (
+                                                            <line
+                                                                x1={activeX}
+                                                                y1={paddingTop}
+                                                                x2={activeX}
+                                                                y2={paddingTop + h}
+                                                                stroke="rgba(255,255,255,0.25)"
+                                                                strokeDasharray="3 3"
+                                                            />
+                                                        )}
+
+                                                        {/* Data dots for users */}
+                                                        {userPts.map((p, i) => (
+                                                            <circle
+                                                                key={i}
+                                                                cx={p.x}
+                                                                cy={p.y}
+                                                                r={hoveredOverviewIndex === i ? 5.5 : 2.5}
+                                                                fill="#c084fc"
+                                                                stroke="#0f1422"
+                                                                strokeWidth="2"
+                                                                className="transition-all"
+                                                            />
+                                                        ))}
+
+                                                        {/* X-axis time marks */}
+                                                        {tl.map((d, i) => {
+                                                            if (N > 12 && i % 2 !== 0 && i !== N - 1) return null;
+                                                            const x = paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft);
+                                                            return (
+                                                                <text
+                                                                    key={i}
+                                                                    x={x}
+                                                                    y={paddingTop + h + 18}
+                                                                    textAnchor="middle"
+                                                                    fill="#64748b"
+                                                                    fontSize="9"
+                                                                    fontFamily="monospace"
+                                                                >
+                                                                    {d.time}
+                                                                </text>
+                                                            );
+                                                        })}
+
+                                                        {/* Invisible hover triggers per slice */}
+                                                        {tl.map((_, i) => {
+                                                            const x1 = paddingLeft + ((i - 0.5) / Math.max(1, N - 1)) * (w - paddingLeft);
+                                                            const sliceW = (w - paddingLeft) / Math.max(1, N - 1);
+                                                            return (
+                                                                <rect
+                                                                    key={i}
+                                                                    x={Math.max(paddingLeft, x1)}
+                                                                    y={0}
+                                                                    width={sliceW}
+                                                                    height={h + paddingTop + 25}
+                                                                    fill="transparent"
+                                                                    className="cursor-pointer"
+                                                                    onMouseEnter={() => setHoveredOverviewIndex(i)}
+                                                                    onMouseLeave={() => setHoveredOverviewIndex(null)}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </svg>
+
+                                                    {/* Hover Floating Tooltip */}
+                                                    {hoveredOverviewIndex !== null && activePt && activeX !== null && (
+                                                        <div
+                                                            style={{
+                                                                left: `${(activeX / w) * 100}%`,
+                                                                transform: "translateX(-50%)",
+                                                            }}
+                                                            className="absolute -top-16 bg-[#090d16] border border-gray-700 rounded-xl p-2 text-[10px] font-mono text-white pointer-events-none z-30 whitespace-nowrap shadow-2xl"
+                                                        >
+                                                            <div className="font-bold text-cyan-300 border-b border-gray-800 pb-1 mb-1">{activePt.time}</div>
+                                                            <div className="text-purple-300">👥 User Mới: +{activePt.newUsers}</div>
+                                                            <div className="text-blue-300">⚡ Free: {activePt.freeDownloads}</div>
+                                                            <div className="text-emerald-300">💎 Credit: {activePt.creditDownloads}</div>
+                                                            {activePt.anomalousDownloads > 0 && <div className="text-rose-400">🚨 Lỗi/Bypass: {activePt.anomalousDownloads}</div>}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })() : (
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-mono">
+                                                {isVi ? "Chưa có dữ liệu lượt tải theo thời gian." : "No download timeline data."}
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    /* DẠNG CỘT (STACKED MULTI-BAR CHART) */
+                                    <div className="h-56 w-full flex items-end gap-2 pt-6 pb-2 border-b border-gray-800">
+                                        {stats?.timeline && stats.timeline.length > 0 ? (
+                                            stats.timeline.map((item, idx) => {
+                                                const maxVal = Math.max(...stats.timeline.map((t) => (t.freeDownloads + t.creditDownloads + t.anomalousDownloads + t.newUsers)), 10);
+                                                const freeH = (item.freeDownloads / maxVal) * 100;
+                                                const creditH = (item.creditDownloads / maxVal) * 100;
+                                                const anomalyH = (item.anomalousDownloads / maxVal) * 100;
+                                                const userH = (item.newUsers / maxVal) * 100;
+
+                                                return (
+                                                    <div key={idx} className="flex-1 flex flex-col items-center gap-0.5 group relative h-full justify-end">
+                                                        {/* Hover Tooltip */}
+                                                        <div className="absolute -top-16 opacity-0 group-hover:opacity-100 transition-opacity bg-[#090d16] border border-gray-700 rounded-xl p-2 text-[10px] font-mono text-white pointer-events-none z-30 whitespace-nowrap shadow-xl">
+                                                            <div className="font-bold text-cyan-300 border-b border-gray-800 pb-1 mb-1">{item.time}</div>
+                                                            <div className="text-blue-300">⚡ Free: {item.freeDownloads}</div>
+                                                            <div className="text-emerald-300">💎 Credit: {item.creditDownloads}</div>
+                                                            <div className="text-purple-300">👥 User Mới: +{item.newUsers}</div>
+                                                            {item.anomalousDownloads > 0 && <div className="text-rose-400">🚨 Lỗi/Bypass: {item.anomalousDownloads}</div>}
+                                                        </div>
+
+                                                        {/* User Indicator Pin */}
+                                                        {item.newUsers > 0 && (
+                                                            <div
+                                                                style={{ height: `${Math.min(userH, 20)}%` }}
+                                                                className="w-full bg-purple-500 rounded-t-sm opacity-90 group-hover:opacity-100 transition-all"
+                                                                title={`+${item.newUsers} Users`}
+                                                            ></div>
+                                                        )}
+
+                                                        {/* Anomaly Bar segment */}
+                                                        {item.anomalousDownloads > 0 && (
+                                                            <div
+                                                                style={{ height: `${Math.min(anomalyH, 30)}%` }}
+                                                                className="w-full bg-rose-500 transition-all group-hover:bg-rose-400"
+                                                            ></div>
+                                                        )}
+
+                                                        {/* Credit Bar segment */}
+                                                        {item.creditDownloads > 0 && (
+                                                            <div
+                                                                style={{ height: `${Math.min(creditH, 50)}%` }}
+                                                                className="w-full bg-emerald-500 transition-all group-hover:bg-emerald-400"
+                                                            ></div>
+                                                        )}
+
+                                                        {/* Free Bar segment */}
+                                                        <div
+                                                            style={{ height: `${Math.max(4, Math.min(freeH, 60))}%` }}
+                                                            className="w-full bg-blue-500/80 rounded-b-sm transition-all group-hover:bg-blue-400"
+                                                        ></div>
+
+                                                        <span className="text-[9px] font-mono text-gray-500 truncate w-full text-center mt-1">
+                                                            {item.time}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-mono">
+                                                {isVi ? "Chưa có dữ liệu lượt tải theo thời gian." : "No download timeline data."}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+
+                                <div className="mt-3 flex flex-wrap items-center justify-between text-xs font-mono text-gray-400">
+                                    <span>{isVi ? "Tỷ lệ Free / Credit:" : "Free / Credit Ratio:"} <strong className="text-white">{stats?.totalDownloads ? Math.round(((stats.freeDownloadsCount || 0) / stats.totalDownloads) * 100) : 100}% Free / {stats?.totalDownloads ? Math.round(((stats.creditDownloadsCount || 0) / stats.totalDownloads) * 100) : 0}% Credit</strong></span>
+                                    <span className="text-cyan-400 font-bold">{isVi ? "Thời gian chờ TB:" : "Avg Wait:"} {stats?.averageWaitSeconds || 32}s</span>
+                                </div>
+                            </div>
+
+                            {/* Right: 24-Hour Peak Activity Heatmap (1 col) */}
+                            <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                            <span>⏰</span>
+                                            <span>{isVi ? "Khung Giờ Cao Điểm (24h)" : "Hourly Peak Heatmap"}</span>
+                                        </h3>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {isVi ? "Lưu lượng tải phân bổ từ 00h đến 23h" : "Distribution across 24 hours of the day"}
+                                        </p>
+                                    </div>
+                                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono">
+                                        24h
+                                    </span>
+                                </div>
+
+                                {/* 24 Vertical / Horizontal Heatmap Bars */}
+                                <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 pt-2">
+                                    {stats?.hourlyDistribution && stats.hourlyDistribution.length > 0 ? (
+                                        stats.hourlyDistribution.map((bucket) => {
+                                            const maxH = Math.max(...stats.hourlyDistribution.map(b => b.totalDownloads), 1);
+                                            const intensity = bucket.totalDownloads / maxH;
+                                            const isPeak = intensity >= 0.75;
+                                            const isMedium = intensity >= 0.4;
+
+                                            return (
+                                                <div
+                                                    key={bucket.hour}
+                                                    title={`${bucket.label}: ${bucket.totalDownloads} lượt tải (${bucket.percentage}%)`}
+                                                    className={`p-2 rounded-xl border flex flex-col items-center justify-between transition-all hover:scale-105 cursor-pointer ${
+                                                        isPeak
+                                                            ? "bg-cyan-500/25 border-cyan-500/60 shadow-lg shadow-cyan-500/10 text-cyan-200"
+                                                            : isMedium
+                                                            ? "bg-blue-500/15 border-blue-500/30 text-blue-200"
+                                                            : bucket.totalDownloads > 0
+                                                            ? "bg-[#141b2d] border-gray-800 text-gray-300"
+                                                            : "bg-[#0b0e17] border-gray-900 text-gray-600"
+                                                    }`}
+                                                >
+                                                    <span className="text-[10px] font-mono font-bold">{bucket.hour}h</span>
+                                                    <span className={`text-xs font-mono font-black mt-1 ${isPeak ? "text-cyan-300" : ""}`}>
+                                                        {bucket.totalDownloads}
+                                                    </span>
+                                                    <span className="text-[8px] font-mono text-gray-400 mt-0.5">
+                                                        {bucket.percentage}%
+                                                    </span>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="col-span-8 text-center py-6 text-xs text-gray-500 font-mono">
+                                            {isVi ? "Chưa có dữ liệu phân bổ theo giờ." : "No hourly distribution data."}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="p-3 rounded-xl bg-[#141b2d] border border-cyan-500/20 text-xs font-mono text-gray-300">
+                                    <span className="text-cyan-400 font-bold block mb-1">
+                                        💡 {isVi ? "Nhận định cao điểm:" : "Peak Traffic Insight:"}
+                                    </span>
+                                    <span>
+                                        {isVi
+                                            ? "Lưu lượng tải thường tăng mạnh vào khung 14:00 - 16:30 và 20:00 - 23:00. Bạn có thể kích hoạt thông báo nạp credit hoặc kiểm tra server vào các khung giờ này."
+                                            : "Traffic surges typically between 14:00 - 16:30 and 20:00 - 23:00. Optimal for promotional notifications."}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ROW 2: TOP DOWNLOADED DOCUMENTS & DAY OF WEEK ACTIVITY */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Left: Top 10 Most Downloaded Documents (2 cols) */}
+                            <div className="lg:col-span-2 bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                            <span>📑</span>
+                                            <span>{isVi ? "Top 10 Tài Liệu Được Tải Nhiều Nhất" : "Top 10 Downloaded Documents"}</span>
+                                        </h3>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {isVi ? "Xếp hạng tài liệu theo mức độ quan tâm của người dùng" : "Ranked by download frequency and channel"}
+                                        </p>
+                                    </div>
+                                    <span className="text-xs font-mono text-gray-400">
+                                        {stats?.topDocuments?.length || 0} {isVi ? "tài liệu" : "docs"}
+                                    </span>
+                                </div>
+
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs font-mono">
+                                        <thead>
+                                            <tr className="border-b border-gray-800 text-gray-400">
+                                                <th className="pb-3 font-semibold">#</th>
+                                                <th className="pb-3 font-semibold">{isVi ? "Tiêu Đề / Hash Tài Liệu" : "Document Title / Hash"}</th>
+                                                <th className="pb-3 font-semibold text-center">{isVi ? "Lượt Tải" : "Downloads"}</th>
+                                                <th className="pb-3 font-semibold">{isVi ? "Kênh Tải (Free vs Credit)" : "Download Channels"}</th>
+                                                <th className="pb-3 font-semibold text-center">{isVi ? "Số Trang TB" : "Avg Pages"}</th>
+                                                <th className="pb-3 font-semibold text-right">{isVi ? "Hành Động" : "Action"}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-800/60">
+                                            {stats?.topDocuments && stats.topDocuments.length > 0 ? (
+                                                stats.topDocuments.map((doc, idx) => {
+                                                    const freePct = Math.round((doc.freeCount / doc.totalDownloads) * 100);
+                                                    const creditPct = 100 - freePct;
+                                                    return (
+                                                        <tr key={idx} className="hover:bg-gray-800/40 transition-colors">
+                                                            <td className="py-3 text-gray-500 font-bold">{idx + 1}</td>
+                                                            <td className="py-3 max-w-xs truncate text-white font-medium" title={doc.docTitle}>
+                                                                <div className="flex flex-col">
+                                                                    <span className="truncate">{doc.docTitle}</span>
+                                                                    <span className="text-[10px] text-gray-500 truncate">{doc.docIdHash}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-3 text-center font-bold text-cyan-300">
+                                                                {doc.totalDownloads}
+                                                            </td>
+                                                            <td className="py-3">
+                                                                <div className="w-36 space-y-1">
+                                                                    <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden flex">
+                                                                        <div style={{ width: `${freePct}%` }} className="bg-blue-500 h-full"></div>
+                                                                        <div style={{ width: `${creditPct}%` }} className="bg-emerald-500 h-full"></div>
+                                                                    </div>
+                                                                    <div className="flex justify-between text-[9px] text-gray-400">
+                                                                        <span>⚡ {doc.freeCount}</span>
+                                                                        <span>💎 {doc.creditCount}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-3 text-center text-amber-300 font-bold">
+                                                                {doc.avgPages} {isVi ? "trang" : "pgs"}
+                                                            </td>
+                                                            <td className="py-3 text-right">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSearchQuery(doc.docIdHash);
+                                                                        setActiveTab("telemetry");
+                                                                    }}
+                                                                    className="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 rounded-lg text-[10px] transition-all cursor-pointer"
+                                                                >
+                                                                    {isVi ? "Xem Log" : "View Logs"}
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan={6} className="py-8 text-center text-gray-500">
+                                                        {isVi ? "Chưa có dữ liệu tài liệu được tải." : "No document downloads recorded."}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Right: Day of Week & Device Breakdown (1 col) */}
+                            <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-5">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                        <span>📅</span>
+                                        <span>{isVi ? "Phân Bổ Theo Ngày Trong Tuần" : "Day of Week Activity"}</span>
+                                    </h3>
+                                    <p className="text-xs text-gray-400 mt-0.5">
+                                        {isVi ? "Lượt tải và doanh thu phát sinh theo từng ngày" : "Weekly downloads and revenue trends"}
+                                    </p>
+
+                                    <div className="mt-3 space-y-2 font-mono text-xs">
+                                        {stats?.dayOfWeekDistribution && stats.dayOfWeekDistribution.length > 0 ? (
+                                            stats.dayOfWeekDistribution.map((d, i) => (
+                                                <div key={i} className="flex items-center justify-between p-2 rounded-xl bg-[#141b2d] border border-gray-800">
+                                                    <span className="text-gray-300">{d.dayName}</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-cyan-400 font-bold">{d.downloads} {isVi ? "tải" : "DL"}</span>
+                                                        <span className="text-emerald-400 font-bold">{d.revenue.toLocaleString()} đ</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-xs text-gray-500 p-2">{isVi ? "Chưa có dữ liệu" : "No data"}</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Top Countries */}
+                                <div className="pt-3 border-t border-gray-800">
+                                    <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2 font-mono flex items-center justify-between">
+                                        <span>{isVi ? "Top Quốc Gia & Khu Vực" : "Top Geolocation"}</span>
+                                        <span>🌍</span>
+                                    </h4>
+                                    <div className="space-y-1.5 text-xs">
+                                        {stats?.topCountries && stats.topCountries.length > 0 ? (
+                                            stats.topCountries.slice(0, 4).map((c, i) => (
+                                                <div key={i} className="flex items-center justify-between text-gray-300 font-mono">
+                                                    <span>{c.country}</span>
+                                                    <span className="text-gray-400">{c.count} {isVi ? "lượt" : "hits"}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <span className="text-gray-500 text-xs">{isVi ? "Chưa có dữ liệu" : "No geo data"}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* USERS CRM & DIRECTORY TAB */}
+                {activeTab === "users" && (
+                    <div className="space-y-6">
+                        {/* USER KPI CARDS (4 CARDS) */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Card 1: Total Users */}
+                            <div className="bg-[#0f1422] border border-purple-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-purple-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Tổng Người Dùng" : "Total Users"}</span>
+                                    <span className="text-base">👥</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-white mt-2">
+                                    {(userStats?.totalUsers || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-1">
+                                    {isVi ? "Tài khoản từ Sheet Credits_Users" : "All registered accounts"}
+                                </div>
+                            </div>
+
+                            {/* Card 2: New Users in Window */}
+                            <div className="bg-[#0f1422] border border-cyan-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-cyan-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "User Mới Trong Khung" : "New Registrations"}</span>
+                                    <span className="text-base">✨</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-cyan-300 mt-2">
+                                    +{userStats?.newUsersCount || 0}
+                                </div>
+                                <div className="text-[10px] text-emerald-400 font-mono mt-1">
+                                    {(userStats?.newUsersGrowthPercentage ?? 0) >= 0 ? "+" : ""}
+                                    {userStats?.newUsersGrowthPercentage || 0}% {isVi ? "so với kỳ trước" : "vs previous"}
+                                </div>
+                            </div>
+
+                            {/* Card 3: Paying Customers */}
+                            <div className="bg-[#0f1422] border border-emerald-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-emerald-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Khách Hàng Đã Nạp" : "Paying Users"}</span>
+                                    <span className="text-base">💎</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-emerald-300 mt-2">
+                                    {(userStats?.payingUsersCount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-1">
+                                    {isVi ? `Tỷ lệ chuyển đổi CR: ${userStats?.conversionRate || 0}%` : `Conversion: ${userStats?.conversionRate || 0}%`}
+                                </div>
+                            </div>
+
+                            {/* Card 4: Credits in Circulation */}
+                            <div className="bg-[#0f1422] border border-amber-500/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 rounded-bl-full"></div>
+                                <div className="text-[11px] font-mono uppercase text-amber-400 font-bold flex items-center justify-between">
+                                    <span>{isVi ? "Credits Đang Lưu Hành" : "Circulating Credits"}</span>
+                                    <span className="text-base">🪙</span>
+                                </div>
+                                <div className="text-2xl sm:text-3xl font-black text-amber-300 mt-2">
+                                    {(userStats?.totalCreditsInCirculation || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-1">
+                                    {isVi ? "Tổng số dư khả dụng của user" : "Remaining user credit balance"}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* USER GROWTH DEDICATED LINE CHART */}
+                        <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                        <span className="text-purple-400">📈</span>
+                                        <span>{isVi ? "Biểu Đồ Tăng Trưởng Người Dùng Mới (Line Chart)" : "New User Growth Trajectory"}</span>
+                                    </h3>
+                                    <p className="text-xs text-gray-400 mt-0.5">
+                                        {isVi
+                                            ? "Đường cong trực quan phân tích số lượng user mới đăng ký và tốc độ tăng trưởng tích lũy"
+                                            : "Trajectory of new user registrations and cumulative base over time"}
+                                    </p>
+                                </div>
+
+                                {/* Metric Mode Switch */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex bg-[#141b2d] p-0.5 rounded-xl border border-gray-800 text-[11px] font-mono">
+                                        <button
+                                            type="button"
+                                            onClick={() => setUserChartMetric("both")}
+                                            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                                                userChartMetric === "both"
+                                                    ? "bg-purple-600 text-white font-bold shadow-md shadow-purple-500/30"
+                                                    : "text-gray-400 hover:text-white"
+                                            }`}
+                                        >
+                                            {isVi ? "🔀 Cả Hai Đường" : "Dual Axis"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setUserChartMetric("new_users")}
+                                            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                                                userChartMetric === "new_users"
+                                                    ? "bg-purple-600 text-white font-bold shadow-md shadow-purple-500/30"
+                                                    : "text-gray-400 hover:text-white"
+                                            }`}
+                                        >
+                                            {isVi ? "🟣 User Mới" : "New Users"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setUserChartMetric("cumulative")}
+                                            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                                                userChartMetric === "cumulative"
+                                                    ? "bg-purple-600 text-white font-bold shadow-md shadow-purple-500/30"
+                                                    : "text-gray-400 hover:text-white"
+                                            }`}
+                                        >
+                                            {isVi ? "📈 Lũy Kế" : "Cumulative"}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 text-[11px] font-mono ml-1">
+                                        {(userChartMetric === "new_users" || userChartMetric === "both") && (
+                                            <span className="flex items-center gap-1.5 text-purple-400">
+                                                <span className="w-2.5 h-0.5 bg-purple-400"></span> {isVi ? "User Mới (+N)" : "New Users"}
+                                            </span>
+                                        )}
+                                        {(userChartMetric === "cumulative" || userChartMetric === "both") && (
+                                            <span className="flex items-center gap-1.5 text-cyan-400">
+                                                <span className="w-2.5 h-0.5 bg-cyan-400"></span> {isVi ? "Tổng Lũy Kế" : "Cumulative Total"}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Metric Quick Stats Bar */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#121829] p-3 rounded-xl border border-gray-800/80 text-xs font-mono">
+                                <div>
+                                    <span className="text-gray-500 block text-[10px] uppercase">{isVi ? "User Mới Trong Kỳ" : "New In Period"}</span>
+                                    <strong className="text-purple-300 font-bold text-sm">+{userStats?.newUsersCount || 0} users</strong>
+                                </div>
+                                <div>
+                                    <span className="text-gray-500 block text-[10px] uppercase">{isVi ? "Tỷ Lệ Tăng Trưởng" : "Growth Rate"}</span>
+                                    <strong className={`font-bold text-sm ${((userStats?.newUsersGrowthPercentage ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400")}`}>
+                                        {(userStats?.newUsersGrowthPercentage ?? 0) >= 0 ? "+" : ""}{userStats?.newUsersGrowthPercentage || 0}%
+                                    </strong>
+                                </div>
+                                <div>
+                                    <span className="text-gray-500 block text-[10px] uppercase">{isVi ? "Tỷ Lệ Nạp Tiền (CR)" : "Conversion Rate"}</span>
+                                    <strong className="text-emerald-400 font-bold text-sm">{userStats?.conversionRate || 0}%</strong>
+                                </div>
+                                <div>
+                                    <span className="text-gray-500 block text-[10px] uppercase">{isVi ? "Tổng Khách Toàn Hệ Thống" : "Total Database"}</span>
+                                    <strong className="text-cyan-300 font-bold text-sm">{(userStats?.totalUsers || 0).toLocaleString()} users</strong>
+                                </div>
+                            </div>
+
+                            {/* SVG Line Chart Canvas */}
+                            <div className="h-64 w-full relative pt-2 pb-2">
+                                {(() => {
+                                    const uTimeline = (userStats?.timeline && userStats.timeline.length > 0)
+                                        ? userStats.timeline
+                                        : (stats?.timeline?.map(t => ({
+                                            time: t.time,
+                                            newUsers: t.newUsers,
+                                            activeUsers: 1,
+                                            cumulativeUsers: t.newUsers
+                                        })) || []);
+
+                                    if (uTimeline.length === 0) {
+                                        return (
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-mono">
+                                                {isVi ? "Chưa có dữ liệu tăng trưởng người dùng trong khung thời gian này." : "No user growth data in timeframe."}
+                                            </div>
+                                        );
+                                    }
+
+                                    const N = uTimeline.length;
+                                    const maxNew = Math.max(...uTimeline.map(d => d.newUsers), 4);
+                                    const maxCum = Math.max(...uTimeline.map(d => d.cumulativeUsers ?? d.newUsers), 10);
+                                    const w = 740;
+                                    const h = 180;
+                                    const paddingLeft = 42;
+                                    const paddingTop = 20;
+
+                                    const userPts = uTimeline.map((d, i) => ({
+                                        x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                        y: paddingTop + h - (d.newUsers / maxNew) * h,
+                                        val: d.newUsers,
+                                        time: d.time,
+                                    }));
+
+                                    const cumPts = uTimeline.map((d, i) => ({
+                                        x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                        y: paddingTop + h - ((d.cumulativeUsers ?? d.newUsers) / maxCum) * h,
+                                        val: d.cumulativeUsers ?? d.newUsers,
+                                        time: d.time,
+                                    }));
+
+                                    const pathUser = generateSmoothPath(userPts);
+                                    const pathCum = generateSmoothPath(cumPts);
+
+                                    const areaUser = userPts.length > 0
+                                        ? `${pathUser} L ${userPts[userPts.length - 1].x} ${paddingTop + h} L ${userPts[0].x} ${paddingTop + h} Z`
+                                        : "";
+                                    const areaCum = cumPts.length > 0
+                                        ? `${pathCum} L ${cumPts[cumPts.length - 1].x} ${paddingTop + h} L ${cumPts[0].x} ${paddingTop + h} Z`
+                                        : "";
+
+                                    const activePt = hoveredUserChartIndex !== null && hoveredUserChartIndex < N ? uTimeline[hoveredUserChartIndex] : null;
+                                    const activeX = hoveredUserChartIndex !== null ? paddingLeft + (hoveredUserChartIndex / Math.max(1, N - 1)) * (w - paddingLeft) : null;
+
+                                    return (
+                                        <div className="relative w-full h-full">
+                                            <svg viewBox={`0 0 ${w + 10} ${h + 45}`} className="w-full h-full overflow-visible">
+                                                <defs>
+                                                    <linearGradient id="userGrowthAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor="#a855f7" stopOpacity="0.4" />
+                                                        <stop offset="100%" stopColor="#a855f7" stopOpacity="0.0" />
+                                                    </linearGradient>
+                                                    <linearGradient id="userCumAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.25" />
+                                                        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                                                    </linearGradient>
+                                                </defs>
+
+                                                {/* Horizontal Grid lines */}
+                                                {[0, 0.25, 0.5, 0.75, 1].map((p, gIdx) => {
+                                                    const y = paddingTop + h * (1 - p);
+                                                    const valLabel = userChartMetric === "cumulative" ? Math.round(maxCum * p) : Math.round(maxNew * p);
+                                                    return (
+                                                        <g key={gIdx}>
+                                                            <line
+                                                                x1={paddingLeft}
+                                                                y1={y}
+                                                                x2={w}
+                                                                y2={y}
+                                                                stroke="#1f293d"
+                                                                strokeDasharray="4 4"
+                                                            />
+                                                            <text x={paddingLeft - 8} y={y + 3} textAnchor="end" fill="#64748b" fontSize="9" fontFamily="monospace">
+                                                                {valLabel}
+                                                            </text>
+                                                        </g>
+                                                    );
+                                                })}
+
+                                                {/* Area glow under curve */}
+                                                {(userChartMetric === "cumulative" || userChartMetric === "both") && areaCum && (
+                                                    <path d={areaCum} fill="url(#userCumAreaGrad)" />
+                                                )}
+                                                {(userChartMetric === "new_users" || userChartMetric === "both") && areaUser && (
+                                                    <path d={areaUser} fill="url(#userGrowthAreaGrad)" />
+                                                )}
+
+                                                {/* Glowing Curves */}
+                                                {(userChartMetric === "cumulative" || userChartMetric === "both") && (
+                                                    <path
+                                                        d={pathCum}
+                                                        fill="none"
+                                                        stroke="#38bdf8"
+                                                        strokeWidth="2.5"
+                                                        style={{ filter: "drop-shadow(0 0 6px rgba(56, 189, 248, 0.5))" }}
+                                                    />
+                                                )}
+                                                {(userChartMetric === "new_users" || userChartMetric === "both") && (
+                                                    <path
+                                                        d={pathUser}
+                                                        fill="none"
+                                                        stroke="#c084fc"
+                                                        strokeWidth="3.2"
+                                                        style={{ filter: "drop-shadow(0 0 8px rgba(192, 132, 252, 0.7))" }}
+                                                    />
+                                                )}
+
+                                                {/* Hover Vertical Cursor Line */}
+                                                {activeX !== null && (
+                                                    <line
+                                                        x1={activeX}
+                                                        y1={paddingTop}
+                                                        x2={activeX}
+                                                        y2={paddingTop + h}
+                                                        stroke="rgba(255,255,255,0.3)"
+                                                        strokeDasharray="3 3"
+                                                    />
+                                                )}
+
+                                                {/* Interactive Data Dots (New Users) */}
+                                                {(userChartMetric === "new_users" || userChartMetric === "both") &&
+                                                    userPts.map((p, i) => (
+                                                        <circle
+                                                            key={`u-${i}`}
+                                                            cx={p.x}
+                                                            cy={p.y}
+                                                            r={hoveredUserChartIndex === i ? 6 : 3}
+                                                            fill="#c084fc"
+                                                            stroke="#0f1422"
+                                                            strokeWidth="2.5"
+                                                            className="transition-all"
+                                                        />
+                                                    ))}
+
+                                                {/* Interactive Data Dots (Cumulative) */}
+                                                {(userChartMetric === "cumulative" || userChartMetric === "both") &&
+                                                    cumPts.map((p, i) => (
+                                                        <circle
+                                                            key={`c-${i}`}
+                                                            cx={p.x}
+                                                            cy={p.y}
+                                                            r={hoveredUserChartIndex === i ? 5.5 : 2.5}
+                                                            fill="#38bdf8"
+                                                            stroke="#0f1422"
+                                                            strokeWidth="2"
+                                                            className="transition-all"
+                                                        />
+                                                    ))}
+
+                                                {/* X-axis time marks */}
+                                                {uTimeline.map((d, i) => {
+                                                    if (N > 12 && i % 2 !== 0 && i !== N - 1) return null;
+                                                    const x = paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft);
+                                                    return (
+                                                        <text
+                                                            key={i}
+                                                            x={x}
+                                                            y={paddingTop + h + 18}
+                                                            textAnchor="middle"
+                                                            fill="#64748b"
+                                                            fontSize="9"
+                                                            fontFamily="monospace"
+                                                        >
+                                                            {d.time}
+                                                        </text>
+                                                    );
+                                                })}
+
+                                                {/* Invisible slice triggers for mouse interaction */}
+                                                {uTimeline.map((_, i) => {
+                                                    const x1 = paddingLeft + ((i - 0.5) / Math.max(1, N - 1)) * (w - paddingLeft);
+                                                    const sliceW = (w - paddingLeft) / Math.max(1, N - 1);
+                                                    return (
+                                                        <rect
+                                                            key={i}
+                                                            x={Math.max(paddingLeft, x1)}
+                                                            y={0}
+                                                            width={sliceW}
+                                                            height={h + paddingTop + 25}
+                                                            fill="transparent"
+                                                            className="cursor-pointer"
+                                                            onMouseEnter={() => setHoveredUserChartIndex(i)}
+                                                            onMouseLeave={() => setHoveredUserChartIndex(null)}
+                                                        />
+                                                    );
+                                                })}
+                                            </svg>
+
+                                            {/* Hover Floating Tooltip */}
+                                            {hoveredUserChartIndex !== null && activePt && activeX !== null && (
+                                                <div
+                                                    style={{
+                                                        left: `${(activeX / w) * 100}%`,
+                                                        transform: "translateX(-50%)",
+                                                    }}
+                                                    className="absolute -top-16 bg-[#090d16] border border-purple-500/50 rounded-xl p-2.5 text-[11px] font-mono text-white pointer-events-none z-30 whitespace-nowrap shadow-2xl"
+                                                >
+                                                    <div className="font-bold text-cyan-300 border-b border-gray-800 pb-1 mb-1">
+                                                        🕒 {activePt.time}
+                                                    </div>
+                                                    <div className="text-purple-300 font-bold">
+                                                        🟣 User Mới: +{activePt.newUsers}
+                                                    </div>
+                                                    {activePt.cumulativeUsers !== undefined && (
+                                                        <div className="text-cyan-300 text-[10px]">
+                                                            📈 Lũy kế: {activePt.cumulativeUsers.toLocaleString()} users
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* USER SEGMENTATION PILLS */}
+                        <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                            <span className="text-gray-400 font-bold uppercase">{isVi ? "Phân khúc người dùng:" : "User Segments:"}</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                    onClick={() => setUserFilter("all")}
+                                    className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                                        userFilter === "all" ? "bg-purple-600 text-white font-bold" : "bg-[#141b2d] text-gray-400 hover:text-white"
+                                    }`}
+                                >
+                                    {isVi ? "Tất cả" : "All"} ({userStats?.totalUsers || 0})
+                                </button>
+                                <button
+                                    onClick={() => setUserFilter("paying")}
+                                    className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                                        userFilter === "paying" ? "bg-emerald-600 text-white font-bold" : "bg-[#141b2d] text-gray-400 hover:text-white"
+                                    }`}
+                                >
+                                    💎 {isVi ? "Đã Nạp Tiền" : "Paying"} ({userStats?.segmentation?.paying || 0})
+                                </button>
+                                <button
+                                    onClick={() => setUserFilter("new")}
+                                    className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                                        userFilter === "new" ? "bg-cyan-600 text-white font-bold" : "bg-[#141b2d] text-gray-400 hover:text-white"
+                                    }`}
+                                >
+                                    ✨ {isVi ? "Tân Thủ Mới" : "New In Timeframe"} ({userStats?.newUsersCount || 0})
+                                </button>
+                                <button
+                                    onClick={() => setUserFilter("high_credits")}
+                                    className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                                        userFilter === "high_credits" ? "bg-amber-600 text-white font-bold" : "bg-[#141b2d] text-gray-400 hover:text-white"
+                                    }`}
+                                >
+                                    ⚡ {isVi ? "Nhiều Credit (≥10)" : "High Credits"}
+                                </button>
+                                <button
+                                    onClick={() => setUserFilter("risk")}
+                                    className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                                        userFilter === "risk" ? "bg-rose-600 text-white font-bold" : "bg-[#141b2d] text-gray-400 hover:text-white"
+                                    }`}
+                                >
+                                    🚨 {isVi ? "Đáng Ngờ (Risk)" : "Risk Flags"}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* USER DIRECTORY TABLE */}
+                        <div className="bg-[#0f1422] border border-gray-800 rounded-2xl p-5 shadow-sm space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                                        <span>👥</span>
+                                        <span>{isVi ? "Danh Sách Người Dùng & Sổ Cái CRM (Credits_Users)" : "Users Directory & CRM"}</span>
+                                    </h3>
+                                    <p className="text-xs text-gray-400">
+                                        {isVi ? "Dữ liệu người dùng được đồng bộ tự động từ Google Sheets" : "Synced directly from Google Sheets"}
+                                    </p>
+                                </div>
+
+                                {/* Search in Users */}
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder={isVi ? "Tìm User ID, IP, Thành phố..." : "Search User ID, IP, City..."}
+                                        className="w-full sm:w-64 px-3 py-1.5 bg-[#121829] border border-gray-700/80 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 font-mono"
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery("")}
+                                            className="absolute right-2.5 top-1.5 text-gray-500 hover:text-white text-xs cursor-pointer"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Table */}
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-xs font-mono">
+                                    <thead>
+                                        <tr className="border-b border-gray-800 text-gray-400">
+                                            <th className="pb-3 font-semibold">{isVi ? "Mã User ID" : "User ID"}</th>
+                                            <th className="pb-3 font-semibold text-center">{isVi ? "Số Dư Credit" : "Credits"}</th>
+                                            <th className="pb-3 font-semibold text-center">{isVi ? "Tổng Đã Tải" : "Total Downloads"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Tổng Chi Tiêu" : "Total Spent"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "IP Đăng Ký & Địa Điểm" : "Created IP & Geo"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Ngày Tham Gia" : "Joined At"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Phân Loại" : "Status"}</th>
+                                            <th className="pb-3 font-semibold text-right">{isVi ? "Hồ Sơ" : "Profile"}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800/60">
+                                        {filteredUsers.length > 0 ? (
+                                            filteredUsers.map((user, idx) => (
+                                                <tr key={`${user.userId}-${user.createdIp}-${idx}`} className="hover:bg-gray-800/40 transition-colors">
+                                                    <td className="py-3 font-bold text-white whitespace-nowrap">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                                                            <span>{user.userId}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3 text-center whitespace-nowrap">
+                                                        <span className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
+                                                            user.credits >= 10
+                                                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                                                : user.credits > 0
+                                                                ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                                                : "bg-gray-800 text-gray-400"
+                                                        }`}>
+                                                            {user.credits} cr
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 text-center text-gray-300 font-bold whitespace-nowrap">
+                                                        {user.totalDownloaded}
+                                                    </td>
+                                                    <td className="py-3 whitespace-nowrap">
+                                                        {user.isPaying ? (
+                                                            <span className="text-emerald-400 font-bold">
+                                                                {user.totalSpentVnd.toLocaleString()} đ ({user.transactionCount} GD)
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-500">0 đ (Free)</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3 text-gray-300 whitespace-nowrap">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-cyan-300">{user.createdIp}</span>
+                                                            <span className="text-[10px] text-gray-500">
+                                                                {user.city ? `${user.city}, ` : ""}{user.country || "Chưa xác định"}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3 text-gray-400 whitespace-nowrap">
+                                                        {new Date(user.createdAt).toLocaleDateString(isVi ? "vi-VN" : "en-US")}
+                                                    </td>
+                                                    <td className="py-3 whitespace-nowrap">
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {user.isPaying && (
+                                                                <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold">
+                                                                    VIP
+                                                                </span>
+                                                            )}
+                                                            {user.isNewInTimeframe && (
+                                                                <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[9px] font-bold">
+                                                                    MỚI
+                                                                </span>
+                                                            )}
+                                                            {user.riskFlags.length > 0 && (
+                                                                <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[9px] font-bold">
+                                                                    CẢNH BÁO
+                                                                </span>
+                                                            )}
+                                                            {!user.isPaying && !user.isNewInTimeframe && user.riskFlags.length === 0 && (
+                                                                <span className="px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 text-[9px]">
+                                                                    FREE
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3 text-right">
+                                                        <button
+                                                            onClick={() => setSelectedUser(user)}
+                                                            className="px-2.5 py-1 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded-lg text-[10px] transition-all cursor-pointer font-bold"
+                                                        >
+                                                            {isVi ? "Hồ Sơ" : "Profile"}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={8} className="py-8 text-center text-gray-500">
+                                                    {isVi ? "Không tìm thấy người dùng nào phù hợp." : "No users match criteria."}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* TELEMETRY VIEW */}
                 {activeTab === "telemetry" && (
@@ -534,8 +1818,9 @@ export default function DarkboardClient({
                         <div className="text-2xl font-black text-white mt-1">
                             {stats?.totalDownloads.toLocaleString() || 0}
                         </div>
-                        <div className="text-[10px] text-emerald-400 font-mono mt-1">
-                            {isVi ? "Yêu cầu hợp lệ" : "Compliant Handshakes"}
+                        <div className="text-[10px] font-mono mt-1 flex items-center justify-between">
+                            <span className="text-blue-400 font-bold">⚡ {stats?.freeDownloadsCount || 0} Free</span>
+                            <span className="text-emerald-400 font-bold">💎 {stats?.creditDownloadsCount || 0} Cr</span>
                         </div>
                     </div>
 
@@ -852,9 +2137,11 @@ export default function DarkboardClient({
                             </div>
 
                             {/* Status Filter Buttons */}
-                            <div className="flex bg-[#121829] border border-gray-700/80 rounded-xl p-0.5 text-xs font-mono">
+                            <div className="flex flex-wrap bg-[#121829] border border-gray-700/80 rounded-xl p-0.5 text-xs font-mono">
                                 {[
                                     { key: "all", label: isVi ? "Tất cả" : "All" },
+                                    { key: "credit_only", label: isVi ? "💎 Credit" : "Credit" },
+                                    { key: "free_only", label: isVi ? "⚡ Free" : "Free" },
                                     { key: "anomalies_only", label: isVi ? "Bất thường" : "Anomalies" },
                                     { key: "fast_bypass", label: isVi ? "Vượt Tốc Độ" : "Fast Bypass" },
                                     { key: "multi_ip", label: isVi ? "Nhiều IP" : "Multi-IP" },
@@ -862,7 +2149,7 @@ export default function DarkboardClient({
                                     <button
                                         key={tab.key}
                                         onClick={() => setStatusFilter(tab.key as any)}
-                                        className={`px-2.5 py-1 rounded-lg transition-all ${
+                                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                                             statusFilter === tab.key
                                                 ? "bg-cyan-500 text-white font-bold"
                                                 : "text-gray-400 hover:text-white"
@@ -893,13 +2180,13 @@ export default function DarkboardClient({
                             </thead>
                             <tbody className="divide-y divide-gray-800/60">
                                 {events.length > 0 ? (
-                                    events.map((event) => {
+                                    events.map((event, idx) => {
                                         const isFastBypass = event.anomalies.includes("FAST_BYPASS");
                                         const isAnomalous = event.anomalies.length > 0;
                                         const requiredMin = event.estimatedMinSeconds || 30;
                                         return (
                                             <tr
-                                                key={event.id}
+                                                key={`${event.id}-${idx}`}
                                                 className={`hover:bg-gray-800/40 transition-colors ${
                                                     isFastBypass
                                                         ? "bg-red-950/20"
@@ -1242,8 +2529,8 @@ export default function DarkboardClient({
                                     </thead>
                                     <tbody className="divide-y divide-gray-800/60">
                                         {transactions.length > 0 ? (
-                                            transactions.map((tx) => (
-                                                <tr key={tx.id} className="hover:bg-gray-800/40 transition-colors">
+                                            transactions.map((tx, idx) => (
+                                                <tr key={`${tx.id}-${idx}`} className="hover:bg-gray-800/40 transition-colors">
                                                     <td className="py-3 text-gray-400 whitespace-nowrap">
                                                         {new Date(tx.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US")}
                                                     </td>
@@ -1546,6 +2833,189 @@ export default function DarkboardClient({
                         <div className="pt-2 flex justify-end">
                             <button
                                 onClick={() => setSelectedTransaction(null)}
+                                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-mono cursor-pointer"
+                            >
+                                {isVi ? "Đóng" : "Close"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* USER PROFILE FORENSIC MODAL */}
+            {selectedUser && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-2xl bg-[#0f1422] border border-gray-700 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-mono">
+                        <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-lg font-bold">
+                                    👤
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                        <span>{isVi ? "Hồ Sơ & Kiểm Toán Người Dùng" : "User Profile & Forensic Audit"}</span>
+                                        {selectedUser.isPaying && (
+                                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px]">
+                                                💎 VIP
+                                            </span>
+                                        )}
+                                        {selectedUser.riskFlags.length > 0 && (
+                                            <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px]">
+                                                ⚠️ Risk
+                                            </span>
+                                        )}
+                                    </h3>
+                                    <p className="text-xs text-gray-400 font-mono mt-0.5">UID: {selectedUser.userId}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedUser(null)}
+                                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-300 cursor-pointer"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* User Summary Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div className="p-3 rounded-xl bg-[#141b2d] border border-cyan-500/20">
+                                <div className="text-gray-400 text-[10px] uppercase">{isVi ? "Số Dư Credit" : "Credits Balance"}</div>
+                                <div className="text-cyan-300 font-black text-lg mt-1">{selectedUser.credits} cr</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d] border border-blue-500/20">
+                                <div className="text-gray-400 text-[10px] uppercase">{isVi ? "Tổng Đã Tải" : "Total Downloaded"}</div>
+                                <div className="text-blue-300 font-black text-lg mt-1">{selectedUser.totalDownloaded}</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d] border border-emerald-500/20">
+                                <div className="text-gray-400 text-[10px] uppercase">{isVi ? "Tổng Tiền Đã Nạp" : "Total Spent"}</div>
+                                <div className="text-emerald-400 font-black text-lg mt-1">{selectedUser.totalSpentVnd.toLocaleString()} đ</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d] border border-purple-500/20">
+                                <div className="text-gray-400 text-[10px] uppercase">{isVi ? "Số Lần Nạp" : "Transactions"}</div>
+                                <div className="text-purple-300 font-black text-lg mt-1">{selectedUser.transactionCount} GD</div>
+                            </div>
+                        </div>
+
+                        {/* User Metadata */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "IP Đăng Ký Ban Đầu" : "Registration IP"}</div>
+                                <div className="text-white mt-1 font-bold">{selectedUser.createdIp}</div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Vị Trí Địa Lý" : "Location"}</div>
+                                <div className="text-white mt-1 font-bold">
+                                    {selectedUser.city ? `${selectedUser.city}, ` : ""}{selectedUser.country || "Chưa xác định"}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Ngày Tham Gia Hệ Thống" : "Registered At"}</div>
+                                <div className="text-gray-200 mt-1">
+                                    {new Date(selectedUser.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US")}
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-xl bg-[#141b2d]">
+                                <div className="text-gray-400">{isVi ? "Lần Hoạt Động Gần Nhất" : "Last Activity"}</div>
+                                <div className="text-gray-200 mt-1">
+                                    {new Date(selectedUser.updatedAt).toLocaleString(isVi ? "vi-VN" : "en-US")}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Downloads from this User */}
+                        <div>
+                            <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                                <span className="font-bold uppercase text-white flex items-center gap-1.5">
+                                    <span>⚡</span>
+                                    <span>{isVi ? "Lượt Tải Gần Đây Của User" : "Recent User Downloads"}</span>
+                                </span>
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery(selectedUser.userId);
+                                        setActiveTab("telemetry");
+                                        setSelectedUser(null);
+                                    }}
+                                    className="text-cyan-400 hover:underline text-[11px] cursor-pointer"
+                                >
+                                    {isVi ? "Xem tất cả trong Telemetry →" : "View all in Telemetry →"}
+                                </button>
+                            </div>
+                            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                                {events.filter((e) => e.clientUserId === selectedUser.userId).slice(0, 5).length > 0 ? (
+                                    events
+                                        .filter((e) => e.clientUserId === selectedUser.userId)
+                                        .slice(0, 5)
+                                        .map((dl, i) => (
+                                            <div key={`${dl.id}-${i}`} className="p-2 rounded-xl bg-[#141b2d] text-xs flex items-center justify-between">
+                                                <div className="flex flex-col truncate max-w-xs">
+                                                    <span className="text-white truncate">{dl.docTitle || dl.docIdHash}</span>
+                                                    <span className="text-[10px] text-gray-500">
+                                                        {new Date(dl.createdAt).toLocaleTimeString(isVi ? "vi-VN" : "en-US")} • {dl.pages || 1} trang • {dl.elapsedSeconds}s
+                                                    </span>
+                                                </div>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                    dl.downloadType === "credit" ? "bg-emerald-500/20 text-emerald-400" : "bg-blue-500/20 text-blue-300"
+                                                }`}>
+                                                    {dl.downloadType === "credit" ? "💎 Credit" : "⚡ Free"}
+                                                </span>
+                                            </div>
+                                        ))
+                                ) : (
+                                    <div className="p-3 rounded-xl bg-[#141b2d] text-gray-500 text-xs text-center">
+                                        {isVi ? "Chưa có lượt tải nào trong khung thời gian hiện tại." : "No downloads logged in active timeframe."}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Recent Transactions from this User */}
+                        <div>
+                            <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                                <span className="font-bold uppercase text-white flex items-center gap-1.5">
+                                    <span>💳</span>
+                                    <span>{isVi ? "Lịch Sử Nạp Tiền Của User" : "Payment History"}</span>
+                                </span>
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery(selectedUser.userId);
+                                        setActiveTab("transactions");
+                                        setSelectedUser(null);
+                                    }}
+                                    className="text-emerald-400 hover:underline text-[11px] cursor-pointer"
+                                >
+                                    {isVi ? "Xem tất cả trong Giao Dịch →" : "View all in Transactions →"}
+                                </button>
+                            </div>
+                            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                                {transactions.filter((t) => t.userId.trim().toUpperCase() === selectedUser.userId.trim().toUpperCase()).slice(0, 5).length > 0 ? (
+                                    transactions
+                                        .filter((t) => t.userId.trim().toUpperCase() === selectedUser.userId.trim().toUpperCase())
+                                        .slice(0, 5)
+                                        .map((tx, i) => (
+                                            <div key={`${tx.id}-${i}`} className="p-2 rounded-xl bg-[#141b2d] text-xs flex items-center justify-between">
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold">{tx.id} ({tx.bankCode})</span>
+                                                    <span className="text-[10px] text-gray-500">
+                                                        {new Date(tx.createdAt).toLocaleDateString(isVi ? "vi-VN" : "en-US")}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-amber-400 font-bold">+{tx.creditsAdded} cr</span>
+                                                    <span className="text-emerald-400 font-bold">+{tx.amount.toLocaleString()} đ</span>
+                                                </div>
+                                            </div>
+                                        ))
+                                ) : (
+                                    <div className="p-3 rounded-xl bg-[#141b2d] text-gray-500 text-xs text-center">
+                                        {isVi ? "User chưa từng có giao dịch nạp tiền." : "No payment transactions recorded for this user."}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                onClick={() => setSelectedUser(null)}
                                 className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-xs font-mono cursor-pointer"
                             >
                                 {isVi ? "Đóng" : "Close"}

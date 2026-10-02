@@ -307,8 +307,9 @@ export function isVaultSlugValid(slug: string): boolean {
 
     const inputBuf = Buffer.from(slug);
 
-    // Strictly check current (t) and previous (t-1) 60-second windows only
-    const validSteps = [currentStep, currentStep - 1];
+    // Check current step (t), grace period (t-1, t-2), and clock-skew step (t+1)
+    // to account for human interaction time, compilation latency, and client/server drift
+    const validSteps = [currentStep, currentStep - 1, currentStep + 1, currentStep - 2];
     for (const step of validSteps) {
         const expected = calculateVaultSlug(secret, step);
         const expBuf = Buffer.from(expected);

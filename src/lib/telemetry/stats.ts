@@ -4,7 +4,7 @@ import { TelemetryEvent, TelemetrySummaryStats, AnomalyType, ExtensionId } from 
 export interface StatsFilterOptions {
     extensionId?: string; // "all" or specific
     timeframe?: "1h" | "24h" | "7d" | "30d" | "all";
-    status?: "all" | "anomalies_only" | "fast_bypass" | "multi_ip";
+    status?: "all" | "credit_only" | "free_only" | "anomalies_only" | "fast_bypass" | "multi_ip";
     searchQuery?: string;
 }
 
@@ -54,23 +54,45 @@ export async function getTelemetryStats(options: StatsFilterOptions = {}): Promi
             ? Math.round((validWaitTimes.reduce((a, b) => a + b, 0) / validWaitTimes.length) * 10) / 10
             : 32.5;
 
-    // 3. Hourly / Timeline Breakdown (last 12 buckets)
+    // 3. Hourly / Timeline Breakdown
     const timelineMap: Record<
         string,
-        { normalDownloads: number; anomalousDownloads: number; fastBypassCount: number }
+        {
+            normalDownloads: number;
+            freeDownloads: number;
+            creditDownloads: number;
+            anomalousDownloads: number;
+            fastBypassCount: number;
+            newUsers: number;
+        }
     > = {};
+
+    const freeDownloadsCount = downloadEvents.filter((e) => e.downloadType !== "credit").length;
+    const creditDownloadsCount = downloadEvents.filter((e) => e.downloadType === "credit").length;
 
     downloadEvents.forEach((e) => {
         const d = new Date(e.createdAt);
-        // Format bucket key: HH:00 or MM-DD
         const bucket =
             options.timeframe === "7d" || options.timeframe === "30d"
                 ? `${d.getMonth() + 1}/${d.getDate()}`
                 : `${String(d.getHours()).padStart(2, "0")}:00`;
 
         if (!timelineMap[bucket]) {
-            timelineMap[bucket] = { normalDownloads: 0, anomalousDownloads: 0, fastBypassCount: 0 };
+            timelineMap[bucket] = {
+                normalDownloads: 0,
+                freeDownloads: 0,
+                creditDownloads: 0,
+                anomalousDownloads: 0,
+                fastBypassCount: 0,
+                newUsers: 0,
+            };
         }
+        if (e.downloadType === "credit") {
+            timelineMap[bucket].creditDownloads++;
+        } else {
+            timelineMap[bucket].freeDownloads++;
+        }
+
         if (e.anomalies.length > 0) {
             timelineMap[bucket].anomalousDownloads++;
             if (e.anomalies.includes("FAST_BYPASS")) {
@@ -85,6 +107,82 @@ export async function getTelemetryStats(options: StatsFilterOptions = {}): Promi
         time,
         ...data,
     }));
+
+    // 24-Hour Peak Activity Heatmap
+    const hourlyMap: Record<number, { free: number; credit: number; anomaly: number; total: number }> = {};
+    for (let h = 0; h < 24; h++) {
+        hourlyMap[h] = { free: 0, credit: 0, anomaly: 0, total: 0 };
+    }
+    downloadEvents.forEach((e) => {
+        const h = new Date(e.createdAt).getHours();
+        if (hourlyMap[h]) {
+            hourlyMap[h].total++;
+            if (e.downloadType === "credit") hourlyMap[h].credit++;
+            else hourlyMap[h].free++;
+            if (e.anomalies.length > 0) hourlyMap[h].anomaly++;
+        }
+    });
+
+    const hourlyDistribution = Object.entries(hourlyMap).map(([hStr, data]) => {
+        const h = parseInt(hStr, 10);
+        return {
+            hour: h,
+            label: `${String(h).padStart(2, "0")}:00`,
+            freeDownloads: data.free,
+            creditDownloads: data.credit,
+            anomalousDownloads: data.anomaly,
+            totalDownloads: data.total,
+            percentage: totalDownloads > 0 ? Math.round((data.total / totalDownloads) * 1000) / 10 : 0,
+        };
+    });
+
+    // Day of week
+    const dayNamesVi = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    const dowMap: Record<number, number> = {};
+    for (let d = 0; d < 7; d++) dowMap[d] = 0;
+    downloadEvents.forEach((e) => {
+        const d = new Date(e.createdAt).getDay();
+        if (dowMap[d] !== undefined) dowMap[d]++;
+    });
+    const dayOfWeekDistribution = [1, 2, 3, 4, 5, 6, 0].map((dayIndex) => ({
+        dayIndex,
+        dayName: dayNamesVi[dayIndex],
+        downloads: dowMap[dayIndex] || 0,
+        revenue: 0,
+    }));
+
+    // Top documents
+    const docMap = new Map<string, { docIdHash: string; docTitle: string; totalDownloads: number; freeCount: number; creditCount: number; totalPages: number }>();
+    downloadEvents.forEach((e) => {
+        const key = e.docTitle || e.docIdHash || "Document";
+        if (!docMap.has(key)) {
+            docMap.set(key, {
+                docIdHash: e.docIdHash,
+                docTitle: e.docTitle || key,
+                totalDownloads: 0,
+                freeCount: 0,
+                creditCount: 0,
+                totalPages: 0,
+            });
+        }
+        const item = docMap.get(key)!;
+        item.totalDownloads++;
+        if (e.downloadType === "credit") item.creditCount++;
+        else item.freeCount++;
+        item.totalPages += (e.pages || 1);
+    });
+
+    const topDocuments = Array.from(docMap.values())
+        .map((d) => ({
+            docIdHash: d.docIdHash,
+            docTitle: d.docTitle,
+            totalDownloads: d.totalDownloads,
+            freeCount: d.freeCount,
+            creditCount: d.creditCount,
+            avgPages: Math.max(1, Math.round(d.totalPages / d.totalDownloads)),
+        }))
+        .sort((a, b) => b.totalDownloads - a.totalDownloads)
+        .slice(0, 10);
 
     // 4. Anomaly Breakdown
     const anomalyBreakdown: Record<AnomalyType, number> = {
@@ -176,6 +274,10 @@ export async function getTelemetryStats(options: StatsFilterOptions = {}): Promi
     let tableEvents = [...events];
     if (options.status === "anomalies_only") {
         tableEvents = tableEvents.filter((e) => e.anomalies.length > 0);
+    } else if (options.status === "credit_only") {
+        tableEvents = tableEvents.filter((e) => e.downloadType === "credit");
+    } else if (options.status === "free_only") {
+        tableEvents = tableEvents.filter((e) => e.downloadType !== "credit");
     } else if (options.status === "fast_bypass") {
         tableEvents = tableEvents.filter((e) => e.anomalies.includes("FAST_BYPASS"));
     } else if (options.status === "multi_ip") {
@@ -190,13 +292,17 @@ export async function getTelemetryStats(options: StatsFilterOptions = {}): Promi
                 e.ip.toLowerCase().includes(q) ||
                 e.docIdHash.toLowerCase().includes(q) ||
                 (e.docTitle && e.docTitle.toLowerCase().includes(q)) ||
-                (e.country && e.country.toLowerCase().includes(q))
+                (e.country && e.country.toLowerCase().includes(q)) ||
+                (e.downloadType && e.downloadType.toLowerCase().includes(q)) ||
+                (e.meta?.rawDownloadType && String(e.meta.rawDownloadType).toLowerCase().includes(q))
         );
     }
 
     return {
         stats: {
             totalDownloads,
+            freeDownloadsCount,
+            creditDownloadsCount,
             totalInits: events.filter((e) => e.action === "INIT_REQUEST").length,
             totalAnomalies,
             anomalyPercentage,
@@ -205,12 +311,18 @@ export async function getTelemetryStats(options: StatsFilterOptions = {}): Promi
             fastBypassCount,
             multiIpCount,
             averageWaitSeconds,
+            newUsersCount: 0,
+            userGrowthPercentage: 0,
+            conversionRate: 0,
             timeline,
+            hourlyDistribution,
+            dayOfWeekDistribution,
+            topDocuments,
             anomalyBreakdown,
             browserBreakdown,
             topCountries,
             topAbusers,
         },
-        filteredEvents: tableEvents.slice(0, 150), // Return latest 150 matching rows
+        filteredEvents: tableEvents.slice(0, 150),
     };
 }

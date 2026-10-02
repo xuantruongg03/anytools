@@ -28,19 +28,19 @@ interface PageProps {
 export default async function SysVaultPage({ params }: PageProps) {
     const { locale, slug } = await params;
 
-    // STRICT 1-MINUTE TIME-WINDOW CHECK:
-    // If the URL was generated more than 1 minute ago, return 404 immediately.
-    // The doorway closes after 60 seconds.
-    if (!isVaultSlugValid(slug)) {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    const isAuthenticated = verifyAdminSessionToken(sessionCookie);
+
+    // STRICT TIME-WINDOW CHECK:
+    // If not authenticated and the URL was generated outside the valid window, return 404 immediately.
+    // If already authenticated via secure admin session, allow access so page refresh doesn't fail.
+    if (!isAuthenticated && !isVaultSlugValid(slug)) {
         notFound();
     }
 
     // Generate ephemeral in-tab session token to keep the tab functional while open
     const tabToken = createTabSessionToken();
-
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-    const isAuthenticated = verifyAdminSessionToken(sessionCookie);
 
     return (
         <DarkboardClient

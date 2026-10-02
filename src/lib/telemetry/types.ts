@@ -62,6 +62,8 @@ export interface HandshakeSession {
 
 export interface TelemetrySummaryStats {
     totalDownloads: number;
+    freeDownloadsCount: number;
+    creditDownloadsCount: number;
     totalInits: number;
     totalAnomalies: number;
     anomalyPercentage: number;
@@ -70,12 +72,21 @@ export interface TelemetrySummaryStats {
     fastBypassCount: number;
     multiIpCount: number;
     averageWaitSeconds: number;
+    newUsersCount: number;
+    userGrowthPercentage: number;
+    conversionRate: number;
     timeline: Array<{
-        time: string; // HH:00 or YYYY-MM-DD
+        time: string; // HH:00 or DD/MM
         normalDownloads: number;
+        freeDownloads: number;
+        creditDownloads: number;
         anomalousDownloads: number;
         fastBypassCount: number;
+        newUsers: number;
     }>;
+    hourlyDistribution: HourlyActivityBucket[];
+    dayOfWeekDistribution: DayOfWeekActivity[];
+    topDocuments: TopDocumentItem[];
     anomalyBreakdown: Record<AnomalyType, number>;
     browserBreakdown: Record<string, number>;
     topCountries: Array<{ country: string; count: number }>;
@@ -120,4 +131,77 @@ export interface CreditTransactionSummary {
         lastTransaction: string;
     }>;
 }
+
+export interface UserDirectoryItem {
+    userId: string;
+    credits: number;
+    totalDownloaded: number;
+    createdIp: string;
+    country?: string;
+    city?: string;
+    createdAt: string; // ISO
+    updatedAt: string; // ISO
+    isPaying: boolean;
+    totalSpentVnd: number;
+    transactionCount: number;
+    actualDownloadsInTimeframe: number;
+    isNewInTimeframe: boolean;
+    riskFlags: string[];
+}
+
+export interface UserSummaryStats {
+    totalUsers: number;
+    newUsersCount: number;
+    newUsersGrowthPercentage: number;
+    activeUsersCount: number;
+    payingUsersCount: number;
+    conversionRate: number;
+    totalCreditsInCirculation: number;
+    totalDownloadsLogged: number;
+    timeline: Array<{
+        time: string;
+        newUsers: number;
+        activeUsers: number;
+        cumulativeUsers?: number;
+    }>;
+    segmentation: {
+        freeOnly: number;
+        paying: number;
+        highSpenders: number;
+        inactive: number;
+    };
+    topHolders: Array<{
+        userId: string;
+        credits: number;
+        totalDownloaded: number;
+        createdIp: string;
+    }>;
+}
+
+export interface HourlyActivityBucket {
+    hour: number;
+    label: string; // "00:00", "01:00", ...
+    freeDownloads: number;
+    creditDownloads: number;
+    anomalousDownloads: number;
+    totalDownloads: number;
+    percentage: number;
+}
+
+export interface DayOfWeekActivity {
+    dayIndex: number;
+    dayName: string;
+    downloads: number;
+    revenue: number;
+}
+
+export interface TopDocumentItem {
+    docIdHash: string;
+    docTitle: string;
+    totalDownloads: number;
+    freeCount: number;
+    creditCount: number;
+    avgPages: number;
+}
+
 

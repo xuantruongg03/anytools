@@ -48,7 +48,10 @@ export async function handleInitHandshake(input: TelemetryIngestInput): Promise<
 }> {
     const now = Date.now();
     const nonce = `vlt_hsk_${crypto.randomBytes(16).toString("hex")}`;
-    const isCredit = input.meta?.downloadType === "credit" || input.meta?.isCredit === true;
+    const isCredit =
+        input.meta?.downloadType === "credit" ||
+        input.meta?.downloadType === "instant" ||
+        input.meta?.isCredit === true;
     // Tải bằng Credit: minWaitSeconds = 0 (bỏ qua đếm ngược 30s, chỉ chờ tải init data)
     // Tải Free: minWaitSeconds = 30 (bắt buộc đếm ngược)
     const minWaitSeconds = isCredit ? 0 : MANDATORY_WAIT_SECONDS;
@@ -84,7 +87,10 @@ export async function processTelemetryEvent(input: TelemetryIngestInput): Promis
     let actualElapsedSeconds = 0;
     let initTimestamp: number | undefined = undefined;
 
-    const isCredit = input.meta?.downloadType === "credit" || input.meta?.isCredit === true;
+    const isCredit =
+        input.meta?.downloadType === "credit" ||
+        input.meta?.downloadType === "instant" ||
+        input.meta?.isCredit === true;
 
     // 1. Verify Handshake & Elapsed Wait Time
     if (input.action === "DOWNLOAD_SUCCESS") {

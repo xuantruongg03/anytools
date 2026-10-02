@@ -7,6 +7,11 @@ import {
     ExtensionId,
     CreditTransaction,
     CreditTransactionSummary,
+    UserDirectoryItem,
+    UserSummaryStats,
+    HourlyActivityBucket,
+    DayOfWeekActivity,
+    TopDocumentItem,
 } from "./types";
 import { StatsFilterOptions } from "./stats";
 import { batchResolveIpLocations } from "@/lib/utils/geo-ip-service";
@@ -37,7 +42,133 @@ let cachedEvents: TelemetryEvent[] | null = null;
 let lastCacheTime = 0;
 let cachedTransactions: CreditTransaction[] | null = null;
 let lastTxCacheTime = 0;
+let cachedUsers: RawSheetUser[] | null = null;
+let lastUsersCacheTime = 0;
 const CACHE_TTL_MS = 25000;
+
+export interface RawSheetUser {
+    userId: string;
+    credits: number;
+    totalDownloaded: number;
+    createdIp: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+/**
+ * Chuẩn hóa giá trị từ cột C (Download_Type) trong sheet Credits_Downloads:
+ * - "free": Tải miễn phí (yêu cầu chờ đếm ngược 30s)
+ * - "instant": Tải bằng Credit (bỏ qua đếm ngược 30s, chỉ chờ khởi tạo vật lý)
+ * - "credit" / "paid": Biến thể tải credit hợp lệ
+ */
+export function normalizeDownloadType(rawType: any): "credit" | "free" {
+    if (!rawType) return "free";
+    const str = String(rawType).trim().toLowerCase();
+    if (
+        str === "instant" ||
+        str === "credit" ||
+        str === "paid" ||
+        str.includes("instant") ||
+        str.includes("credit")
+    ) {
+        return "credit";
+    }
+    return "free";
+}
+
+/**
+ * Fetch and parse real users directly from Google Sheets (Credits_Users)
+ */
+export async function fetchRealGoogleSheetsUsers(): Promise<RawSheetUser[]> {
+    const now = Date.now();
+    if (cachedUsers && now - lastUsersCacheTime < CACHE_TTL_MS) {
+        return cachedUsers;
+    }
+
+    const sheets = getSheets();
+    const spreadsheetId = process.env.CREDITS_SPREADSHEET_ID;
+
+    if (!sheets || !spreadsheetId) {
+        return [];
+    }
+
+    try {
+        const usersRange = process.env.TELEMETRY_USERS_SHEET_RANGE || "Credits_Users!A:F";
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: usersRange,
+        });
+
+        const rows = response.data.values;
+        if (!rows || rows.length <= 1) {
+            cachedUsers = [];
+            lastUsersCacheTime = now;
+            return [];
+        }
+
+        // Header: [User_ID, Credits, Total_Downloaded, Created_IP, Created_At, Updated_At]
+        const dataRows = rows.slice(1);
+        const userMap = new Map<string, RawSheetUser>();
+
+        dataRows.forEach((r, idx) => {
+            const rawId = (r[0] || "").toString().trim();
+            const userId = rawId || `USER_${idx}`;
+            const credits = parseInt(r[1] || "0", 10) || 0;
+            const totalDownloaded = parseInt(r[2] || "0", 10) || 0;
+            const createdIp = (r[3] || "unknown").toString().trim();
+            const createdAtRaw = (r[4] || "").toString().trim();
+            const updatedAtRaw = (r[5] || "").toString().trim();
+
+            let createdAt = new Date(now - idx * 120000).toISOString();
+            if (createdAtRaw) {
+                const parsed = new Date(createdAtRaw.replace(" ", "T") + "+07:00");
+                if (!isNaN(parsed.getTime())) {
+                    createdAt = parsed.toISOString();
+                }
+            }
+
+            let updatedAt = createdAt;
+            if (updatedAtRaw) {
+                const parsed = new Date(updatedAtRaw.replace(" ", "T") + "+07:00");
+                if (!isNaN(parsed.getTime())) {
+                    updatedAt = parsed.toISOString();
+                }
+            }
+
+            const existing = userMap.get(userId);
+            if (existing) {
+                // If duplicate row exists, keep latest update and merge metrics
+                const isNewer = new Date(updatedAt).getTime() >= new Date(existing.updatedAt).getTime();
+                userMap.set(userId, {
+                    userId,
+                    credits: isNewer ? credits : Math.max(existing.credits, credits),
+                    totalDownloaded: Math.max(existing.totalDownloaded, totalDownloaded),
+                    createdIp: existing.createdIp !== "unknown" ? existing.createdIp : createdIp,
+                    createdAt: new Date(existing.createdAt).getTime() <= new Date(createdAt).getTime() ? existing.createdAt : createdAt,
+                    updatedAt: isNewer ? updatedAt : existing.updatedAt,
+                });
+            } else {
+                userMap.set(userId, {
+                    userId,
+                    credits,
+                    totalDownloaded,
+                    createdIp,
+                    createdAt,
+                    updatedAt,
+                });
+            }
+        });
+
+        const users: RawSheetUser[] = Array.from(userMap.values());
+        users.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        cachedUsers = users;
+        lastUsersCacheTime = now;
+        return users;
+    } catch (err: any) {
+        console.error("❌ [Telemetry Engine] Users stream read failed:", err.message);
+        return cachedUsers || [];
+    }
+}
 
 /**
  * Fetch and parse real credit purchase transactions directly from Google Sheets (Credits_Transactions)
@@ -134,7 +265,10 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
     }
 
     try {
-        const range = process.env.TELEMETRY_SHEET_RANGE || process.env.CREDITS_SHEET_RANGE;
+        const range =
+            process.env.TELEMETRY_SHEET_RANGE ||
+            process.env.CREDITS_SHEET_RANGE ||
+            "Credits_Downloads!A:H";
         if (!range) {
             console.warn("⚠️ [Telemetry Engine] Missing secure range configuration in environment.");
             return [];
@@ -172,7 +306,9 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
         // First pass: Index timestamps and associations
         dataRows.forEach((r, idx) => {
             const userId = (r[1] || `ANON_${idx}`).toString().trim();
-            const downloadType = (r[2] || "free").toString().trim().toLowerCase();
+            // Cột C (index 2): Download_Type ("free" hoặc "instant" / "credit")
+            const rawType = (r[2] || "free").toString().trim();
+            const downloadType = normalizeDownloadType(rawType);
             const pages = Math.max(1, parseInt(r[5] || "1", 10) || 1);
             const clientIp = (r[6] || "unknown").toString().trim();
             const dateStr = (r[7] || "").toString().trim();
@@ -286,7 +422,9 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
         const events: TelemetryEvent[] = dataRows.map((r, idx) => {
             const logId = (r[0] || `DL_${idx}`).toString().trim();
             const userId = (r[1] || `ANON_${idx}`).toString().trim();
-            const downloadType = (r[2] || "free").toString().trim().toLowerCase();
+            // Cột C (index 2): Download_Type ("free" hoặc "instant" / "credit")
+            const rawType = (r[2] || "free").toString().trim();
+            const downloadType = normalizeDownloadType(rawType);
             const docUrl = (r[3] || "").toString().trim();
             const docTitle = (r[4] || "Resource Document").toString().trim();
             const clientIp = (r[6] || "unknown").toString().trim();
@@ -373,6 +511,7 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
                 severity: severity,
                 meta: {
                     downloadType,
+                    rawDownloadType: rawType, // Lưu đúng chuỗi thực tế từ Google Sheet ("free", "instant")
                     docUrl,
                     source: process.env.TELEMETRY_SHEET_TAB || "SECURE_DATAPOOL",
                     totalUserDistinctIps: distinctIps,
@@ -402,27 +541,41 @@ export async function fetchRealGoogleSheetsTelemetry(): Promise<TelemetryEvent[]
 }
 
 /**
- * Compute full statistics from Real Google Sheets telemetry
+ * Compute full statistics from Real Google Sheets telemetry, transactions, and users
  */
 export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {}): Promise<{
     stats: TelemetrySummaryStats;
     filteredEvents: TelemetryEvent[];
     transactionStats: CreditTransactionSummary;
     transactions: CreditTransaction[];
+    userStats: UserSummaryStats;
+    users: UserDirectoryItem[];
 }> {
-    const [rawEvents, rawTransactions] = await Promise.all([
+    const [rawEvents, rawTransactions, rawUsers] = await Promise.all([
         fetchRealGoogleSheetsTelemetry(),
         fetchRealGoogleSheetsTransactions(),
+        fetchRealGoogleSheetsUsers(),
     ]);
     const now = Date.now();
 
     // 1. Timeframe Filter (Default: "24h" - Theo ngày)
     const effectiveTimeframe = options.timeframe || "24h";
     let cutoffTime = 0;
-    if (effectiveTimeframe === "1h") cutoffTime = now - 3600 * 1000;
-    else if (effectiveTimeframe === "24h") cutoffTime = now - 24 * 3600 * 1000;
-    else if (effectiveTimeframe === "7d") cutoffTime = now - 7 * 24 * 3600 * 1000;
-    else if (effectiveTimeframe === "30d") cutoffTime = now - 30 * 24 * 3600 * 1000;
+    let prevCutoffTime = 0;
+
+    if (effectiveTimeframe === "1h") {
+        cutoffTime = now - 3600 * 1000;
+        prevCutoffTime = now - 7200 * 1000;
+    } else if (effectiveTimeframe === "24h") {
+        cutoffTime = now - 24 * 3600 * 1000;
+        prevCutoffTime = now - 48 * 3600 * 1000;
+    } else if (effectiveTimeframe === "7d") {
+        cutoffTime = now - 7 * 24 * 3600 * 1000;
+        prevCutoffTime = now - 14 * 24 * 3600 * 1000;
+    } else if (effectiveTimeframe === "30d") {
+        cutoffTime = now - 30 * 24 * 3600 * 1000;
+        prevCutoffTime = now - 60 * 24 * 3600 * 1000;
+    }
 
     let events = rawEvents;
     let transactions = rawTransactions;
@@ -435,8 +588,32 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         events = events.filter((e) => e.extensionId === options.extensionId);
     }
 
-    // 2. Compute Summary Metrics
+    // 2. New Users Calculation & Growth Rate
+    const newUsersInWindow = cutoffTime > 0
+        ? rawUsers.filter((u) => new Date(u.createdAt).getTime() >= cutoffTime)
+        : rawUsers;
+
+    const newUsersInPrevWindow = (cutoffTime > 0 && prevCutoffTime > 0)
+        ? rawUsers.filter((u) => {
+            const t = new Date(u.createdAt).getTime();
+            return t >= prevCutoffTime && t < cutoffTime;
+        })
+        : [];
+
+    let userGrowthPercentage = 0;
+    if (newUsersInPrevWindow.length > 0) {
+        userGrowthPercentage = Math.round(((newUsersInWindow.length - newUsersInPrevWindow.length) / newUsersInPrevWindow.length) * 1000) / 10;
+    } else if (newUsersInWindow.length > 0) {
+        userGrowthPercentage = 100;
+    }
+
+    // 3. Compute Summary Metrics for Downloads
     const totalDownloads = events.length;
+    const freeDownloads = events.filter((e) => e.downloadType !== "credit");
+    const creditDownloads = events.filter((e) => e.downloadType === "credit");
+    const freeDownloadsCount = freeDownloads.length;
+    const creditDownloadsCount = creditDownloads.length;
+
     const anomalousDownloads = events.filter((e) => e.anomalies.length > 0);
     const totalAnomalies = anomalousDownloads.length;
     const anomalyPercentage = totalDownloads > 0 ? Math.round((totalAnomalies / totalDownloads) * 1000) / 10 : 0;
@@ -456,10 +633,24 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
             ? Math.round((validWaitTimes.reduce((a, b) => a + b, 0) / validWaitTimes.length) * 10) / 10
             : 34.2;
 
-    // 3. Timeline Breakdown (hourly for 24h/1h, daily for 7d/30d/all)
+    // 4. Paying Users & Conversion Rate
+    const payingUserIds = new Set(rawTransactions.map((t) => t.userId.trim().toUpperCase()));
+    const payingUsersCount = rawUsers.filter((u) => payingUserIds.has(u.userId.trim().toUpperCase())).length;
+    const conversionRate = rawUsers.length > 0 ? Math.round((payingUsersCount / rawUsers.length) * 1000) / 10 : 0;
+    const totalCreditsInCirculation = rawUsers.reduce((sum, u) => sum + u.credits, 0);
+    const totalDownloadsAcrossUsers = rawUsers.reduce((sum, u) => sum + u.totalDownloaded, 0);
+
+    // 5. Timeline Breakdown (hourly for 24h/1h, daily for 7d/30d/all)
     const timelineMap: Record<
         string,
-        { normalDownloads: number; anomalousDownloads: number; fastBypassCount: number }
+        {
+            normalDownloads: number;
+            freeDownloads: number;
+            creditDownloads: number;
+            anomalousDownloads: number;
+            fastBypassCount: number;
+            newUsers: number;
+        }
     > = {};
 
     const isHourly = effectiveTimeframe === "1h" || effectiveTimeframe === "24h";
@@ -471,8 +662,21 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
             : `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 
         if (!timelineMap[bucket]) {
-            timelineMap[bucket] = { normalDownloads: 0, anomalousDownloads: 0, fastBypassCount: 0 };
+            timelineMap[bucket] = {
+                normalDownloads: 0,
+                freeDownloads: 0,
+                creditDownloads: 0,
+                anomalousDownloads: 0,
+                fastBypassCount: 0,
+                newUsers: 0,
+            };
         }
+        if (e.downloadType === "credit") {
+            timelineMap[bucket].creditDownloads++;
+        } else {
+            timelineMap[bucket].freeDownloads++;
+        }
+
         if (e.anomalies.length > 0) {
             timelineMap[bucket].anomalousDownloads++;
             if (e.anomalies.includes("FAST_BYPASS")) {
@@ -483,11 +687,111 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         }
     });
 
+    // Populate newUsers in timeline
+    newUsersInWindow.forEach((u) => {
+        const d = new Date(u.createdAt);
+        const bucket = isHourly
+            ? `${String(d.getHours()).padStart(2, "0")}:00`
+            : `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (!timelineMap[bucket]) {
+            timelineMap[bucket] = {
+                normalDownloads: 0,
+                freeDownloads: 0,
+                creditDownloads: 0,
+                anomalousDownloads: 0,
+                fastBypassCount: 0,
+                newUsers: 0,
+            };
+        }
+        timelineMap[bucket].newUsers++;
+    });
+
     const timeline = Object.entries(timelineMap)
         .map(([time, data]) => ({ time, ...data }))
         .sort((a, b) => a.time.localeCompare(b.time));
 
-    // 4. Anomaly Breakdown
+    // 6. 24-Hour Peak Activity Heatmap
+    const hourlyMap: Record<number, { free: number; credit: number; anomaly: number; total: number }> = {};
+    for (let h = 0; h < 24; h++) {
+        hourlyMap[h] = { free: 0, credit: 0, anomaly: 0, total: 0 };
+    }
+    events.forEach((e) => {
+        const h = new Date(e.createdAt).getHours();
+        if (hourlyMap[h]) {
+            hourlyMap[h].total++;
+            if (e.downloadType === "credit") hourlyMap[h].credit++;
+            else hourlyMap[h].free++;
+            if (e.anomalies.length > 0) hourlyMap[h].anomaly++;
+        }
+    });
+
+    const hourlyDistribution: HourlyActivityBucket[] = Object.entries(hourlyMap).map(([hStr, data]) => {
+        const h = parseInt(hStr, 10);
+        return {
+            hour: h,
+            label: `${String(h).padStart(2, "0")}:00`,
+            freeDownloads: data.free,
+            creditDownloads: data.credit,
+            anomalousDownloads: data.anomaly,
+            totalDownloads: data.total,
+            percentage: totalDownloads > 0 ? Math.round((data.total / totalDownloads) * 1000) / 10 : 0,
+        };
+    });
+
+    // 7. Day of Week Activity Distribution
+    const dayNamesVi = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    const dowMap: Record<number, { downloads: number; revenue: number }> = {};
+    for (let d = 0; d < 7; d++) dowMap[d] = { downloads: 0, revenue: 0 };
+    events.forEach((e) => {
+        const d = new Date(e.createdAt).getDay();
+        if (dowMap[d]) dowMap[d].downloads++;
+    });
+    transactions.forEach((t) => {
+        const d = new Date(t.createdAt).getDay();
+        if (dowMap[d]) dowMap[d].revenue += t.amount;
+    });
+
+    const dayOfWeekDistribution: DayOfWeekActivity[] = [1, 2, 3, 4, 5, 6, 0].map((dayIndex) => ({
+        dayIndex,
+        dayName: dayNamesVi[dayIndex],
+        downloads: dowMap[dayIndex].downloads,
+        revenue: dowMap[dayIndex].revenue,
+    }));
+
+    // 8. Top Downloaded Documents
+    const docMap = new Map<string, { docIdHash: string; docTitle: string; totalDownloads: number; freeCount: number; creditCount: number; totalPages: number }>();
+    events.forEach((e) => {
+        const key = (e.docTitle && e.docTitle !== "Resource Document" ? e.docTitle : e.docIdHash) || "Tài liệu Scribd";
+        if (!docMap.has(key)) {
+            docMap.set(key, {
+                docIdHash: e.docIdHash,
+                docTitle: e.docTitle || key,
+                totalDownloads: 0,
+                freeCount: 0,
+                creditCount: 0,
+                totalPages: 0,
+            });
+        }
+        const item = docMap.get(key)!;
+        item.totalDownloads++;
+        if (e.downloadType === "credit") item.creditCount++;
+        else item.freeCount++;
+        item.totalPages += (e.pages || 1);
+    });
+
+    const topDocuments: TopDocumentItem[] = Array.from(docMap.values())
+        .map((d) => ({
+            docIdHash: d.docIdHash,
+            docTitle: d.docTitle,
+            totalDownloads: d.totalDownloads,
+            freeCount: d.freeCount,
+            creditCount: d.creditCount,
+            avgPages: Math.max(1, Math.round(d.totalPages / d.totalDownloads)),
+        }))
+        .sort((a, b) => b.totalDownloads - a.totalDownloads)
+        .slice(0, 10);
+
+    // 9. Anomaly Breakdown
     const anomalyBreakdown: Record<AnomalyType, number> = {
         FAST_BYPASS: 0,
         MISSING_INIT: 0,
@@ -506,7 +810,7 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         });
     });
 
-    // 5. Browser Breakdown
+    // 10. Browser Breakdown
     const browserBreakdown: Record<string, number> = {
         chrome: Math.round(totalDownloads * 0.76),
         edge: Math.round(totalDownloads * 0.22),
@@ -514,7 +818,7 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         other: 0,
     };
 
-    // 6. Top Countries
+    // 11. Top Countries
     const countryMap: Record<string, number> = {};
     events.forEach((e) => {
         const c = e.country || "Unknown";
@@ -525,7 +829,7 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         .sort((a, b) => b.count - a.count)
         .slice(0, 6);
 
-    // 7. Top Abusers Ranking
+    // 12. Top Abusers Ranking
     const userMap: Record<
         string,
         {
@@ -569,10 +873,14 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         .sort((a, b) => b.riskScore - a.riskScore || b.totalDownloads - a.totalDownloads)
         .slice(0, 10);
 
-    // 8. Filtered Events Table
+    // 13. Filtered Events Table
     let tableEvents = [...events];
     if (options.status === "anomalies_only") {
         tableEvents = tableEvents.filter((e) => e.anomalies.length > 0);
+    } else if (options.status === "credit_only") {
+        tableEvents = tableEvents.filter((e) => e.downloadType === "credit");
+    } else if (options.status === "free_only") {
+        tableEvents = tableEvents.filter((e) => e.downloadType !== "credit");
     } else if (options.status === "fast_bypass") {
         tableEvents = tableEvents.filter((e) => e.anomalies.includes("FAST_BYPASS"));
     } else if (options.status === "multi_ip") {
@@ -587,11 +895,13 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
                 e.ip.toLowerCase().includes(q) ||
                 e.docIdHash.toLowerCase().includes(q) ||
                 (e.docTitle && e.docTitle.toLowerCase().includes(q)) ||
-                (e.country && e.country.toLowerCase().includes(q))
+                (e.country && e.country.toLowerCase().includes(q)) ||
+                (e.downloadType && e.downloadType.toLowerCase().includes(q)) ||
+                (e.meta?.rawDownloadType && String(e.meta.rawDownloadType).toLowerCase().includes(q))
         );
     }
 
-    // 9. Compute Credit Transaction Metrics
+    // 14. Compute Credit Transaction Metrics
     const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
     const totalTransactions = transactions.length;
     const totalCreditsAdded = transactions.reduce((sum, t) => sum + t.creditsAdded, 0);
@@ -669,9 +979,115 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         );
     }
 
+    // 15. User Directory & CRM Analysis
+    const userTxMap = new Map<string, { totalSpent: number; count: number }>();
+    rawTransactions.forEach((t) => {
+        const u = t.userId.trim().toUpperCase();
+        if (!userTxMap.has(u)) userTxMap.set(u, { totalSpent: 0, count: 0 });
+        userTxMap.get(u)!.totalSpent += t.amount;
+        userTxMap.get(u)!.count += 1;
+    });
+
+    const userDlInTimeframe = new Map<string, number>();
+    events.forEach((e) => {
+        const u = e.clientUserId.trim().toUpperCase();
+        userDlInTimeframe.set(u, (userDlInTimeframe.get(u) || 0) + 1);
+    });
+
+    const fourteenDaysAgo = now - 14 * 24 * 3600 * 1000;
+    let freeOnlyCount = 0;
+    let payingCount = 0;
+    let highSpendersCount = 0;
+    let inactiveCount = 0;
+
+    const userIps = Array.from(new Set(rawUsers.map((u) => u.createdIp).filter((ip) => ip && ip !== "unknown")));
+    const userGeoMap = await batchResolveIpLocations(userIps.slice(0, 80), 8);
+
+    const enrichedUsers: UserDirectoryItem[] = rawUsers.map((u) => {
+        const uKey = u.userId.trim().toUpperCase();
+        const txInfo = userTxMap.get(uKey) || { totalSpent: 0, count: 0 };
+        const dlCount = userDlInTimeframe.get(uKey) || 0;
+        const isPaying = txInfo.count > 0;
+        const isNew = cutoffTime > 0 ? new Date(u.createdAt).getTime() >= cutoffTime : true;
+        const lastActive = new Date(u.updatedAt).getTime();
+        const isInactive = lastActive < fourteenDaysAgo && dlCount === 0;
+
+        if (isPaying) {
+            payingCount++;
+            if (txInfo.totalSpent >= 50000) highSpendersCount++;
+        } else {
+            freeOnlyCount++;
+        }
+        if (isInactive) inactiveCount++;
+
+        const riskFlags: string[] = [];
+        const userAnomalies = userMap[u.userId]?.anomalies;
+        if (userAnomalies && userAnomalies.size > 0) {
+            riskFlags.push(...Array.from(userAnomalies));
+        }
+        if (u.credits > 100 && !isPaying) {
+            riskFlags.push("HIGH_CREDITS_UNPAID");
+        }
+
+        const geo = userGeoMap.get(u.createdIp);
+
+        return {
+            userId: u.userId,
+            credits: u.credits,
+            totalDownloaded: u.totalDownloaded,
+            createdIp: u.createdIp,
+            country: geo?.country || "Chưa xác định",
+            city: geo?.city || geo?.region || "",
+            createdAt: u.createdAt,
+            updatedAt: u.updatedAt,
+            isPaying,
+            totalSpentVnd: txInfo.totalSpent,
+            transactionCount: txInfo.count,
+            actualDownloadsInTimeframe: dlCount,
+            isNewInTimeframe: isNew,
+            riskFlags,
+        };
+    });
+
+    // Top credit holders
+    const topHolders = [...rawUsers]
+        .sort((a, b) => b.credits - a.credits)
+        .slice(0, 6)
+        .map((u) => ({
+            userId: u.userId,
+            credits: u.credits,
+            totalDownloaded: u.totalDownloaded,
+            createdIp: u.createdIp,
+        }));
+
+    let tableUsers = [...enrichedUsers];
+    if (options.searchQuery && options.searchQuery.trim()) {
+        const q = options.searchQuery.trim().toLowerCase();
+        tableUsers = tableUsers.filter(
+            (u) =>
+                u.userId.toLowerCase().includes(q) ||
+                u.createdIp.toLowerCase().includes(q) ||
+                (u.city && u.city.toLowerCase().includes(q)) ||
+                (u.country && u.country.toLowerCase().includes(q))
+        );
+    }
+
+    let runningUsers = Math.max(0, rawUsers.length - newUsersInWindow.length);
+    const userTimelineEntries = Object.entries(timelineMap).map(([time, data]) => {
+        runningUsers += data.newUsers;
+        return {
+            time,
+            newUsers: data.newUsers,
+            activeUsers: data.normalDownloads + data.creditDownloads > 0 ? 1 : 0,
+            cumulativeUsers: runningUsers,
+        };
+    });
+
     return {
         stats: {
             totalDownloads,
+            freeDownloadsCount,
+            creditDownloadsCount,
             totalInits: totalDownloads + 45,
             totalAnomalies,
             anomalyPercentage,
@@ -680,7 +1096,13 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
             fastBypassCount,
             multiIpCount,
             averageWaitSeconds,
+            newUsersCount: newUsersInWindow.length,
+            userGrowthPercentage,
+            conversionRate,
             timeline,
+            hourlyDistribution,
+            dayOfWeekDistribution,
+            topDocuments,
             anomalyBreakdown,
             browserBreakdown,
             topCountries,
@@ -697,5 +1119,25 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
             topSpenders,
         },
         transactions: tableTransactions.slice(0, 100),
+        userStats: {
+            totalUsers: rawUsers.length,
+            newUsersCount: newUsersInWindow.length,
+            newUsersGrowthPercentage: userGrowthPercentage,
+            activeUsersCount: uniqueUsers.size,
+            payingUsersCount,
+            conversionRate,
+            totalCreditsInCirculation,
+            totalDownloadsLogged: totalDownloadsAcrossUsers,
+            timeline: userTimelineEntries,
+            segmentation: {
+                freeOnly: freeOnlyCount,
+                paying: payingCount,
+                highSpenders: highSpendersCount,
+                inactive: inactiveCount,
+            },
+            topHolders,
+        },
+        users: tableUsers.slice(0, 100),
     };
 }
+
