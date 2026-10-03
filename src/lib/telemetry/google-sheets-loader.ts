@@ -77,6 +77,27 @@ export function normalizeDownloadType(rawType: any): "credit" | "free" {
 }
 
 /**
+ * Format timestamp to Vietnam Time (UTC+7) bucket string.
+ * Ensures consistent hourly (HH:00) and daily (DD/MM) grouping regardless of server runtime timezone.
+ */
+function formatVnBucket(dateIso: string, isHourly: boolean): string {
+    const d = new Date(dateIso);
+    if (isNaN(d.getTime())) return isHourly ? "00:00" : "01/01";
+    const vn = new Date(d.getTime() + 7 * 3600 * 1000);
+    if (isHourly) {
+        return `${String(vn.getUTCHours()).padStart(2, "0")}:00`;
+    }
+    return `${String(vn.getUTCDate()).padStart(2, "0")}/${String(vn.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function getVnHour(dateIso: string): number {
+    const d = new Date(dateIso);
+    if (isNaN(d.getTime())) return 0;
+    const vn = new Date(d.getTime() + 7 * 3600 * 1000);
+    return vn.getUTCHours();
+}
+
+/**
  * Fetch and parse real users directly from Google Sheets (Credits_Users)
  */
 export async function fetchRealGoogleSheetsUsers(): Promise<RawSheetUser[]> {
@@ -558,30 +579,70 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
     ]);
     const now = Date.now();
 
-    // 1. Timeframe Filter (Default: "24h" - Theo ngày)
+    // Vietnam Time (UTC+7) calculations
+    const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+    const vnNow = new Date(now + VN_OFFSET_MS);
+
+    // Mốc bắt đầu ngày hôm nay (00:00:00.000) theo giờ Việt Nam
+    const startOfTodayVn = Date.UTC(
+        vnNow.getUTCFullYear(),
+        vnNow.getUTCMonth(),
+        vnNow.getUTCDate(),
+        0, 0, 0, 0
+    ) - VN_OFFSET_MS;
+
+    // Mốc kết thúc ngày hôm nay (23:59:59.999) theo giờ Việt Nam
+    const endOfTodayVn = Date.UTC(
+        vnNow.getUTCFullYear(),
+        vnNow.getUTCMonth(),
+        vnNow.getUTCDate(),
+        23, 59, 59, 999
+    ) - VN_OFFSET_MS;
+
+    // Mốc ngày hôm qua (00:00 đến 23:59) để so sánh tăng trưởng
+    const startOfYesterdayVn = startOfTodayVn - 24 * 3600 * 1000;
+
+    // 1. Timeframe Filter (Default: "24h" - Theo ngày hôm nay từ 00:00 đến 23:59)
     const effectiveTimeframe = options.timeframe || "24h";
     let cutoffTime = 0;
+    let endTime = Infinity;
     let prevCutoffTime = 0;
+    let prevEndTime = 0;
 
     if (effectiveTimeframe === "1h") {
         cutoffTime = now - 3600 * 1000;
+        endTime = now;
         prevCutoffTime = now - 7200 * 1000;
+        prevEndTime = cutoffTime;
     } else if (effectiveTimeframe === "24h") {
-        cutoffTime = now - 24 * 3600 * 1000;
-        prevCutoffTime = now - 48 * 3600 * 1000;
+        // "Theo ngày": Tính từ 00:00:00 đến 23:59:59 của ngày hôm nay (Giờ Việt Nam UTC+7)
+        cutoffTime = startOfTodayVn;
+        endTime = endOfTodayVn;
+        prevCutoffTime = startOfYesterdayVn;
+        prevEndTime = startOfTodayVn;
     } else if (effectiveTimeframe === "7d") {
         cutoffTime = now - 7 * 24 * 3600 * 1000;
+        endTime = now;
         prevCutoffTime = now - 14 * 24 * 3600 * 1000;
+        prevEndTime = cutoffTime;
     } else if (effectiveTimeframe === "30d") {
         cutoffTime = now - 30 * 24 * 3600 * 1000;
+        endTime = now;
         prevCutoffTime = now - 60 * 24 * 3600 * 1000;
+        prevEndTime = cutoffTime;
     }
 
     let events = rawEvents;
     let transactions = rawTransactions;
     if (cutoffTime > 0) {
-        events = events.filter((e) => new Date(e.createdAt).getTime() >= cutoffTime);
-        transactions = transactions.filter((t) => new Date(t.createdAt).getTime() >= cutoffTime);
+        events = events.filter((e) => {
+            const t = new Date(e.createdAt).getTime();
+            return t >= cutoffTime && t <= endTime;
+        });
+        transactions = transactions.filter((tx) => {
+            const t = new Date(tx.createdAt).getTime();
+            return t >= cutoffTime && t <= endTime;
+        });
     }
 
     if (options.extensionId && options.extensionId !== "all") {
@@ -590,13 +651,16 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
 
     // 2. New Users Calculation & Growth Rate
     const newUsersInWindow = cutoffTime > 0
-        ? rawUsers.filter((u) => new Date(u.createdAt).getTime() >= cutoffTime)
+        ? rawUsers.filter((u) => {
+            const t = new Date(u.createdAt).getTime();
+            return t >= cutoffTime && t <= endTime;
+        })
         : rawUsers;
 
     const newUsersInPrevWindow = (cutoffTime > 0 && prevCutoffTime > 0)
         ? rawUsers.filter((u) => {
             const t = new Date(u.createdAt).getTime();
-            return t >= prevCutoffTime && t < cutoffTime;
+            return t >= prevCutoffTime && t < prevEndTime;
         })
         : [];
 
@@ -655,11 +719,24 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
 
     const isHourly = effectiveTimeframe === "1h" || effectiveTimeframe === "24h";
 
+    // Khởi tạo các mốc giờ liên tục từ 00:00 đến giờ hiện tại của ngày hôm nay
+    if (effectiveTimeframe === "24h") {
+        const currentVnHour = vnNow.getUTCHours();
+        for (let h = 0; h <= currentVnHour; h++) {
+            const bucket = `${String(h).padStart(2, "0")}:00`;
+            timelineMap[bucket] = {
+                normalDownloads: 0,
+                freeDownloads: 0,
+                creditDownloads: 0,
+                anomalousDownloads: 0,
+                fastBypassCount: 0,
+                newUsers: 0,
+            };
+        }
+    }
+
     events.forEach((e) => {
-        const d = new Date(e.createdAt);
-        const bucket = isHourly
-            ? `${String(d.getHours()).padStart(2, "0")}:00`
-            : `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const bucket = formatVnBucket(e.createdAt, isHourly);
 
         if (!timelineMap[bucket]) {
             timelineMap[bucket] = {
@@ -689,10 +766,7 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
 
     // Populate newUsers in timeline
     newUsersInWindow.forEach((u) => {
-        const d = new Date(u.createdAt);
-        const bucket = isHourly
-            ? `${String(d.getHours()).padStart(2, "0")}:00`
-            : `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const bucket = formatVnBucket(u.createdAt, isHourly);
         if (!timelineMap[bucket]) {
             timelineMap[bucket] = {
                 normalDownloads: 0,
@@ -716,7 +790,7 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
         hourlyMap[h] = { free: 0, credit: 0, anomaly: 0, total: 0 };
     }
     events.forEach((e) => {
-        const h = new Date(e.createdAt).getHours();
+        const h = getVnHour(e.createdAt);
         if (hourlyMap[h]) {
             hourlyMap[h].total++;
             if (e.downloadType === "credit") hourlyMap[h].credit++;
@@ -910,11 +984,15 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
 
     // Timeline for transactions
     const txTimelineMap: Record<string, { revenue: number; transactionsCount: number; creditsCount: number }> = {};
+    if (effectiveTimeframe === "24h") {
+        const currentVnHour = vnNow.getUTCHours();
+        for (let h = 0; h <= currentVnHour; h++) {
+            const bucket = `${String(h).padStart(2, "0")}:00`;
+            txTimelineMap[bucket] = { revenue: 0, transactionsCount: 0, creditsCount: 0 };
+        }
+    }
     transactions.forEach((t) => {
-        const d = new Date(t.createdAt);
-        const bucket = isHourly
-            ? `${String(d.getHours()).padStart(2, "0")}:00`
-            : `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const bucket = formatVnBucket(t.createdAt, isHourly);
 
         if (!txTimelineMap[bucket]) {
             txTimelineMap[bucket] = { revenue: 0, transactionsCount: 0, creditsCount: 0 };
@@ -1073,10 +1151,10 @@ export async function getRealGoogleSheetsStats(options: StatsFilterOptions = {})
     }
 
     let runningUsers = Math.max(0, rawUsers.length - newUsersInWindow.length);
-    const userTimelineEntries = Object.entries(timelineMap).map(([time, data]) => {
+    const userTimelineEntries = timeline.map((data) => {
         runningUsers += data.newUsers;
         return {
-            time,
+            time: data.time,
             newUsers: data.newUsers,
             activeUsers: data.normalDownloads + data.creditDownloads > 0 ? 1 : 0,
             cumulativeUsers: runningUsers,

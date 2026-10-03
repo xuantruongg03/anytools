@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
     TelemetryEvent,
     TelemetrySummaryStats,
@@ -53,6 +53,47 @@ export default function DarkboardClient({
 
     // Active Module Tab: Overview vs Users vs Telemetry vs Transactions
     const [activeTab, setActiveTab] = useState<"overview" | "users" | "telemetry" | "transactions">("overview");
+
+    // Responsive Chart Containers
+    const userChartContainerRef = useRef<HTMLDivElement>(null);
+    const [userChartWidth, setUserChartWidth] = useState(1000);
+
+    const overviewChartContainerRef = useRef<HTMLDivElement>(null);
+    const [overviewChartWidth, setOverviewChartWidth] = useState(1000);
+
+    useEffect(() => {
+        const updateWidths = () => {
+            if (userChartContainerRef.current) {
+                const w = userChartContainerRef.current.clientWidth;
+                if (w > 0) setUserChartWidth(w);
+            }
+            if (overviewChartContainerRef.current) {
+                const w = overviewChartContainerRef.current.clientWidth;
+                if (w > 0) setOverviewChartWidth(w);
+            }
+        };
+
+        updateWidths();
+
+        const ro = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.target === userChartContainerRef.current && entry.contentRect.width > 0) {
+                    setUserChartWidth(Math.floor(entry.contentRect.width));
+                } else if (entry.target === overviewChartContainerRef.current && entry.contentRect.width > 0) {
+                    setOverviewChartWidth(Math.floor(entry.contentRect.width));
+                }
+            }
+        });
+
+        if (userChartContainerRef.current) ro.observe(userChartContainerRef.current);
+        if (overviewChartContainerRef.current) ro.observe(overviewChartContainerRef.current);
+        window.addEventListener("resize", updateWidths);
+
+        return () => {
+            ro.disconnect();
+            window.removeEventListener("resize", updateWidths);
+        };
+    }, [activeTab]);
 
     // Chart Presentation States
     const [overviewChartType, setOverviewChartType] = useState<"line" | "bar">("line");
@@ -415,21 +456,14 @@ export default function DarkboardClient({
                             <span className="text-lg">🛡️</span>
                         </div>
                         <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-base font-black text-white uppercase tracking-wide">
-                                    {isVi ? "ANYTOOLS // BẢNG ĐIỀU KHIỂN BẢO MẬT (DARKBOARD)" : "ANYTOOLS // DARKBOARD"}
-                                </h1>
-                                <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono">
-                                    {isVi ? "KHO DỮ LIỆU TELEMETRY" : "TELEMETRY VAULT"}
-                                </span>
-                            </div>
+                            <h1 className="text-base font-black text-white uppercase tracking-wide">
+                                {isVi ? "ANYTOOLS // BẢNG ĐIỀU KHIỂN" : "ANYTOOLS // DASHBOARD"}
+                            </h1>
                             <div className="flex items-center gap-2 text-[11px] text-gray-400 font-mono mt-0.5">
                                 <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    <span>{isVi ? "Kênh Telemetry Trực Tiếp (Mã Hóa AES-256)" : "Live Telemetry Stream (AES-256 Encrypted)"}</span>
+                                    <span>{isVi ? "Trực tiếp" : "Live"}</span>
                                 </span>
-                                <span>•</span>
-                                <span>Token: {secretSlug.slice(0, 10)}...</span>
                                 <span>•</span>
                                 <span>{isVi ? "Cập nhật:" : "Updated:"} {lastUpdated || (isVi ? "Thời gian thực" : "Live")}</span>
                             </div>
@@ -453,8 +487,8 @@ export default function DarkboardClient({
                         {/* Timeframe Selector */}
                         <div className="flex bg-[#121829] border border-gray-700/80 rounded-xl p-0.5 text-xs font-mono">
                             {[
-                                { key: "1h", label: isVi ? "1h" : "1h" },
-                                { key: "24h", label: isVi ? "Theo ngày (24h)" : "24h (Daily)" },
+                                { key: "1h", label: "1h" },
+                                { key: "24h", label: isVi ? "Theo ngày" : "Today" },
                                 { key: "7d", label: isVi ? "7 ngày" : "7d" },
                                 { key: "30d", label: isVi ? "30 ngày" : "30d" },
                                 { key: "all", label: isVi ? "Toàn bộ" : "All" },
@@ -726,7 +760,7 @@ export default function DarkboardClient({
 
                                 {overviewChartType === "line" ? (
                                     /* DẠNG ĐƯỜNG KẺ (SVG LINE CHART) */
-                                    <div className="h-56 w-full relative pt-2 pb-2 border-b border-gray-800">
+                                    <div ref={overviewChartContainerRef} className="h-56 w-full relative pt-2 pb-2 border-b border-gray-800">
                                         {stats?.timeline && stats.timeline.length > 0 ? (() => {
                                             const tl = stats.timeline;
                                             const N = tl.length;
@@ -734,31 +768,33 @@ export default function DarkboardClient({
                                                 ...tl.map((t) => Math.max(t.freeDownloads, t.creditDownloads, t.newUsers, t.anomalousDownloads)),
                                                 5
                                             );
-                                            const w = 720;
+                                            const w = Math.max(300, overviewChartWidth);
                                             const h = 160;
                                             const paddingLeft = 38;
+                                            const paddingRight = 16;
                                             const paddingTop = 15;
+                                            const availableW = Math.max(100, w - paddingLeft - paddingRight);
 
                                             const freePts = tl.map((d, i) => ({
-                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * availableW,
                                                 y: paddingTop + h - (d.freeDownloads / maxVal) * h,
                                                 val: d.freeDownloads,
                                                 time: d.time,
                                             }));
                                             const creditPts = tl.map((d, i) => ({
-                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * availableW,
                                                 y: paddingTop + h - (d.creditDownloads / maxVal) * h,
                                                 val: d.creditDownloads,
                                                 time: d.time,
                                             }));
                                             const userPts = tl.map((d, i) => ({
-                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * availableW,
                                                 y: paddingTop + h - (d.newUsers / maxVal) * h,
                                                 val: d.newUsers,
                                                 time: d.time,
                                             }));
                                             const anomalyPts = tl.map((d, i) => ({
-                                                x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                                x: paddingLeft + (i / Math.max(1, N - 1)) * availableW,
                                                 y: paddingTop + h - (d.anomalousDownloads / maxVal) * h,
                                                 val: d.anomalousDownloads,
                                                 time: d.time,
@@ -774,11 +810,11 @@ export default function DarkboardClient({
                                                 : "";
 
                                             const activePt = hoveredOverviewIndex !== null && hoveredOverviewIndex < N ? tl[hoveredOverviewIndex] : null;
-                                            const activeX = hoveredOverviewIndex !== null ? paddingLeft + (hoveredOverviewIndex / Math.max(1, N - 1)) * (w - paddingLeft) : null;
+                                            const activeX = hoveredOverviewIndex !== null ? paddingLeft + (hoveredOverviewIndex / Math.max(1, N - 1)) * availableW : null;
 
                                             return (
                                                 <div className="relative w-full h-full">
-                                                    <svg viewBox={`0 0 ${w + 10} ${h + 40}`} className="w-full h-full overflow-visible">
+                                                    <svg viewBox={`0 0 ${w} ${h + 40}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
                                                         <defs>
                                                             <linearGradient id="userOverviewGrad" x1="0" y1="0" x2="0" y2="1">
                                                                 <stop offset="0%" stopColor="#a855f7" stopOpacity="0.35" />
@@ -795,7 +831,7 @@ export default function DarkboardClient({
                                                                     <line
                                                                         x1={paddingLeft}
                                                                         y1={y}
-                                                                        x2={w}
+                                                                        x2={w - paddingRight}
                                                                         y2={y}
                                                                         stroke="#1f293d"
                                                                         strokeDasharray="4 4"
@@ -845,7 +881,7 @@ export default function DarkboardClient({
                                                         {/* X-axis time marks */}
                                                         {tl.map((d, i) => {
                                                             if (N > 12 && i % 2 !== 0 && i !== N - 1) return null;
-                                                            const x = paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft);
+                                                            const x = paddingLeft + (i / Math.max(1, N - 1)) * availableW;
                                                             return (
                                                                 <text
                                                                     key={i}
@@ -863,8 +899,8 @@ export default function DarkboardClient({
 
                                                         {/* Invisible hover triggers per slice */}
                                                         {tl.map((_, i) => {
-                                                            const x1 = paddingLeft + ((i - 0.5) / Math.max(1, N - 1)) * (w - paddingLeft);
-                                                            const sliceW = (w - paddingLeft) / Math.max(1, N - 1);
+                                                            const sliceW = availableW / Math.max(1, N - 1);
+                                                            const x1 = paddingLeft + (i - 0.5) * sliceW;
                                                             return (
                                                                 <rect
                                                                     key={i}
@@ -1348,7 +1384,7 @@ export default function DarkboardClient({
                             </div>
 
                             {/* SVG Line Chart Canvas */}
-                            <div className="h-64 w-full relative pt-2 pb-2">
+                            <div ref={userChartContainerRef} className="h-64 w-full relative pt-2 pb-2">
                                 {(() => {
                                     const uTimeline = (userStats?.timeline && userStats.timeline.length > 0)
                                         ? userStats.timeline
@@ -1370,20 +1406,22 @@ export default function DarkboardClient({
                                     const N = uTimeline.length;
                                     const maxNew = Math.max(...uTimeline.map(d => d.newUsers), 4);
                                     const maxCum = Math.max(...uTimeline.map(d => d.cumulativeUsers ?? d.newUsers), 10);
-                                    const w = 740;
+                                    const w = Math.max(300, userChartWidth);
                                     const h = 180;
                                     const paddingLeft = 42;
+                                    const paddingRight = 16;
                                     const paddingTop = 20;
+                                    const availableW = Math.max(100, w - paddingLeft - paddingRight);
 
                                     const userPts = uTimeline.map((d, i) => ({
-                                        x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                        x: paddingLeft + (i / Math.max(1, N - 1)) * availableW,
                                         y: paddingTop + h - (d.newUsers / maxNew) * h,
                                         val: d.newUsers,
                                         time: d.time,
                                     }));
 
                                     const cumPts = uTimeline.map((d, i) => ({
-                                        x: paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft),
+                                        x: paddingLeft + (i / Math.max(1, N - 1)) * availableW,
                                         y: paddingTop + h - ((d.cumulativeUsers ?? d.newUsers) / maxCum) * h,
                                         val: d.cumulativeUsers ?? d.newUsers,
                                         time: d.time,
@@ -1400,11 +1438,11 @@ export default function DarkboardClient({
                                         : "";
 
                                     const activePt = hoveredUserChartIndex !== null && hoveredUserChartIndex < N ? uTimeline[hoveredUserChartIndex] : null;
-                                    const activeX = hoveredUserChartIndex !== null ? paddingLeft + (hoveredUserChartIndex / Math.max(1, N - 1)) * (w - paddingLeft) : null;
+                                    const activeX = hoveredUserChartIndex !== null ? paddingLeft + (hoveredUserChartIndex / Math.max(1, N - 1)) * availableW : null;
 
                                     return (
                                         <div className="relative w-full h-full">
-                                            <svg viewBox={`0 0 ${w + 10} ${h + 45}`} className="w-full h-full overflow-visible">
+                                            <svg viewBox={`0 0 ${w} ${h + 45}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
                                                 <defs>
                                                     <linearGradient id="userGrowthAreaGrad" x1="0" y1="0" x2="0" y2="1">
                                                         <stop offset="0%" stopColor="#a855f7" stopOpacity="0.4" />
@@ -1425,7 +1463,7 @@ export default function DarkboardClient({
                                                             <line
                                                                 x1={paddingLeft}
                                                                 y1={y}
-                                                                x2={w}
+                                                                x2={w - paddingRight}
                                                                 y2={y}
                                                                 stroke="#1f293d"
                                                                 strokeDasharray="4 4"
@@ -1510,7 +1548,7 @@ export default function DarkboardClient({
                                                 {/* X-axis time marks */}
                                                 {uTimeline.map((d, i) => {
                                                     if (N > 12 && i % 2 !== 0 && i !== N - 1) return null;
-                                                    const x = paddingLeft + (i / Math.max(1, N - 1)) * (w - paddingLeft);
+                                                    const x = paddingLeft + (i / Math.max(1, N - 1)) * availableW;
                                                     return (
                                                         <text
                                                             key={i}
@@ -1528,8 +1566,8 @@ export default function DarkboardClient({
 
                                                 {/* Invisible slice triggers for mouse interaction */}
                                                 {uTimeline.map((_, i) => {
-                                                    const x1 = paddingLeft + ((i - 0.5) / Math.max(1, N - 1)) * (w - paddingLeft);
-                                                    const sliceW = (w - paddingLeft) / Math.max(1, N - 1);
+                                                    const sliceW = availableW / Math.max(1, N - 1);
+                                                    const x1 = paddingLeft + (i - 0.5) * sliceW;
                                                     return (
                                                         <rect
                                                             key={i}

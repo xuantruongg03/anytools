@@ -15,15 +15,42 @@ export async function getTelemetryStats(options: StatsFilterOptions = {}): Promi
     const rawEvents = await getAllEvents();
     const now = Date.now();
 
+    // Vietnam Time (UTC+7) calculations
+    const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+    const vnNow = new Date(now + VN_OFFSET_MS);
+    const startOfTodayVn = Date.UTC(
+        vnNow.getUTCFullYear(),
+        vnNow.getUTCMonth(),
+        vnNow.getUTCDate(),
+        0, 0, 0, 0
+    ) - VN_OFFSET_MS;
+    const endOfTodayVn = Date.UTC(
+        vnNow.getUTCFullYear(),
+        vnNow.getUTCMonth(),
+        vnNow.getUTCDate(),
+        23, 59, 59, 999
+    ) - VN_OFFSET_MS;
+
     // 1. Filter by timeframe
     let cutoffTime = 0;
-    if (options.timeframe === "1h") cutoffTime = now - 3600 * 1000;
-    else if (options.timeframe === "24h" || !options.timeframe) cutoffTime = now - 24 * 3600 * 1000;
-    else if (options.timeframe === "7d") cutoffTime = now - 7 * 24 * 3600 * 1000;
-    else if (options.timeframe === "30d") cutoffTime = now - 30 * 24 * 3600 * 1000;
+    let endTime = Infinity;
+    if (options.timeframe === "1h") {
+        cutoffTime = now - 3600 * 1000;
+        endTime = now;
+    } else if (options.timeframe === "24h" || !options.timeframe) {
+        cutoffTime = startOfTodayVn;
+        endTime = endOfTodayVn;
+    } else if (options.timeframe === "7d") {
+        cutoffTime = now - 7 * 24 * 3600 * 1000;
+        endTime = now;
+    } else if (options.timeframe === "30d") {
+        cutoffTime = now - 30 * 24 * 3600 * 1000;
+        endTime = now;
+    }
 
     let events = rawEvents.filter((e) => {
-        if (cutoffTime > 0 && new Date(e.createdAt).getTime() < cutoffTime) {
+        const t = new Date(e.createdAt).getTime();
+        if (cutoffTime > 0 && (t < cutoffTime || t > endTime)) {
             return false;
         }
         if (options.extensionId && options.extensionId !== "all" && e.extensionId !== options.extensionId) {
