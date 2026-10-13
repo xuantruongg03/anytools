@@ -11,6 +11,7 @@ import {
     HourlyActivityBucket,
     DayOfWeekActivity,
     TopDocumentItem,
+    MarketingBehaviorStats,
 } from "@/lib/telemetry/types";
 
 interface DarkboardClientProps {
@@ -51,8 +52,8 @@ export default function DarkboardClient({
     const [loginError, setLoginError] = useState<string | null>(null);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-    // Active Module Tab: Overview vs Users vs Telemetry vs Transactions
-    const [activeTab, setActiveTab] = useState<"overview" | "users" | "telemetry" | "transactions">("overview");
+    // Active Module Tab: Overview vs Users vs Telemetry vs Transactions vs Marketing
+    const [activeTab, setActiveTab] = useState<"overview" | "users" | "telemetry" | "transactions" | "marketing">("overview");
 
     // Responsive Chart Containers
     const userChartContainerRef = useRef<HTMLDivElement>(null);
@@ -114,16 +115,20 @@ export default function DarkboardClient({
     const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
     const [userStats, setUserStats] = useState<UserSummaryStats | null>(null);
     const [users, setUsers] = useState<UserDirectoryItem[]>([]);
+    const [marketingStats, setMarketingStats] = useState<MarketingBehaviorStats | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>("");
+    const [dataSource, setDataSource] = useState<"mongodb" | "hybrid" | "google_sheets" | "google_sheets_fallback">("mongodb");
 
     // Modal & Interactive State
     const [selectedEvent, setSelectedEvent] = useState<TelemetryEvent | null>(null);
     const [selectedTransaction, setSelectedTransaction] = useState<CreditTransaction | null>(null);
     const [selectedUser, setSelectedUser] = useState<UserDirectoryItem | null>(null);
+    const [marketingPersonaFilter, setMarketingPersonaFilter] = useState<"all" | "whales" | "impatient" | "frugal" | "frustrated">("all");
+    const [marketingSearchQuery, setMarketingSearchQuery] = useState("");
 
-    // Load Telemetry Data (Pure Real Google Sheets)
+    // Load Telemetry Data (MongoDB Primary + Google Sheets Hybrid)
     const fetchTelemetry = useCallback(async () => {
         if (!isAuthenticated) return;
         setIsLoading(true);
@@ -147,6 +152,9 @@ export default function DarkboardClient({
             }
             const data = await res.json();
             if (data.success) {
+                if (data.source) {
+                    setDataSource(data.source);
+                }
                 setStats(data.stats);
                 setEvents(data.filteredEvents || []);
                 if (data.transactionStats) {
@@ -160,6 +168,9 @@ export default function DarkboardClient({
                 }
                 if (data.users) {
                     setUsers(data.users);
+                }
+                if (data.marketingStats) {
+                    setMarketingStats(data.marketingStats);
                 }
                 setLastUpdated(new Date().toLocaleTimeString(isVi ? "vi-VN" : "en-US"));
             }
@@ -507,6 +518,51 @@ export default function DarkboardClient({
                             ))}
                         </div>
 
+                        {/* Data Source Indicator Badge */}
+                        <div
+                            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-mono text-xs transition-all ${
+                                timeframe === "all" || dataSource === "google_sheets"
+                                    ? "bg-blue-500/10 border-blue-500/30 text-blue-300"
+                                    : dataSource === "google_sheets_fallback"
+                                    ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                            }`}
+                            title={
+                                timeframe === "all" || dataSource === "google_sheets"
+                                    ? isVi
+                                        ? "Dữ liệu toàn bộ lịch sử từ Google Sheets (Bản sao lưu lưu trữ đầy đủ)"
+                                        : "Full historical archive from Google Sheets"
+                                    : dataSource === "google_sheets_fallback"
+                                    ? isVi
+                                        ? "Dữ liệu dự phòng từ Google Sheets (khi MongoDB chưa kết nối)"
+                                        : "Fallback data from Google Sheets"
+                                    : isVi
+                                    ? "Dữ liệu thời gian thực từ MongoDB Atlas"
+                                    : "Realtime data from MongoDB"
+                            }
+                        >
+                            <span
+                                className={`w-2 h-2 rounded-full ${
+                                    timeframe === "all" || dataSource === "google_sheets"
+                                        ? "bg-blue-400 animate-pulse"
+                                        : dataSource === "google_sheets_fallback"
+                                        ? "bg-amber-400"
+                                        : "bg-emerald-400 animate-pulse"
+                                }`}
+                            />
+                            <span>
+                                {timeframe === "all" || dataSource === "google_sheets"
+                                    ? isVi
+                                        ? "Google Sheets (Lưu trữ)"
+                                        : "Google Sheets"
+                                    : dataSource === "google_sheets_fallback"
+                                    ? isVi
+                                        ? "Sheets (Dự phòng)"
+                                        : "Sheets (Fallback)"
+                                    : "MongoDB Realtime"}
+                            </span>
+                        </div>
+
                         {/* Auto Refresh Toggle */}
                         <button
                             onClick={() => setAutoRefresh(!autoRefresh)}
@@ -598,6 +654,20 @@ export default function DarkboardClient({
                             <span>{isVi ? "Giao Dịch Nạp Credit" : "Transactions"}</span>
                             <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px]">
                                 {transactionStats?.totalTransactions || 0}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("marketing")}
+                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
+                                activeTab === "marketing"
+                                    ? "bg-gradient-to-r from-amber-500 to-rose-600 text-white font-bold shadow-lg shadow-amber-500/20"
+                                    : "text-gray-400 hover:text-white"
+                            }`}
+                        >
+                            <span>🎯</span>
+                            <span>{isVi ? "Hành Vi & Marketing" : "Marketing & Behavior"}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-black/30 text-[10px]">
+                                {marketingStats?.totalInteractions || 0}
                             </span>
                         </button>
                     </div>
@@ -2623,6 +2693,853 @@ export default function DarkboardClient({
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* MARKETING & BEHAVIORAL ANALYTICS TAB */}
+                {activeTab === "marketing" && (
+                    <div className="space-y-6">
+                        {/* 1. EXECUTIVE STRATEGY BANNER */}
+                        <div className="bg-[#0f1422] border border-amber-500/30 rounded-3xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
+                            <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-amber-500/10 via-rose-500/5 to-transparent rounded-full blur-3xl -z-10 pointer-events-none"></div>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-mono text-[11px] font-bold border border-amber-500/30">
+                                            MARKETING INTELLIGENCE ENGINE
+                                        </span>
+                                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-mono text-[11px]">
+                                            {isVi ? "Dữ liệu vi hành vi thời gian thực" : "Real-time Micro-behavior"}
+                                        </span>
+                                    </div>
+                                    <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                                        <span>🎯</span>
+                                        <span>{isVi ? "Phân Tích Hành Vi & Chiến Lược Tăng Trưởng Tiếp Thị" : "Behavioral Telemetry & Growth Marketing Engine"}</span>
+                                    </h2>
+                                    <p className="text-xs text-gray-400 max-w-3xl leading-relaxed">
+                                        {isVi
+                                            ? "Phân tích vi thao tác tiện ích, đo lường tỷ lệ rơi rớt ở các giai đoạn phễu tải và phễu nạp tiền, tự động nhận diện nhóm khách hàng nóng (Whales, Impatient, Frugal) và gợi ý khung giờ vàng chuyển đổi."
+                                            : "In-depth micro-behavior tracking from extension events. Pinpoint funnel drop-offs, automatically cluster user personas (Whales, Impatient, Frugal), and identify golden marketing hours."}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2 font-mono text-xs">
+                                    <div className="bg-[#141b2d] border border-gray-700/80 rounded-2xl px-4 py-3 text-right">
+                                        <div className="text-[10px] text-gray-400 uppercase">{isVi ? "Tổng Vi Tương Tác" : "Total Micro-Events"}</div>
+                                        <div className="text-xl font-black text-amber-400">
+                                            {(marketingStats?.totalInteractions || 0).toLocaleString()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. 6 SUMMARY METRIC CARDS */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                            {/* Card 1: Popup Opened */}
+                            <div className="bg-[#0f1422] border border-gray-800 hover:border-cyan-500/40 rounded-2xl p-4 transition-all relative overflow-hidden">
+                                <div className="text-[10px] font-mono text-cyan-400 uppercase font-semibold flex items-center justify-between">
+                                    <span>{isVi ? "Mở Extension" : "Popup Views"}</span>
+                                    <span>👁️</span>
+                                </div>
+                                <div className="text-2xl font-black text-white mt-1.5 font-mono">
+                                    {(marketingStats?.popupOpenedCount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-500 mt-1 font-mono">
+                                    {isVi ? "Lượt mở tiện ích" : "Extension opened"}
+                                </div>
+                            </div>
+
+                            {/* Card 2: Topup Page Viewed */}
+                            <div className="bg-[#0f1422] border border-gray-800 hover:border-emerald-500/40 rounded-2xl p-4 transition-all relative overflow-hidden">
+                                <div className="text-[10px] font-mono text-emerald-400 uppercase font-semibold flex items-center justify-between">
+                                    <span>{isVi ? "Vào Trang Nạp" : "Topup Views"}</span>
+                                    <span>💳</span>
+                                </div>
+                                <div className="text-2xl font-black text-white mt-1.5 font-mono">
+                                    {(marketingStats?.topupPageViewedCount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-500 mt-1 font-mono">
+                                    {isVi ? "Mở link/trang nạp" : "Topup page intent"}
+                                </div>
+                            </div>
+
+                            {/* Card 3: Copied Bank Info (Hot Leads) */}
+                            <div className="bg-[#0f1422] border border-gray-800 hover:border-amber-500/40 rounded-2xl p-4 transition-all relative overflow-hidden">
+                                <div className="text-[10px] font-mono text-amber-400 uppercase font-semibold flex items-center justify-between">
+                                    <span>{isVi ? "Copy STK/QR" : "Copied Bank Info"}</span>
+                                    <span>📋</span>
+                                </div>
+                                <div className="text-2xl font-black text-amber-400 mt-1.5 font-mono">
+                                    {(marketingStats?.topupActionCopyCount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-500 mt-1 font-mono">
+                                    {isVi ? "Khách đã copy STK" : "High intent to pay"}
+                                </div>
+                            </div>
+
+                            {/* Card 4: Countdown Aborted (Impatient) */}
+                            <div className="bg-[#0f1422] border border-gray-800 hover:border-rose-500/40 rounded-2xl p-4 transition-all relative overflow-hidden">
+                                <div className="text-[10px] font-mono text-rose-400 uppercase font-semibold flex items-center justify-between">
+                                    <span>{isVi ? "Hủy Đếm 30s" : "30s Aborts"}</span>
+                                    <span>⏳</span>
+                                </div>
+                                <div className="text-2xl font-black text-rose-400 mt-1.5 font-mono">
+                                    {(marketingStats?.countdownAbortedCount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-500 mt-1 font-mono">
+                                    {isVi ? "Bỏ chờ (Khách nóng)" : "Impatient drop-off"}
+                                </div>
+                            </div>
+
+                            {/* Card 5: Download Success */}
+                            <div className="bg-[#0f1422] border border-gray-800 hover:border-blue-500/40 rounded-2xl p-4 transition-all relative overflow-hidden">
+                                <div className="text-[10px] font-mono text-blue-400 uppercase font-semibold flex items-center justify-between">
+                                    <span>{isVi ? "Tải Hoàn Tất" : "DL Success"}</span>
+                                    <span>⚡</span>
+                                </div>
+                                <div className="text-2xl font-black text-white mt-1.5 font-mono">
+                                    {(marketingStats?.downloadSuccessCount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-500 mt-1 font-mono">
+                                    {isVi ? "Free & Instant" : "All completed"}
+                                </div>
+                            </div>
+
+                            {/* Card 6: Download Failed */}
+                            <div className="bg-[#0f1422] border border-gray-800 hover:border-red-500/40 rounded-2xl p-4 transition-all relative overflow-hidden">
+                                <div className="text-[10px] font-mono text-red-400 uppercase font-semibold flex items-center justify-between">
+                                    <span>{isVi ? "Lỗi Khi Tải" : "DL Errors"}</span>
+                                    <span>❌</span>
+                                </div>
+                                <div className="text-2xl font-black text-red-400 mt-1.5 font-mono">
+                                    {(marketingStats?.downloadFailedCount || 0).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-gray-500 mt-1 font-mono">
+                                    {isVi ? "Lỗi cần hỗ trợ" : "Technical failures"}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 3. DUAL FUNNELS: DOWNLOAD FUNNEL & MONETIZATION FUNNEL */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* FUNNEL 1: DOWNLOAD CONVERSION FUNNEL */}
+                            <div className="bg-[#0f1422] border border-gray-800 rounded-3xl p-6 shadow-lg space-y-5">
+                                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                            <span>📥</span>
+                                            <span>{isVi ? "Phễu Chuyển Đổi Tải Tài Liệu (Download Funnel)" : "Download Conversion Funnel"}</span>
+                                        </h3>
+                                        <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                                            {isVi ? "Đo lường hành trình từ khi mở popup đến khi file được tải về máy" : "Track journey from popup open to file download"}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/20">
+                                            {isVi ? "Tỷ Lệ Tải Xong" : "Completion"}: {marketingStats?.downloadFunnel?.completionRate || 0}%
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Step by step visualization */}
+                                <div className="space-y-3 font-mono text-xs">
+                                    {/* Step 1 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>1. Kích hoạt tiện ích (Open Popup / DL Start)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.downloadFunnel?.step1_initiated || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full w-full"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 2 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>2. Hiển thị hộp chọn chế độ (Choice Modal)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.downloadFunnel?.step2_modalChoice || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(8, (marketingStats?.downloadFunnel?.step1_initiated ? ((marketingStats?.downloadFunnel?.step2_modalChoice || 0) / marketingStats.downloadFunnel.step1_initiated) * 100 : 0)))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 3 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>3. Người dùng chọn tải (Free 30s hoặc Instant Credit)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.downloadFunnel?.step3_downloadAttempt || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-teal-400 to-emerald-400 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(8, (marketingStats?.downloadFunnel?.step1_initiated ? ((marketingStats?.downloadFunnel?.step3_downloadAttempt || 0) / marketingStats.downloadFunnel.step1_initiated) * 100 : 0)))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 4 (Drop-off warning) */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-rose-400">
+                                            <span>4. ⚠️ Bỏ cuộc giữa chừng (Hủy đếm 30s)</span>
+                                            <span className="font-bold">{(marketingStats?.downloadFunnel?.step4_aborted || 0).toLocaleString()} ({marketingStats?.downloadFunnel?.abortRate || 0}%)</span>
+                                        </div>
+                                        <div className="w-full h-2 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-rose-500 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(5, marketingStats?.downloadFunnel?.abortRate || 0))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 5 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-emerald-400">
+                                            <span>5. ✅ Tải thành công (File Ready & Done)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.downloadFunnel?.step5_completed || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-300 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(8, marketingStats?.downloadFunnel?.completionRate || 0))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-3.5 rounded-2xl bg-[#141b2d]/80 border border-gray-700/60 text-xs text-gray-300 flex items-start gap-2.5">
+                                    <span className="text-amber-400 text-sm mt-0.5">💡</span>
+                                    <div>
+                                        <strong className="text-amber-300">{isVi ? "Gợi ý chiến lược:" : "Marketing Insight:"}</strong>{" "}
+                                        {isVi
+                                            ? `Có ${marketingStats?.downloadFunnel?.step4_aborted || 0} lượt hủy đếm ngược 30s (${marketingStats?.downloadFunnel?.abortRate || 0}%). Khi người dùng hủy, hiển thị ngay gợi ý "Nạp gói sinh viên 10k tải tức thì không cần chờ" sẽ tăng ngay doanh thu.`
+                                            : `${marketingStats?.downloadFunnel?.step4_aborted || 0} users aborted 30s countdown. Prompting them with a 10k fast-download bundle at the abort moment will immediately convert.`}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* FUNNEL 2: TOPUP & MONETIZATION FUNNEL */}
+                            <div className="bg-[#0f1422] border border-gray-800 rounded-3xl p-6 shadow-lg space-y-5">
+                                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                            <span>💰</span>
+                                            <span>{isVi ? "Phễu Doanh Thu & Nạp Credit (Monetization Funnel)" : "Monetization & Topup Funnel"}</span>
+                                        </h3>
+                                        <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                                            {isVi ? "Theo dõi các nấc thanh toán từ lúc mở nút Nạp tới lúc nhận tiền" : "Trace payment journey from topup link to paid confirmation"}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 font-mono text-xs font-bold border border-amber-500/20">
+                                            {isVi ? "Chuyển Đổi Nạp" : "CR"}: {marketingStats?.monetizationFunnel?.conversionRate || 0}%
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Step by step visualization */}
+                                <div className="space-y-3 font-mono text-xs">
+                                    {/* Step 1 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>1. Kích hoạt nạp tiền (Bấm nút Nạp trên tiện ích)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.monetizationFunnel?.step1_trigger || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full w-full"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 2 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>2. Xem giao diện nạp tiền (Topup Page View)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.monetizationFunnel?.step2_pageView || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-orange-400 to-amber-300 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(8, (marketingStats?.monetizationFunnel?.step1_trigger ? ((marketingStats?.monetizationFunnel?.step2_pageView || 0) / marketingStats.monetizationFunnel.step1_trigger) * 100 : 0)))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 3 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>3. Chọn gói cước (Package Selection)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.monetizationFunnel?.step3_packageSelect || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-amber-300 to-emerald-400 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(8, (marketingStats?.monetizationFunnel?.step1_trigger ? ((marketingStats?.monetizationFunnel?.step3_packageSelect || 0) / marketingStats.monetizationFunnel.step1_trigger) * 100 : 0)))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 4 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-cyan-300">
+                                            <span>4. 📋 Sao chép STK / Memo (Chuẩn bị chuyển khoản)</span>
+                                            <span className="font-bold">{(marketingStats?.monetizationFunnel?.step4_copyBankInfo || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(8, (marketingStats?.monetizationFunnel?.step1_trigger ? ((marketingStats?.monetizationFunnel?.step4_copyBankInfo || 0) / marketingStats.monetizationFunnel.step1_trigger) * 100 : 0)))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 5 */}
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-emerald-400">
+                                            <span>5. 💰 Thanh toán thành công (Xác nhận tiền về)</span>
+                                            <span className="text-white font-bold">{(marketingStats?.monetizationFunnel?.step5_confirmed || 0).toLocaleString()}</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-emerald-500 to-teal-300 rounded-full transition-all"
+                                                style={{
+                                                    width: `${Math.min(100, Math.max(8, marketingStats?.monetizationFunnel?.conversionRate || 0))}%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-3.5 rounded-2xl bg-[#141b2d]/80 border border-gray-700/60 text-xs text-gray-300 flex items-start gap-2.5">
+                                    <span className="text-emerald-400 text-sm mt-0.5">🚀</span>
+                                    <div>
+                                        <strong className="text-emerald-300">{isVi ? "Tối ưu tỷ lệ nạp:" : "Monetization Optimization:"}</strong>{" "}
+                                        {isVi
+                                            ? `Bước 4 có ${(marketingStats?.monetizationFunnel?.step4_copyBankInfo || 0)} lượt copy thông tin ngân hàng. Tỷ lệ chuyển đổi chung đạt ${marketingStats?.monetizationFunnel?.conversionRate || 0}%. Bổ sung mã QR động hiển thị sẵn số tiền và cú pháp sẽ loại bỏ hoàn toàn việc nhập sai nội dung chuyển khoản.`
+                                            : `${marketingStats?.monetizationFunnel?.step4_copyBankInfo || 0} users copied banking details. Using dynamic QR codes will accelerate checkout completion.`}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 4. MARKETING PERSONAS: 4 STRATEGIC USER SEGMENTS */}
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                    <span>👥</span>
+                                    <span>{isVi ? "Phân Nhóm Chân Dung Khách Hàng & Chiến Lược Marketing" : "Behavioral Personas & Segmentation"}</span>
+                                </h3>
+                                <div className="text-xs font-mono text-gray-400">
+                                    {isVi ? "Bấm vào từng nhóm để xem định hướng tiếp thị" : "Select segment to view recommended strategy"}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {/* Persona 1: Whales */}
+                                <div
+                                    onClick={() => setMarketingPersonaFilter(marketingPersonaFilter === "whales" ? "all" : "whales")}
+                                    className={`bg-[#0f1422] border rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden ${
+                                        marketingPersonaFilter === "whales"
+                                            ? "border-amber-400 ring-2 ring-amber-400/20 bg-amber-500/5 shadow-lg shadow-amber-500/10"
+                                            : "border-gray-800 hover:border-amber-500/40"
+                                    }`}
+                                >
+                                    <div className="text-xs font-mono font-bold text-amber-400 uppercase flex items-center justify-between">
+                                        <span>🐋 Cá Voi (Whales)</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px]">
+                                            {(marketingStats?.personas?.whalesCount || 0)} users
+                                        </span>
+                                    </div>
+                                    <div className="text-2xl font-black text-white mt-2 font-mono">
+                                        {(marketingStats?.personas?.whalesCount || 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-300 font-semibold mt-1">
+                                        {isVi ? "Khách VIP Chi Tiêu Cao" : "High Spenders"}
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
+                                        {isVi
+                                            ? "Thường xuyên nạp các gói lớn (50k - 100k+), chỉ sử dụng Instant Download, coi trọng thời gian và tính liên tục."
+                                            : "Top revenue drivers. High credit consumption, values fast workflow over waiting."}
+                                    </p>
+                                    <div className="mt-3 pt-2.5 border-t border-gray-800 text-[11px] text-amber-300 font-mono">
+                                        🎯 {isVi ? "Tặng 20% bonus khi nạp gói 200k, chăm sóc VIP" : "Offer 20% bonus on 200k packages, VIP support"}
+                                    </div>
+                                </div>
+
+                                {/* Persona 2: Impatient Prospects */}
+                                <div
+                                    onClick={() => setMarketingPersonaFilter(marketingPersonaFilter === "impatient" ? "all" : "impatient")}
+                                    className={`bg-[#0f1422] border rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden ${
+                                        marketingPersonaFilter === "impatient"
+                                            ? "border-rose-400 ring-2 ring-rose-400/20 bg-rose-500/5 shadow-lg shadow-rose-500/10"
+                                            : "border-gray-800 hover:border-rose-500/40"
+                                    }`}
+                                >
+                                    <div className="text-xs font-mono font-bold text-rose-400 uppercase flex items-center justify-between">
+                                        <span>⚡ Khách Nóng (Impatient)</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-[10px]">
+                                            {(marketingStats?.personas?.impatientProspectsCount || 0)} users
+                                        </span>
+                                    </div>
+                                    <div className="text-2xl font-black text-rose-400 mt-2 font-mono">
+                                        {(marketingStats?.personas?.impatientProspectsCount || 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-300 font-semibold mt-1">
+                                        {isVi ? "Mục Tiêu Chuyển Đổi Số 1" : "Top Conversion Targets"}
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
+                                        {isVi
+                                            ? "Thường xuyên hủy đếm ngược 30s hoặc bấm Instant khi hết credit. Rất muốn tải nhanh nhưng ngần ngại giá."
+                                            : "Users who abort 30s timer or spam instant download button. Eager to download instantly."}
+                                    </p>
+                                    <div className="mt-3 pt-2.5 border-t border-gray-800 text-[11px] text-rose-300 font-mono">
+                                        🎯 {isVi ? "Chào mời gói Mini 10.000đ ngay khi bấm Hủy 30s" : "Prompt 10k bundle immediately when aborting 30s"}
+                                    </div>
+                                </div>
+
+                                {/* Persona 3: Frugal Users */}
+                                <div
+                                    onClick={() => setMarketingPersonaFilter(marketingPersonaFilter === "frugal" ? "all" : "frugal")}
+                                    className={`bg-[#0f1422] border rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden ${
+                                        marketingPersonaFilter === "frugal"
+                                            ? "border-cyan-400 ring-2 ring-cyan-400/20 bg-cyan-500/5 shadow-lg shadow-cyan-500/10"
+                                            : "border-gray-800 hover:border-cyan-500/40"
+                                    }`}
+                                >
+                                    <div className="text-xs font-mono font-bold text-cyan-400 uppercase flex items-center justify-between">
+                                        <span>🐢 Khách Tiết Kiệm (Frugal)</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-[10px]">
+                                            {(marketingStats?.personas?.frugalUsersCount || 0)} users
+                                        </span>
+                                    </div>
+                                    <div className="text-2xl font-black text-white mt-2 font-mono">
+                                        {(marketingStats?.personas?.frugalUsersCount || 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-300 font-semibold mt-1">
+                                        {isVi ? "Tải Đều Miễn Phí (30s)" : "Steady Free Users"}
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
+                                        {isVi
+                                            ? "Kiên nhẫn chờ 30 giây tải đều đặn, không có xu hướng nạp tiền nếu không có rào cản hoặc ưu đãi kích hoạt."
+                                            : "Patiently waits 30 seconds for every doc. Loyal users but reluctant to spend directly."}
+                                    </p>
+                                    <div className="mt-3 pt-2.5 border-t border-gray-800 text-[11px] text-cyan-300 font-mono">
+                                        🎯 {isVi ? "Viral tiếp thị: Mời bạn nhận 5 credit, đánh giá 5 sao" : "Gamify: Referral credits & 5-star review bonus"}
+                                    </div>
+                                </div>
+
+                                {/* Persona 4: Frustrated Users */}
+                                <div
+                                    onClick={() => setMarketingPersonaFilter(marketingPersonaFilter === "frustrated" ? "all" : "frustrated")}
+                                    className={`bg-[#0f1422] border rounded-2xl p-5 cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden ${
+                                        marketingPersonaFilter === "frustrated"
+                                            ? "border-orange-400 ring-2 ring-orange-400/20 bg-orange-500/5 shadow-lg shadow-orange-500/10"
+                                            : "border-gray-800 hover:border-orange-500/40"
+                                    }`}
+                                >
+                                    <div className="text-xs font-mono font-bold text-orange-400 uppercase flex items-center justify-between">
+                                        <span>⚠️ Gặp Sự Cố (Frustrated)</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-[10px]">
+                                            {(marketingStats?.personas?.frustratedUsersCount || 0)} events
+                                        </span>
+                                    </div>
+                                    <div className="text-2xl font-black text-orange-400 mt-2 font-mono">
+                                        {(marketingStats?.personas?.frustratedUsersCount || 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-300 font-semibold mt-1">
+                                        {isVi ? "Nguy Cơ Rời Bỏ Dịch Vụ" : "Churn Risk"}
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 mt-2 leading-relaxed">
+                                        {isVi
+                                            ? "Bị lỗi khi tải tài liệu hoặc gặp xung đột tab. Cần giải quyết sự cố kỹ thuật để tránh đánh giá tiêu cực."
+                                            : "Users experiencing failed downloads or document conflicts. High dissatisfaction risk."}
+                                    </p>
+                                    <div className="mt-3 pt-2.5 border-t border-gray-800 text-[11px] text-orange-300 font-mono">
+                                        🎯 {isVi ? "Tự động gửi thông báo đền bù credit và hỗ trợ" : "Auto refund credit & prompt contact support"}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 5. PACKAGE POPULARITY & GOLDEN MARKETING HOURS */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* LEFT: Package Preferences */}
+                            <div className="bg-[#0f1422] border border-gray-800 rounded-3xl p-6 shadow-lg space-y-4">
+                                <div className="border-b border-gray-800 pb-3">
+                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                        <span>🏷️</span>
+                                        <span>{isVi ? "Gói Cước Được Quan Tâm Nhất" : "Package Popularity"}</span>
+                                    </h3>
+                                    <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                                        {isVi ? "Dựa trên hành vi click chọn gói và lịch sử giao dịch" : "Based on clicks & purchase history"}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3 font-mono text-xs">
+                                    {marketingStats?.packagePreferences && marketingStats.packagePreferences.length > 0 ? (
+                                        marketingStats.packagePreferences.map((pkg, idx) => (
+                                            <div key={pkg.packageName} className="space-y-1">
+                                                <div className="flex justify-between text-gray-300">
+                                                    <span className="font-semibold flex items-center gap-1.5">
+                                                        <span className="text-amber-400">#{idx + 1}</span>
+                                                        <span>{pkg.packageName}</span>
+                                                    </span>
+                                                    <span className="text-white font-bold">
+                                                        {pkg.count} ({pkg.percentage}%)
+                                                    </span>
+                                                </div>
+                                                <div className="w-full h-2.5 bg-[#141b2d] rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all ${
+                                                            idx === 0
+                                                                ? "bg-gradient-to-r from-amber-500 to-rose-500"
+                                                                : idx === 1
+                                                                ? "bg-gradient-to-r from-cyan-500 to-blue-500"
+                                                                : "bg-gray-600"
+                                                        }`}
+                                                        style={{ width: `${Math.max(6, pkg.percentage)}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-6 text-center text-gray-500 text-xs">
+                                            {isVi ? "Chưa có dữ liệu lựa chọn gói" : "No package choice telemetry yet"}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[11px] text-purple-300 leading-relaxed font-mono">
+                                    📊 {isVi
+                                        ? "Khuyến nghị mỏ neo giá: Nên đặt gói 20k làm gói 'Phổ Biến Nhất' và gói 50k làm 'Tiết Kiệm Nhất' để nâng cao giá trị đơn hàng trung bình."
+                                        : "Decoy pricing: Position 20k as 'Most Popular' and 50k as 'Best Value' to maximize average order value."}
+                                </div>
+                            </div>
+
+                            {/* RIGHT: 24H Golden Marketing Hours */}
+                            <div className="lg:col-span-2 bg-[#0f1422] border border-gray-800 rounded-3xl p-6 shadow-lg space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-800 pb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                            <span>⭐</span>
+                                            <span>{isVi ? "Khung Giờ Vàng Tiếp Thị & Khuyến Mãi (Golden Hours)" : "Optimal Marketing Hours"}</span>
+                                        </h3>
+                                        <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                                            {isVi ? "Phân tích 24 giờ: Điểm giao thoa giữa lượt truy cập và ý định nạp tiền" : "24-hour heat: High activity + Topup intent"}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-[10px] font-mono">
+                                        <span className="flex items-center gap-1 text-amber-400">
+                                            <span className="w-2.5 h-2.5 rounded bg-amber-400"></span> Khung giờ vàng đề xuất
+                                        </span>
+                                        <span className="flex items-center gap-1 text-gray-400">
+                                            <span className="w-2.5 h-2.5 rounded bg-cyan-600"></span> Lưu lượng thông thường
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* 24H Bar Chart */}
+                                <div className="h-44 w-full flex items-end gap-1 sm:gap-1.5 pt-4 pb-1">
+                                    {marketingStats?.goldenHours && marketingStats.goldenHours.length > 0 ? (
+                                        (() => {
+                                            const maxAct = Math.max(1, ...marketingStats.goldenHours.map((h) => h.activityCount + h.topupIntentCount * 2));
+                                            return marketingStats.goldenHours.map((h) => {
+                                                const heightPct = Math.min(100, Math.max(12, Math.round(((h.activityCount + h.topupIntentCount * 2) / maxAct) * 100)));
+                                                return (
+                                                    <div
+                                                        key={h.hour}
+                                                        className="flex-1 flex flex-col items-center h-full justify-end group relative"
+                                                    >
+                                                        {/* Tooltip */}
+                                                        <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white border border-gray-700 px-2 py-1 rounded text-[10px] font-mono whitespace-nowrap z-20 pointer-events-none">
+                                                            <div><strong>{h.label}</strong> {h.isRecommendedSlot ? "⭐ Giờ Vàng" : ""}</div>
+                                                            <div className="text-amber-300">Nạp/Hủy: {h.topupIntentCount}</div>
+                                                            <div className="text-cyan-300">Tương tác: {h.activityCount}</div>
+                                                        </div>
+
+                                                        {/* Bar */}
+                                                        <div
+                                                            className={`w-full rounded-t-md transition-all ${
+                                                                h.isRecommendedSlot
+                                                                    ? "bg-gradient-to-t from-amber-500 to-rose-500 shadow-lg shadow-amber-500/30 group-hover:from-amber-400 group-hover:to-rose-400"
+                                                                    : "bg-cyan-600/40 group-hover:bg-cyan-500/70"
+                                                            }`}
+                                                            style={{ height: `${heightPct}%` }}
+                                                        >
+                                                            {h.isRecommendedSlot && (
+                                                                <div className="w-full text-center text-[8px] text-white font-bold leading-none -mt-3 hidden sm:block">
+                                                                    ⭐
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Hour Label */}
+                                                        <span className="text-[9px] font-mono text-gray-500 mt-1 truncate">
+                                                            {h.hour % 3 === 0 ? h.hour : ""}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            });
+                                        })()
+                                    ) : (
+                                        <div className="w-full text-center text-gray-500 text-xs py-12">
+                                            {isVi ? "Chưa có đủ dữ liệu theo giờ" : "Insufficient hourly telemetry"}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="p-3.5 rounded-2xl bg-[#141b2d]/80 border border-gray-700/60 text-xs text-gray-300 flex items-start gap-2.5">
+                                    <span className="text-amber-400 text-sm mt-0.5">📢</span>
+                                    <div>
+                                        <strong className="text-amber-300">{isVi ? "Chiến dịch đẩy thông báo (Push / Flash Sale):" : "Push Campaign Timing:"}</strong>{" "}
+                                        {isVi ? (
+                                            <>
+                                                Các khung giờ vàng ghi nhận nhu cầu tải gấp và ý định nạp cao nhất là:{" "}
+                                                <strong className="text-white">
+                                                    {marketingStats?.goldenHours
+                                                        ?.filter((h) => h.isRecommendedSlot)
+                                                        .map((h) => h.label)
+                                                        .join(", ") || "14:00, 20:00, 21:00, 22:00"}
+                                                </strong>
+                                                . Hãy lên lịch phát tin khuyến mãi hoặc mini-discount vào thời điểm này để đạt ROI tối đa.
+                                            </>
+                                        ) : (
+                                            "Target promotional push notifications during peak golden hours for highest conversion ROI."
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 6. TOP HIGH-INTENT PROSPECTS (KHÁCH HÀNG TIỀM NĂNG NHẤT) */}
+                        <div className="bg-[#0f1422] border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-800 pb-3">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                        <span>🎯</span>
+                                        <span>{isVi ? "Danh Sách Khách Hàng Tiềm Năng Nạp Cao Nhất (High-Intent Leads)" : "High-Intent Monetization Prospects"}</span>
+                                    </h3>
+                                    <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                                        {isVi
+                                            ? "Thuật toán chấm điểm Intent Score (0 - 100) dựa trên hành động copy STK, hủy đếm ngược 30s và xem trang nạp"
+                                            : "Algorithmic Intent Score computed from STK copies, timer aborts, and pricing page visits"}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={marketingSearchQuery}
+                                            onChange={(e) => setMarketingSearchQuery(e.target.value)}
+                                            placeholder={isVi ? "Tìm User ID, lý do..." : "Search User ID, intent..."}
+                                            className="px-3 py-1.5 bg-[#121829] border border-gray-700/80 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 font-mono"
+                                        />
+                                        {marketingSearchQuery && (
+                                            <button
+                                                onClick={() => setMarketingSearchQuery("")}
+                                                className="absolute right-2.5 top-1.5 text-gray-500 hover:text-white text-xs cursor-pointer"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                    {marketingPersonaFilter !== "all" && (
+                                        <button
+                                            onClick={() => setMarketingPersonaFilter("all")}
+                                            className="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-mono cursor-pointer"
+                                        >
+                                            ✕ {marketingPersonaFilter}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Table */}
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-xs font-mono">
+                                    <thead>
+                                        <tr className="border-b border-gray-800 text-gray-400">
+                                            <th className="pb-3 font-semibold">{isVi ? "Xếp Hạng" : "Rank"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "User ID (Mã Máy)" : "Client User ID"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Điểm Tiềm Năng (Score)" : "Intent Score"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Căn Cứ Nhận Diện Hành Vi" : "Behavioral Signals"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Thao Tác" : "Interactions"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Lần Cuối Hoạt Động" : "Last Active"}</th>
+                                            <th className="pb-3 font-semibold text-right">{isVi ? "Gợi Ý Tiếp Thị" : "Target Strategy"}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800/60">
+                                        {marketingStats?.highIntentUsers && marketingStats.highIntentUsers.length > 0 ? (
+                                            marketingStats.highIntentUsers
+                                                .filter((u) => {
+                                                    if (marketingSearchQuery) {
+                                                        const q = marketingSearchQuery.toLowerCase();
+                                                        return u.userId.toLowerCase().includes(q) || u.reasons.some((r) => r.toLowerCase().includes(q));
+                                                    }
+                                                    if (marketingPersonaFilter === "impatient") return u.abortedCount > 0;
+                                                    if (marketingPersonaFilter === "whales") return u.reasons.some((r) => r.includes("nạp tiền"));
+                                                    return true;
+                                                })
+                                                .map((user, idx) => (
+                                                    <tr key={user.userId} className="hover:bg-gray-800/40 transition-colors">
+                                                        <td className="py-3 text-gray-400 font-bold whitespace-nowrap">
+                                                            #{idx + 1}
+                                                        </td>
+                                                        <td className="py-3 font-bold text-cyan-300 whitespace-nowrap">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span>{user.userId}</span>
+                                                                <button
+                                                                    onClick={() => navigator.clipboard.writeText(user.userId)}
+                                                                    title="Copy User ID"
+                                                                    className="text-gray-500 hover:text-cyan-400 cursor-pointer text-[10px]"
+                                                                >
+                                                                    📋
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 whitespace-nowrap">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-16 h-2 bg-[#141b2d] rounded-full overflow-hidden">
+                                                                    <div
+                                                                        className={`h-full rounded-full ${
+                                                                            user.intentScore >= 70
+                                                                                ? "bg-gradient-to-r from-amber-500 to-rose-500"
+                                                                                : user.intentScore >= 40
+                                                                                ? "bg-gradient-to-r from-blue-500 to-cyan-400"
+                                                                                : "bg-gray-600"
+                                                                        }`}
+                                                                        style={{ width: `${user.intentScore}%` }}
+                                                                    ></div>
+                                                                </div>
+                                                                <span
+                                                                    className={`font-black text-xs ${
+                                                                        user.intentScore >= 70
+                                                                            ? "text-rose-400"
+                                                                            : user.intentScore >= 40
+                                                                            ? "text-cyan-300"
+                                                                            : "text-gray-400"
+                                                                    }`}
+                                                                >
+                                                                    {user.intentScore}/100
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3">
+                                                            <div className="flex flex-wrap gap-1 max-w-sm">
+                                                                {user.reasons.map((r, rIdx) => (
+                                                                    <span
+                                                                        key={rIdx}
+                                                                        className={`px-2 py-0.5 rounded text-[10px] ${
+                                                                            r.includes("STK")
+                                                                                ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                                                                : r.includes("Hủy")
+                                                                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                                                                : r.includes("nạp")
+                                                                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                                                                : "bg-gray-800 text-gray-300"
+                                                                        }`}
+                                                                    >
+                                                                        {r}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 text-gray-400 whitespace-nowrap text-[11px]">
+                                                            <div>Popup: <strong className="text-white">{user.popupOpens}</strong></div>
+                                                            <div>Nạp: <strong className="text-emerald-400">{user.topupAttempts}</strong> | Hủy 30s: <strong className="text-rose-400">{user.abortedCount}</strong></div>
+                                                        </td>
+                                                        <td className="py-3 text-gray-400 whitespace-nowrap">
+                                                            {new Date(user.lastActive).toLocaleString(isVi ? "vi-VN" : "en-US")}
+                                                        </td>
+                                                        <td className="py-3 text-right whitespace-nowrap">
+                                                            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[11px] font-bold">
+                                                                {user.abortedCount > 0
+                                                                    ? "Offer Gói 10k Mini"
+                                                                    : user.topupAttempts > 1
+                                                                    ? "Hỗ trợ nạp tiền VietQR"
+                                                                    : "Remarketing Popup"}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={7} className="py-10 text-center text-gray-500">
+                                                    <div className="flex flex-col items-center justify-center gap-2">
+                                                        <span className="text-3xl">🎯</span>
+                                                        <span>{isVi ? "Chưa có danh sách khách hàng tiềm năng phù hợp bộ lọc" : "No high-intent users matching filter"}</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* 7. RAW ACTION BREAKDOWN TABLE */}
+                        <div className="bg-[#0f1422] border border-gray-800 rounded-3xl p-6 shadow-lg space-y-4">
+                            <div className="border-b border-gray-800 pb-3">
+                                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                    <span>🔬</span>
+                                    <span>{isVi ? "Bảng Kê Chi Tiết Tần Suất Toàn Bộ Vi Hành Vi (Action Telemetry Log)" : "Complete Action Frequency Breakdown"}</span>
+                                </h3>
+                                <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                                    {isVi ? "Danh mục tất cả các loại sự kiện nhận được từ Chrome Extension" : "Full inventory of micro-events dispatched by extension"}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 font-mono text-xs">
+                                {marketingStats?.actionBreakdown && Object.keys(marketingStats.actionBreakdown).length > 0 ? (
+                                    Object.entries(marketingStats.actionBreakdown)
+                                        .sort(([, a], [, b]) => b - a)
+                                        .map(([actName, count]) => {
+                                            const total = marketingStats?.totalInteractions || 1;
+                                            const pct = Math.round((count / total) * 1000) / 10;
+                                            return (
+                                                <div
+                                                    key={actName}
+                                                    className="p-3 rounded-xl bg-[#141b2d] border border-gray-800/80 hover:border-gray-700 transition-all flex items-center justify-between"
+                                                >
+                                                    <div className="space-y-0.5 overflow-hidden pr-2">
+                                                        <div className="text-gray-300 font-bold truncate text-[11px]">
+                                                            {actName}
+                                                        </div>
+                                                        <div className="text-[10px] text-gray-500">
+                                                            {pct}% tổng tương tác
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right whitespace-nowrap">
+                                                        <span className="text-sm font-black text-white">{count}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                ) : (
+                                    <div className="col-span-full py-6 text-center text-gray-500">
+                                        {isVi ? "Chưa có vi hành vi nào được ghi nhận" : "No action telemetry recorded"}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

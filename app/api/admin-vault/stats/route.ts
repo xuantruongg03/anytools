@@ -6,7 +6,7 @@ import {
     isVaultSlugValid,
 } from "@/lib/security/vault";
 import { StatsFilterOptions } from "@/lib/telemetry/stats";
-import { getRealGoogleSheetsStats } from "@/lib/telemetry/google-sheets-loader";
+import { getUnifiedDashboardStats } from "@/lib/telemetry/unified-loader";
 
 export async function GET(request: NextRequest) {
     const tabToken = request.headers.get("x-vault-tab-token");
@@ -36,14 +36,14 @@ export async function GET(request: NextRequest) {
     };
 
     try {
-        const data = await getRealGoogleSheetsStats(options);
+        const data = await getUnifiedDashboardStats(options);
         return NextResponse.json({
             success: true,
-            source: "google_sheets",
+            source: data.source || (options.timeframe === "all" ? "hybrid" : "mongodb"),
             ...data,
         });
     } catch (err: any) {
-        console.error("❌ [Vault Stats API] Error fetching telemetry from Google Sheets:", err.message);
+        console.error("❌ [Vault Stats API] Error fetching telemetry stats:", err.message);
         return NextResponse.json(
             {
                 success: false,

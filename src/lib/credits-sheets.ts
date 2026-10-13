@@ -50,11 +50,13 @@ async function ensureMongoCreditsIndexes() {
     try {
         const db = await getDb();
         if (db) {
+            // Tự động dọn dẹp các bản ghi lỗi thiếu logId nếu có trong database
+            await db.collection("credits_downloads").deleteMany({ logId: null }).catch(() => {});
             await Promise.all([
                 db.collection("credits_users").createIndex({ userId: 1 }, { unique: true }).catch(() => {}),
                 db.collection("credits_transactions").createIndex({ transId: 1 }, { unique: true }).catch(() => {}),
                 db.collection("credits_transactions").createIndex({ userId: 1 }).catch(() => {}),
-                db.collection("credits_downloads").createIndex({ logId: 1 }, { unique: true }).catch(() => {}),
+                db.collection("credits_downloads").createIndex({ logId: 1 }, { unique: true, sparse: true }).catch(() => {}),
                 db.collection("credits_downloads").createIndex({ userId: 1 }).catch(() => {}),
             ]);
             mongoIndexesEnsured = true;

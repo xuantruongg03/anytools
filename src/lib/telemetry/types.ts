@@ -10,7 +10,31 @@ export type TelemetryAction =
     | "INIT_REQUEST"
     | "DOWNLOAD_SUCCESS"
     | "DOWNLOAD_FAILED"
-    | "HEARTBEAT";
+    | "HEARTBEAT"
+    // Popup & Navigation
+    | "POPUP_OPENED"
+    | "NAVIGATE_SCRIBD_CLICKED"
+    | "DOWNLOAD_INITIATED_FROM_POPUP"
+    | "FOOTER_LINK_CLICKED"
+    // Download Flow
+    | "DOWNLOAD_STARTED"
+    | "CONFLICT_MODAL_SHOWN"
+    | "CHOICE_MODAL_SHOWN"
+    | "INSTANT_DOWNLOAD_CLICKED"
+    | "FREE_DOWNLOAD_CLICKED"
+    | "CONFLICT_INSTANT_CLICKED"
+    | "COUNTDOWN_ABORTED"
+    | "DOWNLOAD_SCAN_CANCELLED"
+    // Topup & Monetization
+    | "TOPUP_OPENED"
+    | "TOPUP_PAGE_VIEWED"
+    | "TOPUP_PACKAGE_SELECTED"
+    | "BUY_ME_A_COFFEE_CLICKED"
+    | "TOPUP_ACTION_COPY"
+    | "TOPUP_MANUAL_CHECK_CLICKED"
+    | "TOPUP_SUCCESS_CONFIRMED"
+    // Settings
+    | "SETTING_SCROLL_DELAY_CHANGED";
 
 export type AnomalyType =
     | "FAST_BYPASS"          // Tải xong < 29s (phá vỡ timer 30s)
@@ -202,6 +226,83 @@ export interface TopDocumentItem {
     freeCount: number;
     creditCount: number;
     avgPages: number;
+}
+
+export interface MarketingBehaviorStats {
+    // Action counts
+    totalInteractions: number;
+    popupOpenedCount: number;
+    topupOpenedCount: number;
+    topupPageViewedCount: number;
+    topupPackageSelectedCount: number;
+    topupActionCopyCount: number;
+    topupSuccessConfirmedCount: number;
+    countdownAbortedCount: number;
+    choiceModalShownCount: number;
+    conflictModalShownCount: number;
+    freeDownloadClickedCount: number;
+    instantDownloadClickedCount: number;
+    downloadSuccessCount: number;
+    downloadFailedCount: number;
+
+    // Funnel 1: Download Conversion Funnel
+    downloadFunnel: {
+        step1_initiated: number;      // POPUP_OPENED + DOWNLOAD_STARTED
+        step2_modalChoice: number;    // CHOICE_MODAL_SHOWN
+        step3_downloadAttempt: number;// FREE_DOWNLOAD_CLICKED + INSTANT_DOWNLOAD_CLICKED
+        step4_aborted: number;        // COUNTDOWN_ABORTED
+        step5_completed: number;      // DOWNLOAD_SUCCESS
+        completionRate: number;       // %
+        abortRate: number;            // %
+    };
+
+    // Funnel 2: Topup & Monetization Funnel
+    monetizationFunnel: {
+        step1_trigger: number;        // TOPUP_OPENED
+        step2_pageView: number;       // TOPUP_PAGE_VIEWED
+        step3_packageSelect: number;  // TOPUP_PACKAGE_SELECTED
+        step4_copyBankInfo: number;   // TOPUP_ACTION_COPY
+        step5_confirmed: number;      // TOPUP_SUCCESS_CONFIRMED (hoặc giao dịch thực tế)
+        conversionRate: number;       // %
+    };
+
+    // Package Popularity Breakdown
+    packagePreferences: Array<{
+        packageName: string;
+        count: number;
+        percentage: number;
+    }>;
+
+    // Behavioral Segments / Marketing Personas
+    personas: {
+        whalesCount: number;            // Khách VIP chi tiêu nhiều
+        impatientProspectsCount: number;// Người thiếu kiên nhẫn (bỏ đếm ngược 30s hoặc bấm instant khi hết credit) -> Khách hàng nóng nhất để chào mời nạp mini
+        frugalUsersCount: number;       // Người chăm chỉ kiên nhẫn chờ 30s, tải đều
+        frustratedUsersCount: number;   // Gặp lỗi download failed
+    };
+
+    // Top Intent Users (Danh sách khách hàng tiềm năng nạp tiền cao nhất)
+    highIntentUsers: Array<{
+        userId: string;
+        intentScore: number;            // 0 - 100
+        reasons: string[];
+        popupOpens: number;
+        topupAttempts: number;
+        abortedCount: number;
+        lastActive: string;
+    }>;
+
+    // Optimal Marketing Hours (Khung giờ vàng tiếp thị)
+    goldenHours: Array<{
+        hour: number;
+        label: string;
+        activityCount: number;
+        topupIntentCount: number;
+        isRecommendedSlot: boolean;
+    }>;
+
+    // Raw action frequency breakdown
+    actionBreakdown: Record<string, number>;
 }
 
 
