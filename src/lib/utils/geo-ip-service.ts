@@ -11,8 +11,14 @@ export interface GeoLocation {
     provider?: string;
     cachedAt: number;
 }
+import os from "os";
 
-const CACHE_DIR = path.join(process.cwd(), "data", "telemetry");
+// Dùng /tmp trên môi trường serverless (Vercel) để tránh lỗi EROFS / ENOENT trên /var/task
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const CACHE_DIR = isServerless
+    ? path.join(os.tmpdir(), "anytools_telemetry")
+    : path.join(process.cwd(), "data", "telemetry");
+
 const CACHE_FILE = path.join(CACHE_DIR, "ip-geo-cache.json");
 
 // In-memory cache
