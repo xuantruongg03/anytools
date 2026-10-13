@@ -83,37 +83,33 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Action 2: DOWNLOAD COMPLETION OR ERROR
-        if (action === "DOWNLOAD_SUCCESS" || action === "DOWNLOAD_FAILED") {
-            const processedEvent = await processTelemetryEvent({
-                extensionId: extensionId as ExtensionId,
-                extensionVersion,
-                action: action as TelemetryAction,
-                clientUserId,
-                sessionNonce,
-                docIdHash: docIdHash || "unknown_doc",
-                docTitle,
-                elapsedSeconds: typeof elapsedSeconds === "number" ? elapsedSeconds : undefined,
-                clientIp,
-                country,
-                city,
-                browser,
-                meta: mergedMeta,
-            });
+        // Action 2: ALL TELEMETRY & BEHAVIOR EVENTS (DOWNLOAD_SUCCESS, DOWNLOAD_FAILED, POPUP_OPENED, etc.)
+        const processedEvent = await processTelemetryEvent({
+            extensionId: extensionId as ExtensionId,
+            extensionVersion,
+            action: action as TelemetryAction,
+            clientUserId,
+            sessionNonce,
+            docIdHash: docIdHash || "unknown_doc",
+            docTitle,
+            elapsedSeconds: typeof elapsedSeconds === "number" ? elapsedSeconds : undefined,
+            clientIp,
+            country,
+            city,
+            browser,
+            meta: mergedMeta,
+        });
 
-            return NextResponse.json(
-                {
-                    success: true,
-                    eventId: processedEvent.id,
-                    riskScore: processedEvent.riskScore,
-                    anomalies: processedEvent.anomalies,
-                    elapsedSeconds: processedEvent.elapsedSeconds,
-                },
-                { status: 200, headers: corsHeaders }
-            );
-        }
-
-        return NextResponse.json({ error: "Unsupported telemetry action" }, { status: 400, headers: corsHeaders });
+        return NextResponse.json(
+            {
+                success: true,
+                eventId: processedEvent.id,
+                riskScore: processedEvent.riskScore,
+                anomalies: processedEvent.anomalies,
+                elapsedSeconds: processedEvent.elapsedSeconds,
+            },
+            { status: 200, headers: corsHeaders }
+        );
     } catch (err: any) {
         console.error("❌ [Telemetry API] Ingest error:", err);
         return NextResponse.json(

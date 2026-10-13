@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { TelemetryEvent, HandshakeSession, ExtensionId } from "./types";
-import { MongoClient } from "mongodb";
+import { getDb } from "@/lib/db/mongodb";
 
 const TELEMETRY_DIR = path.join(process.cwd(), "data", "telemetry");
 const EVENTS_FILE_PATH = path.join(TELEMETRY_DIR, "events.json");
@@ -11,24 +11,29 @@ const EVENTS_FILE_PATH = path.join(TELEMETRY_DIR, "events.json");
 const inMemorySessions = new Map<string, HandshakeSession>();
 let inMemoryEvents: TelemetryEvent[] | null = null;
 
-// MongoDB client instance
-let mongoClient: MongoClient | null = null;
-let mongoClientPromise: Promise<MongoClient> | null = null;
+// Telemetry indexes ensured flag
+let telemetryIndexesEnsured = false;
 
-async function getMongoDb() {
-    const uri = process.env.MONGODB_URI;
-    if (!uri) return null;
+/**
+ * Lấy MongoDB Db instance từ module trung tâm (@/lib/db/mongodb)
+ * và đảm bảo indexes cho telemetry_events collection.
+ * Sử dụng Vercel-optimized connection pool (attachDatabasePool).
+ */
+export async function getMongoDb() {
     try {
-        if (!mongoClientPromise) {
-            mongoClient = new MongoClient(uri, { serverSelectionTimeoutMS: 3000 });
-            mongoClientPromise = mongoClient.connect();
+        const db = await getDb();
+        if (!db) return null;
+
+        // Ensure indexes 1 lần duy nhất per process
+        if (!telemetryIndexesEnsured) {
+            db.collection("telemetry_events").createIndex({ createdAt: -1 }).catch(() => {});
+            db.collection("telemetry_events").createIndex({ clientUserId: 1 }).catch(() => {});
+            db.collection("telemetry_events").createIndex({ action: 1 }).catch(() => {});
+            telemetryIndexesEnsured = true;
         }
-        const client = await mongoClientPromise;
-        const dbName = process.env.MONGODB_DATABASE || "anytools";
-        return client.db(dbName);
+        return db;
     } catch (err) {
         console.warn("⚠️ [Telemetry Storage] MongoDB connect failed, using local file storage:", (err as Error).message);
-        mongoClientPromise = null;
         return null;
     }
 }

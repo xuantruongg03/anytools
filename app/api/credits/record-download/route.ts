@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { recordDownloadEvent } from "@/lib/credits-sheets";
 import { getClientIp } from "@/lib/utils/get-client-ip";
+import { getDb } from "@/lib/db/mongodb";
 
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
@@ -32,28 +33,42 @@ export async function POST(request: NextRequest) {
 
         const validDownloadType = downloadType === "instant" ? "instant" : "free";
         const clientIp = getClientIp(request);
+        const cleanUserId = userId.trim();
 
-        const result = await recordDownloadEvent({
-            userId: userId.trim(),
+        // 1. Ghi REAL-TIME vào MongoDB (Chính - Tốc độ cao < 15ms)
+        try {
+            const db = await getDb();
+            if (db) {
+                await db.collection("credits_downloads").insertOne({
+                    userId: cleanUserId,
+                    downloadType: validDownloadType,
+                    documentUrl: typeof documentUrl === "string" ? documentUrl.slice(0, 500) : "",
+                    documentTitle: typeof documentTitle === "string" ? documentTitle.slice(0, 300) : "",
+                    totalPages: typeof totalPages === "number" ? totalPages : 0,
+                    clientIp,
+                    createdAt: new Date().toISOString(),
+                });
+            }
+        } catch (dbErr) {
+            console.warn("⚠️ [Mongo Record Download] Insert warning:", (dbErr as Error).message);
+        }
+
+        // 2. Backup sang Google Sheets ngầm (Không block luồng người dùng để tránh nghẽn & tránh lỗi 429)
+        recordDownloadEvent({
+            userId: cleanUserId,
             downloadType: validDownloadType,
             documentUrl: typeof documentUrl === "string" ? documentUrl.slice(0, 500) : undefined,
             documentTitle: typeof documentTitle === "string" ? documentTitle.slice(0, 300) : undefined,
             totalPages: typeof totalPages === "number" ? totalPages : undefined,
             clientIp,
+        }).catch((sheetErr) => {
+            console.warn("⚠️ [Google Sheets Backup] Skipped or delayed:", sheetErr?.message);
         });
-
-        if (!result.success) {
-            return NextResponse.json(
-                { success: false, error: result.error || "Ghi nhận lượt tải thất bại" },
-                { status: 500, headers: CORS_HEADERS }
-            );
-        }
 
         return NextResponse.json(
             {
                 success: true,
-                totalDownloaded: result.totalDownloaded,
-                message: "Ghi nhận lượt tải thành công",
+                message: "Ghi nhận lượt tải thành công vào hệ thống",
             },
             { status: 200, headers: CORS_HEADERS }
         );
