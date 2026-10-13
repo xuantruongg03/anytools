@@ -3065,10 +3065,13 @@ export default function DarkboardClient({
                                             : "border-gray-800 hover:border-amber-500/40"
                                     }`}
                                 >
-                                    <div className="text-xs font-mono font-bold text-amber-400 uppercase flex items-center justify-between">
-                                        <span>🐋 Cá Voi (Whales)</span>
-                                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px]">
-                                            {(marketingStats?.personas?.whalesCount || 0)} users
+                                    <div className="flex items-center justify-between gap-2 text-xs font-bold text-amber-400">
+                                        <span className="truncate flex items-center gap-1.5">
+                                            <span>🐋</span>
+                                            <span>{isVi ? "Cá Voi (VIP)" : "Whales (VIP)"}</span>
+                                        </span>
+                                        <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-mono text-amber-300 whitespace-nowrap shrink-0">
+                                            {(marketingStats?.personas?.whalesCount || 0).toLocaleString()} {isVi ? "user" : "users"}
                                         </span>
                                     </div>
                                     <div className="text-2xl font-black text-white mt-2 font-mono">
@@ -3096,10 +3099,13 @@ export default function DarkboardClient({
                                             : "border-gray-800 hover:border-rose-500/40"
                                     }`}
                                 >
-                                    <div className="text-xs font-mono font-bold text-rose-400 uppercase flex items-center justify-between">
-                                        <span>⚡ Khách Nóng (Impatient)</span>
-                                        <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-[10px]">
-                                            {(marketingStats?.personas?.impatientProspectsCount || 0)} users
+                                    <div className="flex items-center justify-between gap-2 text-xs font-bold text-rose-400">
+                                        <span className="truncate flex items-center gap-1.5">
+                                            <span>⚡</span>
+                                            <span>{isVi ? "Khách Nóng" : "Impatient"}</span>
+                                        </span>
+                                        <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-[10px] font-mono text-rose-300 whitespace-nowrap shrink-0">
+                                            {(marketingStats?.personas?.impatientProspectsCount || 0).toLocaleString()} {isVi ? "user" : "users"}
                                         </span>
                                     </div>
                                     <div className="text-2xl font-black text-rose-400 mt-2 font-mono">
@@ -3127,10 +3133,13 @@ export default function DarkboardClient({
                                             : "border-gray-800 hover:border-cyan-500/40"
                                     }`}
                                 >
-                                    <div className="text-xs font-mono font-bold text-cyan-400 uppercase flex items-center justify-between">
-                                        <span>🐢 Khách Tiết Kiệm (Frugal)</span>
-                                        <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-[10px]">
-                                            {(marketingStats?.personas?.frugalUsersCount || 0)} users
+                                    <div className="flex items-center justify-between gap-2 text-xs font-bold text-cyan-400">
+                                        <span className="truncate flex items-center gap-1.5">
+                                            <span>🐢</span>
+                                            <span>{isVi ? "Khách Tiết Kiệm" : "Frugal"}</span>
+                                        </span>
+                                        <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-[10px] font-mono text-cyan-300 whitespace-nowrap shrink-0">
+                                            {(marketingStats?.personas?.frugalUsersCount || 0).toLocaleString()} {isVi ? "user" : "users"}
                                         </span>
                                     </div>
                                     <div className="text-2xl font-black text-white mt-2 font-mono">
@@ -3158,10 +3167,13 @@ export default function DarkboardClient({
                                             : "border-gray-800 hover:border-orange-500/40"
                                     }`}
                                 >
-                                    <div className="text-xs font-mono font-bold text-orange-400 uppercase flex items-center justify-between">
-                                        <span>⚠️ Gặp Sự Cố (Frustrated)</span>
-                                        <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-[10px]">
-                                            {(marketingStats?.personas?.frustratedUsersCount || 0)} events
+                                    <div className="flex items-center justify-between gap-2 text-xs font-bold text-orange-400">
+                                        <span className="truncate flex items-center gap-1.5">
+                                            <span>⚠️</span>
+                                            <span>{isVi ? "Gặp Sự Cố" : "Frustrated"}</span>
+                                        </span>
+                                        <span className="px-2.5 py-0.5 rounded-full bg-orange-500/20 text-[10px] font-mono text-orange-300 whitespace-nowrap shrink-0">
+                                            {(marketingStats?.personas?.frustratedUsersCount || 0).toLocaleString()} {isVi ? "lỗi" : "events"}
                                         </span>
                                     </div>
                                     <div className="text-2xl font-black text-orange-400 mt-2 font-mono">
@@ -3232,8 +3244,8 @@ export default function DarkboardClient({
 
                                 <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[11px] text-purple-300 leading-relaxed font-mono">
                                     📊 {isVi
-                                        ? "Khuyến nghị mỏ neo giá: Nên đặt gói 20k làm gói 'Phổ Biến Nhất' và gói 50k làm 'Tiết Kiệm Nhất' để nâng cao giá trị đơn hàng trung bình."
-                                        : "Decoy pricing: Position 20k as 'Most Popular' and 50k as 'Best Value' to maximize average order value."}
+                                        ? "Khuyến nghị mỏ neo giá: Extension đang cấu hình gói 10K (25 Credits) là 'Best Value' mặc định. Mỏ neo này giúp thúc đẩy khách nạp 10.000đ thay vì nạp gói nhỏ 2K/5K."
+                                        : "Decoy pricing: The extension anchors 10K (25 Credits) as 'Best Value'. This encourages users to opt for 10K rather than smaller 2K/5K tiers."}
                                 </div>
                             </div>
 

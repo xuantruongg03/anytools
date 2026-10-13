@@ -992,31 +992,81 @@ export async function computeDashboardStats(
     const step5_confirmed = topupSuccessConfirmedCount;
     const monetizationConversionRate = step1_trigger > 0 ? Math.round((step5_confirmed / step1_trigger) * 1000) / 10 : 0;
 
-    // Package Preferences
+    // Package Preferences (Đồng bộ chuẩn xác theo cấu hình APP_CONFIG của Extension)
     const pkgCounts: Record<string, number> = {
-        "10k (50 Credits)": 0,
-        "20k (120 Credits)": 0,
-        "50k (350 Credits)": 0,
-        "100k (800 Credits)": 0,
+        "Gói 10K (25 Credits)": 0,
+        "Gói 5K (7 Credits)": 0,
+        "Gói 2K (3 Credits)": 0,
+        "Gói $3.00 USD (200 Credits)": 0,
     };
+
     events.forEach((e) => {
-        if (e.action === "TOPUP_PACKAGE_SELECTED" && e.meta?.packageName) {
-            const pkg = String(e.meta.packageName);
-            pkgCounts[pkg] = (pkgCounts[pkg] || 0) + 1;
+        if (e.action === "TOPUP_PACKAGE_SELECTED") {
+            const m = e.meta || {};
+            let pkgName = "";
+            if (m.amountVnd) {
+                const amt = Number(m.amountVnd);
+                if (amt <= 3000) pkgName = "Gói 2K (3 Credits)";
+                else if (amt <= 7000) pkgName = "Gói 5K (7 Credits)";
+                else if (amt <= 15000) pkgName = "Gói 10K (25 Credits)";
+                else pkgName = `Gói ${(amt / 1000).toFixed(0)}K (${m.credits || 0} Credits)`;
+            } else if (m.amountUsd) {
+                const usd = Number(m.amountUsd);
+                if (usd === 1) pkgName = "Gói $1.00 USD (60 Credits)";
+                else if (usd === 3) pkgName = "Gói $3.00 USD (200 Credits)";
+                else if (usd === 5) pkgName = "Gói $5.00 USD (400 Credits)";
+                else pkgName = `Gói $${usd}.00 USD (${m.credits || 0} Credits)`;
+            } else if (m.packageName) {
+                const rawName = String(m.packageName);
+                if (rawName.includes("10k") || rawName.includes("10K")) pkgName = "Gói 10K (25 Credits)";
+                else if (rawName.includes("5k") || rawName.includes("5K")) pkgName = "Gói 5K (7 Credits)";
+                else if (rawName.includes("2k") || rawName.includes("2K")) pkgName = "Gói 2K (3 Credits)";
+                else pkgName = rawName;
+            }
+
+            if (pkgName) {
+                pkgCounts[pkgName] = (pkgCounts[pkgName] || 0) + 1;
+            }
         }
     });
+
     transactions.forEach((t) => {
-        if (t.amount >= 100000) pkgCounts["100k (800 Credits)"]++;
-        else if (t.amount >= 50000) pkgCounts["50k (350 Credits)"]++;
-        else if (t.amount >= 20000) pkgCounts["20k (120 Credits)"]++;
-        else pkgCounts["10k (50 Credits)"]++;
+        const amt = Number(t.amount) || 0;
+        let pkgName = "";
+        if (amt > 0 && amt <= 3000) {
+            pkgName = "Gói 2K (3 Credits)";
+        } else if (amt <= 7000) {
+            pkgName = "Gói 5K (7 Credits)";
+        } else if (amt <= 15000) {
+            pkgName = "Gói 10K (25 Credits)";
+        } else if (amt >= 20000 && amt <= 35000) {
+            pkgName = "Gói $1.00 USD (60 Credits)";
+        } else if (amt >= 65000 && amt <= 85000) {
+            pkgName = "Gói $3.00 USD (200 Credits)";
+        } else if (amt > 15000) {
+            pkgName = `Gói ${(amt / 1000).toFixed(0)}K (${t.creditsAdded || 0} Credits)`;
+        }
+
+        if (pkgName) {
+            pkgCounts[pkgName] = (pkgCounts[pkgName] || 0) + 1;
+        }
     });
+
     const totalPkgSelects = Object.values(pkgCounts).reduce((a, b) => a + b, 0);
     const packagePreferences = Object.entries(pkgCounts).map(([packageName, count]) => ({
         packageName,
         count,
         percentage: totalPkgSelects > 0 ? Math.round((count / totalPkgSelects) * 1000) / 10 : 0,
-    })).sort((a, b) => b.count - a.count);
+    })).sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        const order: Record<string, number> = {
+            "Gói 10K (25 Credits)": 4,
+            "Gói 5K (7 Credits)": 3,
+            "Gói 2K (3 Credits)": 2,
+            "Gói $3.00 USD (200 Credits)": 1,
+        };
+        return (order[b.packageName] || 0) - (order[a.packageName] || 0);
+    });
 
     // Marketing Personas
     const impatientUserIds = new Set<string>();

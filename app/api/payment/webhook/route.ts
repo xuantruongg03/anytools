@@ -5,15 +5,33 @@ import { sendPaymentErrorEmail } from "@/lib/utils/email-service";
 const WEBHOOK_SECRET = process.env.PAYMENT_WEBHOOK_SECRET || process.env.ADMIN_SECRET || "adminsupersecretkey123456";
 
 /**
- * Trích xuất User ID từ nội dung chuyển khoản (VD: "NAP USER_abc123" hoặc "USER_abc123")
+ * Trích xuất User ID từ nội dung chuyển khoản
+ * Hỗ trợ cả 2 định dạng ID song song trong hệ thống:
+ *   - Legacy (popup.js / topup.js / content.js): USER_XXXXXX  (6 ký tự viết hoa)
+ *   - Mới   (tracker.js):                       usr_xxxxxxxx_mv6xxxxxxx (8 chars + timestamp base36)
+ * 
+ * VD nội dung chuyển khoản hợp lệ:
+ *   "NAP USER_40RA71"
+ *   "NAP usr_8s81edbt_mv6u0d9m"
+ *   "USER 40RA71"
+ *   "usr-8s81edbt-mv6u0d9m"
  */
 function extractUserId(content: string): string | null {
     if (!content) return null;
-    // 1. Chuẩn: USER_XXXX
-    let match = content.match(/USER_[A-Za-z0-9_]+/i);
+
+    // 1. Định dạng mới từ tracker.js: usr_xxxxxxxx_xxxxxxxx (giữ nguyên lowercase vì MongoDB lưu lowercase)
+    let match = content.match(/usr_[a-z0-9]{6,10}_[a-z0-9]{6,12}/i);
+    if (match) return match[0].toLowerCase();
+
+    // 2. Dự phòng usr_ với dấu gạch ngang / dấu cách thay vì underscore: usr-xxxx-xxxx hoặc usr xxxx xxxx
+    match = content.match(/usr[- ]([a-z0-9]{6,10})[- _]([a-z0-9]{6,12})/i);
+    if (match) return `usr_${match[1].toLowerCase()}_${match[2].toLowerCase()}`;
+
+    // 3. Định dạng legacy chuẩn: USER_XXXXXX
+    match = content.match(/USER_[A-Za-z0-9_]+/i);
     if (match) return match[0].toUpperCase();
 
-    // 2. Dự phòng khi người dùng gõ nhầm dấu gạch ngang hoặc dấu cách: USER-XXXX hoặc USER XXXX
+    // 4. Dự phòng USER với dấu gạch ngang / dấu cách: USER-XXXX hoặc USER XXXX
     match = content.match(/USER[- ]([A-Za-z0-9]{4,10})/i);
     if (match) return `USER_${match[1].toUpperCase()}`;
 
