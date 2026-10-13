@@ -521,29 +521,29 @@ export default function DarkboardClient({
                         {/* Data Source Indicator Badge */}
                         <div
                             className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-mono text-xs transition-all ${
-                                timeframe === "all" || dataSource === "google_sheets"
+                                dataSource === "google_sheets"
                                     ? "bg-blue-500/10 border-blue-500/30 text-blue-300"
                                     : dataSource === "google_sheets_fallback"
                                     ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
                                     : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
                             }`}
                             title={
-                                timeframe === "all" || dataSource === "google_sheets"
+                                dataSource === "google_sheets"
                                     ? isVi
-                                        ? "Dữ liệu toàn bộ lịch sử từ Google Sheets (Bản sao lưu lưu trữ đầy đủ)"
+                                        ? "Dữ liệu toàn bộ lịch sử từ Google Sheets (Bản sao lưu)"
                                         : "Full historical archive from Google Sheets"
                                     : dataSource === "google_sheets_fallback"
                                     ? isVi
                                         ? "Dữ liệu dự phòng từ Google Sheets (khi MongoDB chưa kết nối)"
                                         : "Fallback data from Google Sheets"
                                     : isVi
-                                    ? "Dữ liệu thời gian thực từ MongoDB Atlas"
-                                    : "Realtime data from MongoDB"
+                                    ? "Dữ liệu thời gian thực từ MongoDB Atlas (Đã đồng bộ toàn bộ)"
+                                    : "Realtime data from MongoDB Atlas (Full history migrated)"
                             }
                         >
                             <span
                                 className={`w-2 h-2 rounded-full ${
-                                    timeframe === "all" || dataSource === "google_sheets"
+                                    dataSource === "google_sheets"
                                         ? "bg-blue-400 animate-pulse"
                                         : dataSource === "google_sheets_fallback"
                                         ? "bg-amber-400"
@@ -551,7 +551,7 @@ export default function DarkboardClient({
                                 }`}
                             />
                             <span>
-                                {timeframe === "all" || dataSource === "google_sheets"
+                                {dataSource === "google_sheets"
                                     ? isVi
                                         ? "Google Sheets (Lưu trữ)"
                                         : "Google Sheets"
@@ -559,7 +559,9 @@ export default function DarkboardClient({
                                     ? isVi
                                         ? "Sheets (Dự phòng)"
                                         : "Sheets (Fallback)"
-                                    : "MongoDB Realtime"}
+                                    : isVi
+                                    ? timeframe === "all" ? "MongoDB (Toàn bộ)" : "MongoDB Realtime"
+                                    : timeframe === "all" ? "MongoDB (All Data)" : "MongoDB Realtime"}
                             </span>
                         </div>
 

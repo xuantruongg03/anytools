@@ -4,7 +4,13 @@ import crypto from "crypto";
 import { TelemetryEvent, HandshakeSession, ExtensionId } from "./types";
 import { getDb } from "@/lib/db/mongodb";
 
-const TELEMETRY_DIR = path.join(process.cwd(), "data", "telemetry");
+import os from "os";
+
+// Dùng /tmp trên môi trường serverless (Vercel) để tránh lỗi EROFS / ENOENT trên /var/task
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const TELEMETRY_DIR = isServerless
+    ? path.join(os.tmpdir(), "anytools_telemetry")
+    : path.join(process.cwd(), "data", "telemetry");
 const EVENTS_FILE_PATH = path.join(TELEMETRY_DIR, "events.json");
 
 // In-memory cache for fast lookups & handshake sessions
@@ -39,29 +45,31 @@ export async function getMongoDb() {
 }
 
 /**
- * Ensure storage directory and file exists
+ * Ensure storage directory and file exists (safe for serverless)
  */
 function ensureStorage(): void {
-    if (!fs.existsSync(TELEMETRY_DIR)) {
-        fs.mkdirSync(TELEMETRY_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(EVENTS_FILE_PATH)) {
-        fs.writeFileSync(EVENTS_FILE_PATH, JSON.stringify([], null, 2), "utf8");
-        inMemoryEvents = [];
+    try {
+        if (!fs.existsSync(TELEMETRY_DIR)) {
+            fs.mkdirSync(TELEMETRY_DIR, { recursive: true });
+        }
+        if (!fs.existsSync(EVENTS_FILE_PATH)) {
+            fs.writeFileSync(EVENTS_FILE_PATH, JSON.stringify([], null, 2), "utf8");
+            inMemoryEvents = [];
+        }
+    } catch {
+        // Read-only filesystem trên serverless (Vercel) -> an toàn bỏ qua và dùng MongoDB/in-memory
     }
 }
 
 /**
- * Load all events from local file or MongoDB
+ * Load all events from MongoDB first, then fallback to local file
  */
 export async function getAllEvents(): Promise<TelemetryEvent[]> {
     if (inMemoryEvents && inMemoryEvents.length > 0) {
         return inMemoryEvents;
     }
 
-    ensureStorage();
-
-    // Try MongoDB first if configured
+    // 1. Thử lấy từ MongoDB (Nguồn chính trên Vercel)
     try {
         const db = await getMongoDb();
         if (db) {
@@ -69,7 +77,7 @@ export async function getAllEvents(): Promise<TelemetryEvent[]> {
                 .collection<TelemetryEvent>("telemetry_events")
                 .find({})
                 .sort({ createdAt: -1 })
-                .limit(2000)
+                .limit(5000)
                 .toArray();
             if (docs.length > 0) {
                 inMemoryEvents = docs.map((d) => {
@@ -83,49 +91,52 @@ export async function getAllEvents(): Promise<TelemetryEvent[]> {
         console.warn("⚠️ [Telemetry Storage] Mongo query error:", (e as Error).message);
     }
 
-    // Fallback to local file
+    // 2. Fallback sang file cục bộ nếu có
     try {
-        const content = fs.readFileSync(EVENTS_FILE_PATH, "utf8");
-        inMemoryEvents = JSON.parse(content) as TelemetryEvent[];
-        return inMemoryEvents;
+        ensureStorage();
+        if (fs.existsSync(EVENTS_FILE_PATH)) {
+            const content = fs.readFileSync(EVENTS_FILE_PATH, "utf8");
+            inMemoryEvents = JSON.parse(content) as TelemetryEvent[];
+            return inMemoryEvents;
+        }
     } catch {
-        return [];
+        // Bỏ qua lỗi đọc file trên môi trường serverless
     }
+
+    return inMemoryEvents || [];
 }
 
 /**
- * Save a new telemetry event
+ * Save a new telemetry event: MongoDB là chính thức, file cục bộ là cache dự phòng
  */
 export async function saveTelemetryEvent(event: TelemetryEvent): Promise<void> {
-    ensureStorage();
-
-    const events = await getAllEvents();
-    events.unshift(event);
-
-    // Keep max 5000 in local file to avoid bloat
-    if (events.length > 5000) {
-        events.length = 5000;
-    }
-    inMemoryEvents = events;
-
-    // Persist to local file
+    // 1. Ghi trực tiếp vào MongoDB (Primary - Await để không bị Vercel kill lambda)
     try {
-        fs.writeFileSync(EVENTS_FILE_PATH, JSON.stringify(events, null, 2), "utf8");
-    } catch (err) {
-        console.error("❌ [Telemetry Storage] Failed to write event to file:", err);
+        const db = await getMongoDb();
+        if (db) {
+            await db.collection("telemetry_events").insertOne(event as any);
+        }
+    } catch (dbErr) {
+        console.warn("⚠️ [Telemetry Storage] Mongo insert error:", (dbErr as Error).message);
     }
 
-    // Async write to MongoDB in background
-    (async () => {
-        try {
-            const db = await getMongoDb();
-            if (db) {
-                await db.collection("telemetry_events").insertOne(event as any);
-            }
-        } catch (dbErr) {
-            console.warn("⚠️ [Telemetry Storage] Mongo insert error:", (dbErr as Error).message);
+    // 2. Cập nhật In-memory cache
+    if (inMemoryEvents) {
+        inMemoryEvents.unshift(event);
+        if (inMemoryEvents.length > 5000) {
+            inMemoryEvents.length = 5000;
         }
-    })();
+    }
+
+    // 3. Dự phòng file cục bộ (bọc try-catch không để crash trên Vercel)
+    try {
+        ensureStorage();
+        if (fs.existsSync(TELEMETRY_DIR) && inMemoryEvents) {
+            fs.writeFileSync(EVENTS_FILE_PATH, JSON.stringify(inMemoryEvents.slice(0, 500), null, 2), "utf8");
+        }
+    } catch {
+        // An toàn bỏ qua trên môi trường Vercel read-only
+    }
 }
 
 /**

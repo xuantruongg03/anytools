@@ -124,31 +124,9 @@ export function mergeTelemetryEvents(
 export async function getUnifiedDashboardStats(
     options: StatsFilterOptions = {}
 ): Promise<DashboardStatsResult> {
-    const isAllTimeframe = options.timeframe === "all";
-
-    // =========================================================================
-    // TRƯỜNG HỢP 1: Chọn "Toàn bộ" (timeframe === "all") -> Lấy từ Google Sheets
-    // Vì Google Sheets là kho lưu trữ backup toàn bộ lịch sử (bao gồm cả dữ liệu cũ
-    // trước khi có MongoDB và toàn bộ dữ liệu mới được sao lưu liên tục từ MongoDB).
-    // =========================================================================
-    if (isAllTimeframe) {
-        try {
-            console.log("📊 [Unified Stats] Timeframe 'all' selected -> Fetching full historical archive from Google Sheets...");
-            const sheetStats = await getRealGoogleSheetsStats(options);
-            return {
-                ...sheetStats,
-                source: "google_sheets",
-            };
-        } catch (sheetErr: any) {
-            console.warn("⚠️ [Unified Stats] Google Sheets fetch failed for 'all', falling back to MongoDB:", sheetErr.message);
-            const mongoStats = await getRealMongoStats(options);
-            return mongoStats;
-        }
-    }
-
-    // =========================================================================
-    // TRƯỜNG HỢP 2: Khung thời gian khác ("1h", "24h", "7d", "30d") -> CHỈ LẤY MONGODB
-    // =========================================================================
+    // Toàn bộ dữ liệu lịch sử đã được migrate sang MongoDB.
+    // Đọc trực tiếp từ MongoDB cho mọi khung thời gian (1h, 24h, 7d, 30d, all).
+    // Không đọc từ Google Sheets để tối ưu hiệu năng và bảo vệ hạn mức API.
     try {
         console.log(`⚡ [Unified Stats] Fetching strictly from MongoDB for timeframe [${options.timeframe || "24h"}]...`);
         const mongoStats = await getRealMongoStats(options);

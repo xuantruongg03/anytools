@@ -42,7 +42,7 @@ export async function fetchMongoUsers(): Promise<RawSheetUser[]> {
             .collection("credits_users")
             .find({})
             .sort({ createdAt: -1 })
-            .limit(5000)
+            .limit(25000)
             .toArray();
 
         const userMap = new Map<string, RawSheetUser>();
@@ -177,7 +177,7 @@ export async function fetchMongoTelemetry(): Promise<TelemetryEvent[]> {
             .collection("credits_downloads")
             .find({})
             .sort({ createdAt: -1 })
-            .limit(5000)
+            .limit(25000)
             .toArray();
 
         const rawRecords: RawDownloadRecord[] = dlDocs.map((doc: any, idx: number) => ({
@@ -201,7 +201,7 @@ export async function fetchMongoTelemetry(): Promise<TelemetryEvent[]> {
                 .collection("telemetry_events")
                 .find({})
                 .sort({ createdAt: -1 })
-                .limit(5000)
+                .limit(25000)
                 .toArray();
 
             directEvents = teDocs.map((doc: any) => {
