@@ -26,14 +26,9 @@ try {
 }
 
 // ============ Config ============
-const MONGODB_URI =
-    process.env.MONGODB_URI ||
-    process.env.ATLAS_URL ||
-    process.env.STORAGE_URL ||
-    process.env.DATABASE_URL ||
-    "";
+const MONGODB_URI = process.env.ATLAS_MONGODB_URI;
 
-const MONGODB_DATABASE = process.env.MONGODB_DATABASE || "anytools";
+const MONGODB_DATABASE = "anytools";
 
 const options: MongoClientOptions = {
     // Vercel serverless: giới hạn connection pool nhỏ (mặc định MongoDB driver = 100, quá nhiều cho serverless)
