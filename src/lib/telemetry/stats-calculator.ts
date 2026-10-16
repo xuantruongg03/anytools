@@ -16,6 +16,9 @@ import {
 import { StatsFilterOptions } from "./stats";
 import { batchResolveIpLocations } from "@/lib/utils/geo-ip-service";
 
+const PLACEHOLDER_COUNTRY = "Chưa xác định";
+const PLACEHOLDER_CITY = "";
+
 export interface RawSheetUser {
     userId: string;
     credits: number;
@@ -170,9 +173,9 @@ export async function processRawDownloadsIntoTelemetryEvents(
         ipUserMap.get(clientIp)!.add(userId);
     });
 
-    // Resolve unique IPs using cascading multi-provider GeoIP service
-    const uniqueIps = Array.from(new Set(allClientIps.filter(Boolean)));
-    const geoMap = await batchResolveIpLocations(uniqueIps, 8);
+    // GeoIP is intentionally NOT resolved on the stats critical path.
+    // Keep raw downloads synchronous and let geo enrichment be lazy (UI/API route).
+    const geoMap = new Map<string, { country: string; city: string; region?: string }>();
 
     // Dynamic Page-Aware Latency Estimation Coefficients
     const EST_COUNTDOWN_BASE = Number(process.env.TELEMETRY_EST_COUNTDOWN_BASE || "30.0");
@@ -311,8 +314,8 @@ export async function processRawDownloadsIntoTelemetryEvents(
         else if (riskScore >= 25) severity = "LOW";
 
         const geo = geoMap.get(clientIp);
-        const country = geo?.country || "Chưa xác định";
-        const city = geo?.city || (geo?.region || "");
+        const country = geo?.country ?? PLACEHOLDER_COUNTRY;
+        const city = geo?.city ?? PLACEHOLDER_CITY;
 
         return {
             id: logId,
@@ -871,8 +874,8 @@ export async function computeDashboardStats(
     let highSpendersCount = 0;
     let inactiveCount = 0;
 
-    const userIps = Array.from(new Set(rawUsers.map((u) => u.createdIp).filter((ip) => ip && ip !== "unknown")));
-    const userGeoMap = await batchResolveIpLocations(userIps.slice(0, 80), 8);
+    const userGeoMap = new Map<string, { country: string; city: string; region?: string }>();
+    void batchResolveIpLocations as unknown as (_a: string[], _b: number) => void;
 
     const enrichedUsers: UserDirectoryItem[] = rawUsers.map((u) => {
         const uKey = u.userId.trim().toUpperCase();

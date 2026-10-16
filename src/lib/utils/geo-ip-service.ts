@@ -12,6 +12,9 @@ export interface GeoLocation {
     cachedAt: number;
 }
 import os from "os";
+import { upstashMGetGeoCache, upstashMSetGeoCache } from "@/lib/upstash-geo";
+
+const GEO_CACHE_TTL_SECONDS = 60 * 60 * 24 * 20;
 
 // Dùng /tmp trên môi trường serverless (Vercel) để tránh lỗi EROFS / ENOENT trên /var/task
 const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
@@ -284,6 +287,14 @@ async function fetchFromGeoPlugin(ip: string): Promise<GeoLocation | null> {
 export async function resolveIpLocation(ip: string): Promise<GeoLocation> {
     loadDiskCache();
 
+    if (memoryCache.has(ip)) return memoryCache.get(ip)!;
+    const shared = await upstashMGetGeoCache([ip]);
+    const sharedGeo = shared.get(ip);
+    if (sharedGeo) {
+        memoryCache.set(ip, sharedGeo);
+        return sharedGeo;
+    }
+
     if (!ip || isPrivateIp(ip)) {
         return {
             ip: ip || "127.0.0.1",
@@ -340,6 +351,7 @@ export async function resolveIpLocation(ip: string): Promise<GeoLocation> {
 
     // Save to cache and schedule disk persist
     memoryCache.set(ip, geo);
+    void upstashMSetGeoCache([[ip, geo]], GEO_CACHE_TTL_SECONDS);
     persistCacheDebounced();
 
     return geo;
@@ -353,13 +365,25 @@ export async function batchResolveIpLocations(ips: string[], concurrency: number
     const uniqueIps = Array.from(new Set(ips.filter(Boolean)));
     const resultMap = new Map<string, GeoLocation>();
 
-    // 1. Separate cached vs uncached
+    // 1. Separate local/shared cached IPs from network lookups.
     const uncachedIps: string[] = [];
+    const sharedCandidates: string[] = [];
     for (const ip of uniqueIps) {
         if (isPrivateIp(ip)) {
             resultMap.set(ip, { ip, country: "Localhost", city: "Internal", cachedAt: Date.now() });
         } else if (memoryCache.has(ip)) {
             resultMap.set(ip, memoryCache.get(ip)!);
+        } else {
+            sharedCandidates.push(ip);
+        }
+    }
+
+    const shared = await upstashMGetGeoCache(sharedCandidates);
+    for (const ip of sharedCandidates) {
+        const geo = shared.get(ip);
+        if (geo) {
+            memoryCache.set(ip, geo);
+            resultMap.set(ip, geo);
         } else {
             uncachedIps.push(ip);
         }

@@ -13,14 +13,30 @@ import {
     computeDashboardStats,
 } from "./stats-calculator";
 
-// In-memory cache for MongoDB data (TTL: 8 seconds)
+// Keep the dashboard responsive while allowing a short freshness window.
 let cachedMongoEvents: TelemetryEvent[] | null = null;
 let lastMongoEventsCache = 0;
 let cachedMongoTransactions: CreditTransaction[] | null = null;
 let lastMongoTxCache = 0;
 let cachedMongoUsers: RawSheetUser[] | null = null;
 let lastMongoUsersCache = 0;
-const MONGO_CACHE_TTL_MS = 8000;
+const MONGO_CACHE_TTL_MS = 45_000;
+
+function timeframeToDate(timeframe: StatsFilterOptions["timeframe"]): Date | null {
+    const now = Date.now();
+    switch (timeframe) {
+        case "1h": return new Date(now - 60 * 60 * 1000);
+        case "24h": return new Date(now - 24 * 60 * 60 * 1000);
+        case "7d": return new Date(now - 7 * 24 * 60 * 60 * 1000);
+        case "30d": return new Date(now - 30 * 24 * 60 * 60 * 1000);
+        default: return null;
+    }
+}
+
+function createdAtFilter(timeframe: StatsFilterOptions["timeframe"]): Record<string, unknown> {
+    const since = timeframeToDate(timeframe);
+    return since ? { createdAt: { $gte: since } } : {};
+}
 
 /**
  * Lấy danh sách users từ MongoDB (collection credits_users)
@@ -100,7 +116,7 @@ export async function fetchMongoUsers(): Promise<RawSheetUser[]> {
 /**
  * Lấy danh sách giao dịch từ MongoDB (collection credits_transactions)
  */
-export async function fetchMongoTransactions(): Promise<CreditTransaction[]> {
+export async function fetchMongoTransactions(options: StatsFilterOptions = {}): Promise<CreditTransaction[]> {
     const now = Date.now();
     if (cachedMongoTransactions && now - lastMongoTxCache < MONGO_CACHE_TTL_MS) {
         return cachedMongoTransactions;
@@ -115,7 +131,8 @@ export async function fetchMongoTransactions(): Promise<CreditTransaction[]> {
 
         const rawDocs = await db
             .collection("credits_transactions")
-            .find({})
+            .find(createdAtFilter(options.timeframe))
+            .project({ transId: 1, id: 1, userId: 1, amount: 1, creditsAdded: 1, bankCode: 1, content: 1, createdAt: 1 })
             .sort({ createdAt: -1 })
             .limit(5000)
             .toArray();
@@ -159,7 +176,7 @@ export async function fetchMongoTransactions(): Promise<CreditTransaction[]> {
 /**
  * Lấy và xử lý dữ liệu Telemetry / Lượt tải từ MongoDB (collection credits_downloads và telemetry_events)
  */
-export async function fetchMongoTelemetry(): Promise<TelemetryEvent[]> {
+export async function fetchMongoTelemetry(options: StatsFilterOptions = {}): Promise<TelemetryEvent[]> {
     const now = Date.now();
     if (cachedMongoEvents && now - lastMongoEventsCache < MONGO_CACHE_TTL_MS) {
         return cachedMongoEvents;
@@ -175,7 +192,8 @@ export async function fetchMongoTelemetry(): Promise<TelemetryEvent[]> {
         // 1. Lấy lượt tải từ credits_downloads
         const dlDocs = await db
             .collection("credits_downloads")
-            .find({})
+            .find(createdAtFilter(options.timeframe))
+            .project({ logId: 1, userId: 1, downloadType: 1, documentUrl: 1, documentTitle: 1, totalPages: 1, clientIp: 1, createdAt: 1 })
             .sort({ createdAt: -1 })
             .limit(25000)
             .toArray();
@@ -199,7 +217,8 @@ export async function fetchMongoTelemetry(): Promise<TelemetryEvent[]> {
         try {
             const teDocs = await db
                 .collection("telemetry_events")
-                .find({})
+                .find(createdAtFilter(options.timeframe))
+                .project({ _id: 1, id: 1, sessionNonce: 1, clientUserId: 1, extensionId: 1, extensionVersion: 1, action: 1, docIdHash: 1, docTitle: 1, pages: 1, downloadType: 1, elapsedSeconds: 1, estimatedMinSeconds: 1, ip: 1, country: 1, city: 1, browser: 1, anomalies: 1, riskScore: 1, severity: 1, meta: 1, createdAt: 1 })
                 .sort({ createdAt: -1 })
                 .limit(25000)
                 .toArray();
@@ -249,8 +268,8 @@ export async function getRealMongoStats(
     options: StatsFilterOptions = {}
 ): Promise<DashboardStatsResult> {
     const [rawEvents, rawTransactions, rawUsers] = await Promise.all([
-        fetchMongoTelemetry(),
-        fetchMongoTransactions(),
+        fetchMongoTelemetry(options),
+        fetchMongoTransactions(options),
         fetchMongoUsers(),
     ]);
 
