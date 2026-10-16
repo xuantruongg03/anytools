@@ -41,7 +41,7 @@ function extractUserId(content: string): string | null {
 export async function POST(request: NextRequest) {
     // 1. Kiểm tra bảo mật Webhook Secret
     const authHeader = request.headers.get("authorization");
-    const secretHeader = request.headers.get("x-webhook-secret");
+    const secretHeader = request.headers.get("X-SePay-Signature");
     const { searchParams } = new URL(request.url);
     const querySecret = searchParams.get("secret");
 
