@@ -40,20 +40,65 @@ function extractUserId(content: string): string | null {
 
 export async function POST(request: NextRequest) {
     // 1. Kiểm tra bảo mật Webhook Secret
-    const authHeader = request.headers.get("authorization");
-    const secretHeader = request.headers.get("X-SePay-Signature");
-    const { searchParams } = new URL(request.url);
-    const querySecret = searchParams.get("secret");
+    const signature = request.headers.get("x-sepay-signature") || "";
+    const timestamp = request.headers.get("x-sepay-timestamp") || "";
 
-    const providedSecret =
-        secretHeader ||
-        querySecret ||
-        (authHeader?.startsWith("Apikey ") ? authHeader.replace("Apikey ", "").trim() : "") ||
-        (authHeader?.startsWith("Bearer ") ? authHeader.replace("Bearer ", "").trim() : "");
+    // Kiểm tra cấu hình
+    if (!WEBHOOK_SECRET || !signature || !timestamp) {
+        return NextResponse.json(
+            { success: false, error: "Missing authentication data" },
+            { status: 401 }
+        );
+    }
 
-    if (providedSecret !== WEBHOOK_SECRET) {
-        console.warn("[Webhook] Unauthorized attempt with secret:", providedSecret);
-        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    // Chống gửi lại webhook cũ: cho phép lệch tối đa 5 phút
+    const timestampNumber = Number(timestamp);
+
+    if (
+        !Number.isFinite(timestampNumber) ||
+        Math.abs(Date.now() / 1000 - timestampNumber) > 300
+    ) {
+        return NextResponse.json(
+            { success: false, error: "Invalid timestamp" },
+            { status: 401 }
+        );
+    }
+
+    // Đọc nguyên văn body trước khi parse JSON
+    const rawBody = await request.text();
+
+    // Chuỗi cần ký: timestamp.rawBody
+    const message = `${timestamp}.${rawBody}`;
+
+    const encoder = new TextEncoder();
+
+    const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(WEBHOOK_SECRET),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+    );
+
+    const signatureBuffer = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        encoder.encode(message)
+    );
+
+    const hash = Array.from(new Uint8Array(signatureBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+
+    const expectedSignature = `sha256=${hash}`;
+
+    if (signature !== expectedSignature) {
+        console.warn("[Webhook] Invalid HMAC signature");
+
+        return NextResponse.json(
+            { success: false, error: "Invalid signature" },
+            { status: 401 }
+        );
     }
 
     try {
