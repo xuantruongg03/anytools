@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const body = await request.json();
+        const body = JSON.parse(rawBody);
 
         // 2. Chuẩn hóa dữ liệu từ SePay / Casso / Custom
         let transactions: Array<{
