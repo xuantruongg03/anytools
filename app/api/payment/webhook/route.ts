@@ -16,27 +16,45 @@ const WEBHOOK_SECRET = process.env.PAYMENT_WEBHOOK_SECRET || process.env.ADMIN_S
  *   "USER 40RA71"
  *   "usr-8s81edbt-mv6u0d9m"
  */
+
 function extractUserId(content: string): string | null {
     if (!content) return null;
 
-    // 1. Định dạng mới từ tracker.js: usr_xxxxxxxx_xxxxxxxx (giữ nguyên lowercase vì MongoDB lưu lowercase)
-    let match = content.match(/usr_[a-z0-9]{6,10}_[a-z0-9]{6,12}/i);
-    if (match) return match[0].toLowerCase();
+    // Chuẩn hóa chữ hoa/thường, giữ nguyên nội dung gốc để match
+    const normalized = content.trim();
 
-    // 2. Dự phòng usr_ với dấu gạch ngang / dấu cách thay vì underscore: usr-xxxx-xxxx hoặc usr xxxx xxxx
-    match = content.match(/usr[- ]([a-z0-9]{6,10})[- _]([a-z0-9]{6,12})/i);
-    if (match) return `usr_${match[1].toLowerCase()}_${match[2].toLowerCase()}`;
+    // 1. ID mới: usr_bofavqnu_mvak783z
+    // Hỗ trợ cả chữ hoa/thường, dấu cách hoặc dấu gạch ngang
+    let match = normalized.match(
+        /usr[_\s-]*([a-z0-9]{6,10})[_\s-]+([a-z0-9]{6,12})/i
+    );
 
-    // 3. Định dạng legacy chuẩn: USER_XXXXXX
-    match = content.match(/USER_[A-Za-z0-9_]+/i);
-    if (match) return match[0].toUpperCase();
+    if (match) {
+        return `usr_${match[1].toLowerCase()}_${match[2].toLowerCase()}`;
+    }
 
-    // 4. Dự phòng USER với dấu gạch ngang / dấu cách: USER-XXXX hoặc USER XXXX
-    match = content.match(/USER[- ]([A-Za-z0-9]{4,10})/i);
-    if (match) return `USER_${match[1].toUpperCase()}`;
+    // 2. ID legacy có dấu gạch dưới: USER_3EY2ZK
+    match = normalized.match(
+        /USER_([A-Z0-9]{4,10})/i
+    );
+
+    if (match) {
+        return `USER_${match[1].toUpperCase()}`;
+    }
+
+    // 3. ID legacy không có dấu phân cách: USER3EY2ZK
+    // Hỗ trợ NAPUSER3EY2ZK và NAP_USER3EY2ZK
+    match = normalized.match(
+        /USER([A-Z0-9]{6,10})/i
+    );
+
+    if (match) {
+        return `USER_${match[1].toUpperCase()}`;
+    }
 
     return null;
 }
+
 
 export async function POST(request: NextRequest) {
     // 1. Kiểm tra bảo mật Webhook Secret
