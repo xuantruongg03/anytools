@@ -127,6 +127,7 @@ export default function DarkboardClient({
     const [selectedUser, setSelectedUser] = useState<UserDirectoryItem | null>(null);
     const [marketingPersonaFilter, setMarketingPersonaFilter] = useState<"all" | "whales" | "impatient" | "frugal" | "frustrated">("all");
     const [marketingSearchQuery, setMarketingSearchQuery] = useState("");
+    const [expandedIntentUserId, setExpandedIntentUserId] = useState<string | null>(null);
 
     // Refs for in-flight guards, aborting old requests, and dynamic polling
     const isFetchingRef = useRef(false);
@@ -3563,13 +3564,13 @@ export default function DarkboardClient({
                                 <table className="w-full text-left text-xs font-mono">
                                     <thead>
                                         <tr className="border-b border-gray-800 text-gray-400">
-                                            <th className="pb-3 font-semibold w-10">{isVi ? "#" : "#"}</th>
-                                            <th className="pb-3 font-semibold w-44">{isVi ? "User ID" : "User ID"}</th>
-                                            <th className="pb-3 font-semibold w-28">{isVi ? "Score" : "Score"}</th>
-                                            <th className="pb-3 font-semibold">{isVi ? "Tín Hiệu Hành Vi" : "Behavioral Signals"}</th>
-                                            <th className="pb-3 font-semibold w-32 text-center">{isVi ? "Thao Tác" : "Actions"}</th>
-                                            <th className="pb-3 font-semibold w-36">{isVi ? "Hoạt Động Cuối" : "Last Active"}</th>
-                                            <th className="pb-3 font-semibold w-36 text-right">{isVi ? "Chiến Lược" : "Strategy"}</th>
+                                            <th className="pb-3 font-semibold w-10 pr-3">#</th>
+                                            <th className="pb-3 font-semibold w-52 pr-6">User ID</th>
+                                            <th className="pb-3 font-semibold w-36 pr-6">Score</th>
+                                            <th className="pb-3 font-semibold pr-6 min-w-[260px]">{isVi ? "Tín Hiệu Hành Vi" : "Behavioral Signals"}</th>
+                                            <th className="pb-3 font-semibold w-36 text-center px-3">{isVi ? "Thao Tác" : "Actions"}</th>
+                                            <th className="pb-3 font-semibold w-40 px-3">{isVi ? "Hoạt Động Cuối" : "Last Active"}</th>
+                                            <th className="pb-3 font-semibold w-36 text-right pl-3">{isVi ? "Chiến Lược" : "Strategy"}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-800/60">
@@ -3585,39 +3586,29 @@ export default function DarkboardClient({
                                                     return true;
                                                 })
                                                 .map((user, idx) => (
-                                                    <tr key={user.userId} className="hover:bg-gray-800/40 transition-colors">
-                                                        <td className="py-3 text-gray-400 font-bold whitespace-nowrap">
-                                                            #{idx + 1}
-                                                        </td>
-                                                        <td className="py-3 font-bold text-cyan-300 whitespace-nowrap">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <span>{user.userId}</span>
+                                                    <tr key={user.userId} className="hover:bg-gray-800/30 transition-colors">
+                                                        <td className="py-2.5 text-gray-400 font-bold whitespace-nowrap pr-3 align-top">#{idx + 1}</td>
+                                                        <td className="py-2.5 font-bold text-cyan-300 pr-6 align-top">
+                                                            <div className="flex items-center gap-1.5 pt-0.5">
+                                                                <span title={user.userId} className="truncate max-w-[130px] block">{user.userId}</span>
                                                                 <button
                                                                     onClick={() => navigator.clipboard.writeText(user.userId)}
                                                                     title="Copy User ID"
-                                                                    className="text-gray-500 hover:text-cyan-400 cursor-pointer text-[10px]"
-                                                                >
-                                                                    📋
-                                                                </button>
+                                                                    className="text-gray-500 hover:text-cyan-400 cursor-pointer text-[10px] flex-shrink-0"
+                                                                >📋</button>
                                                                 {user.preferredRegion === "intl" && (
-                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold font-mono">
-                                                                        🌐 Quốc tế (USD)
-                                                                    </span>
+                                                                    <span title="Intl (USD)" className="flex-shrink-0 px-1 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">🌐</span>
                                                                 )}
                                                                 {user.preferredRegion === "both" && (
-                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold font-mono">
-                                                                        🔄 VN & Quốc tế
-                                                                    </span>
+                                                                    <span title="VN & Intl" className="flex-shrink-0 px-1 py-0.5 rounded text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">🔄</span>
                                                                 )}
                                                                 {user.preferredRegion === "vn" && (
-                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold font-mono">
-                                                                        🇻🇳 Gói VN
-                                                                    </span>
+                                                                    <span title="Gói VN" className="flex-shrink-0 px-1 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">🇻🇳</span>
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="py-3 whitespace-nowrap">
-                                                            <div className="flex items-center gap-2">
+                                                        <td className="py-2.5 whitespace-nowrap pr-6 align-top">
+                                                            <div className="flex items-center gap-2 pt-0.5">
                                                                 <div className="w-16 h-2 bg-[#141b2d] rounded-full overflow-hidden">
                                                                     <div
                                                                         className={`h-full rounded-full ${
@@ -3643,47 +3634,104 @@ export default function DarkboardClient({
                                                                 </span>
                                                             </div>
                                                         </td>
-                                                        <td className="py-3">
-                                                            <div className="flex flex-wrap gap-1" style={{ maxWidth: 280 }}>
-                                                                {user.reasons.slice(0, 3).map((r, rIdx) => (
-                                                                    <span
-                                                                        key={rIdx}
-                                                                        title={r}
-                                                                        className={`px-2 py-0.5 rounded text-[10px] truncate max-w-[260px] ${
-                                                                            r.includes("STK") || r.includes("sao chép")
-                                                                                ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
-                                                                                : r.includes("Hủy") || r.includes("bỏ")
-                                                                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                                                                                : r.includes("nạp") || r.includes("coffee") || r.includes("Coffee")
-                                                                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                                                                                : r.includes("USD") || r.includes("Quốc tế")
-                                                                                ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                                                                                : "bg-gray-800 text-gray-300"
+                                                        {/* Signals column */}
+                                                        <td className="py-2.5 pr-6 align-top">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                {user.reasons.length === 0 ? (
+                                                                    <span className="text-gray-600">—</span>
+                                                                ) : (
+                                                                    user.reasons.slice(0, 1).map((r, rIdx) => (
+                                                                        <span
+                                                                            key={rIdx}
+                                                                            title={r}
+                                                                            className={`px-2 py-0.5 rounded text-[10px] whitespace-nowrap flex-shrink-0 ${
+                                                                                r.includes("STK") || r.includes("sao chép")
+                                                                                    ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                                                                    : r.includes("Hủy") || r.includes("bỏ")
+                                                                                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                                                                    : r.includes("nạp") || r.includes("coffee") || r.includes("Coffee")
+                                                                                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                                                                    : r.includes("USD") || r.includes("Quốc tế")
+                                                                                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                                                                    : "bg-gray-800 text-gray-300"
+                                                                            }`}
+                                                                        >
+                                                                            {r.length > 28 ? r.slice(0, 26) + "…" : r}
+                                                                        </span>
+                                                                    ))
+                                                                )}
+                                                                {user.reasons.length > 1 && (
+                                                                    <button
+                                                                        onClick={() => setExpandedIntentUserId(
+                                                                            expandedIntentUserId === user.userId ? null : user.userId
+                                                                        )}
+                                                                        className={`px-2 py-0.5 rounded text-[10px] font-medium border cursor-pointer flex-shrink-0 transition-colors flex items-center gap-1 ${
+                                                                            expandedIntentUserId === user.userId
+                                                                                ? "bg-indigo-500/30 text-indigo-200 border-indigo-500/50 hover:bg-indigo-500/40"
+                                                                                : "bg-gray-800/80 text-gray-300 border-gray-700 hover:bg-gray-700 hover:text-white"
                                                                         }`}
                                                                     >
-                                                                        {r}
-                                                                    </span>
-                                                                ))}
-                                                                {user.reasons.length > 3 && (
-                                                                    <span
-                                                                        title={user.reasons.slice(3).join(" • ")}
-                                                                        className="px-2 py-0.5 rounded text-[10px] bg-gray-700/60 text-gray-400 border border-gray-600/40 cursor-help"
-                                                                    >
-                                                                        +{user.reasons.length - 3}
-                                                                    </span>
+                                                                        {expandedIntentUserId === user.userId ? (
+                                                                            <>
+                                                                                <span>▲</span>
+                                                                                <span>{isVi ? "Thu gọn" : "Collapse"}</span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <span>+{user.reasons.length - 1}</span>
+                                                                                <span>{isVi ? "hành vi" : "more"}</span>
+                                                                            </>
+                                                                        )}
+                                                                    </button>
                                                                 )}
                                                             </div>
+                                                            {expandedIntentUserId === user.userId && user.reasons.length > 1 && (
+                                                                <div className="mt-2 p-2 bg-[#121829] rounded-lg border border-gray-700/80 shadow-md">
+                                                                    <div className="text-[10px] text-gray-400 mb-1.5 flex items-center justify-between">
+                                                                        <span className="font-semibold text-gray-300 flex items-center gap-1">
+                                                                            <span>📋</span>
+                                                                            <span>{isVi ? `Các hành vi khác (${user.reasons.length - 1})` : `Other signals (${user.reasons.length - 1})`}</span>
+                                                                        </span>
+                                                                        <button
+                                                                            onClick={() => setExpandedIntentUserId(null)}
+                                                                            className="text-gray-500 hover:text-gray-300 cursor-pointer text-[10px]"
+                                                                            title={isVi ? "Đóng" : "Close"}
+                                                                        >
+                                                                            ✕
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="flex flex-wrap gap-1.5">
+                                                                        {user.reasons.slice(1).map((r, rIdx) => (
+                                                                            <span
+                                                                                key={rIdx}
+                                                                                title={r}
+                                                                                className={`px-2 py-0.5 rounded text-[10px] ${
+                                                                                    r.includes("STK") || r.includes("sao chép")
+                                                                                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                                                                        : r.includes("Hủy") || r.includes("bỏ")
+                                                                                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                                                                        : r.includes("nạp") || r.includes("coffee") || r.includes("Coffee")
+                                                                                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                                                                        : r.includes("USD") || r.includes("Quốc tế")
+                                                                                        ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                                                                        : "bg-gray-700 text-gray-200"
+                                                                                }`}
+                                                                            >
+                                                                                {r}
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </td>
-                                                        <td className="py-3 text-gray-400 whitespace-nowrap text-[11px] text-center">
-                                                            <div className="flex flex-col gap-0.5">
-                                                                <span>Pop <strong className="text-white">{user.popupOpens}</strong> · Top <strong className="text-emerald-400">{user.topupAttempts}</strong> · ✕ <strong className="text-rose-400">{user.abortedCount}</strong></span>
-                                                            </div>
+                                                        <td className="py-2.5 text-gray-400 whitespace-nowrap text-[11px] text-center px-3 align-top">
+                                                            <span className="block pt-0.5">Pop <strong className="text-white">{user.popupOpens}</strong> · Top <strong className="text-emerald-400">{user.topupAttempts}</strong> · ✕ <strong className="text-rose-400">{user.abortedCount}</strong></span>
                                                         </td>
-                                                        <td className="py-3 text-gray-400 whitespace-nowrap">
-                                                            {new Date(user.lastActive).toLocaleString(isVi ? "vi-VN" : "en-US")}
+                                                        <td className="py-2.5 text-gray-400 whitespace-nowrap px-3 align-top">
+                                                            <span className="block pt-0.5">{new Date(user.lastActive).toLocaleString(isVi ? "vi-VN" : "en-US")}</span>
                                                         </td>
-                                                        <td className="py-3 text-right whitespace-nowrap">
-                                                            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[11px] font-bold">
+                                                        <td className="py-2.5 text-right whitespace-nowrap pl-3 align-top">
+                                                            <span className="inline-block mt-0.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[11px] font-bold">
                                                                 {user.abortedCount > 0
                                                                     ? "Offer Gói 10k Mini"
                                                                     : user.topupAttempts > 1
@@ -3693,6 +3741,7 @@ export default function DarkboardClient({
                                                         </td>
                                                     </tr>
                                                 ))
+
                                         ) : (
                                             <tr>
                                                 <td colSpan={7} className="py-10 text-center text-gray-500">
