@@ -28,11 +28,13 @@ export type TelemetryAction =
     // Topup & Monetization
     | "TOPUP_OPENED"
     | "TOPUP_PAGE_VIEWED"
+    | "TOPUP_TAB_VIEWED"
     | "TOPUP_PACKAGE_SELECTED"
     | "BUY_ME_A_COFFEE_CLICKED"
     | "TOPUP_ACTION_COPY"
     | "TOPUP_MANUAL_CHECK_CLICKED"
     | "TOPUP_SUCCESS_CONFIRMED"
+    | "TOPUP_CUSTOM_CONTACT_CLICKED"
     // Settings
     | "SETTING_SCROLL_DELAY_CHANGED";
 
@@ -290,6 +292,7 @@ export interface MarketingBehaviorStats {
         topupAttempts: number;
         abortedCount: number;
         lastActive: string;
+        preferredRegion?: "vn" | "intl" | "both";
     }>;
 
     // Optimal Marketing Hours (Khung giờ vàng tiếp thị)
@@ -300,6 +303,16 @@ export interface MarketingBehaviorStats {
         topupIntentCount: number;
         isRecommendedSlot: boolean;
     }>;
+
+    // Regional Breakdown: Vietnam Domestic (VietQR) vs International (USD / Coffee)
+    regionalBreakdown: {
+        vnViewsCount: number;             // Tổng lượt xem gói Việt Nam (VietQR)
+        intlViewsCount: number;           // Tổng lượt xem gói Quốc tế (Buy Me a Coffee)
+        vnPackageSelections: number;      // Lượt click chọn các gói VND (2k, 5k, 10k, bulk)
+        intlPackageSelections: number;    // Lượt click chọn các gói USD ($1, $3, $5)
+        buyMeACoffeeClicks: number;       // Lượt click mở Buy Me a Coffee
+        intlInterestRatio: number;        // Tỷ lệ % quan tâm đến gói quốc tế
+    };
 
     // Raw action frequency breakdown
     actionBreakdown: Record<string, number>;

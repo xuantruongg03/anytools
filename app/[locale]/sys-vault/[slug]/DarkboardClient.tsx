@@ -3104,6 +3104,115 @@ export default function DarkboardClient({
                             </div>
                         </div>
 
+                        {/* 3.1 REGIONAL TOPUP MONITORING: VN (VIETQR) VS INTL (BUY ME A COFFEE / USD) */}
+                        <div className="bg-[#0f1422] border border-gray-800 rounded-3xl p-6 shadow-xl space-y-5">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-800 pb-3">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                        <span>🌐</span>
+                                        <span>{isVi ? "Giám Sát Nhu Cầu Nạp: Gói Việt Nam (VietQR) vs Quốc Tế (USD / Coffee)" : "Domestic (VND) vs International (USD) Top-up Demand"}</span>
+                                    </h3>
+                                    <p className="text-[11px] text-gray-500 font-mono mt-0.5">
+                                        {isVi
+                                            ? "Phân tích vi hành vi: Theo dõi người dùng xem tab gói cước VN hay Quốc tế, click chọn gói USD và tương tác link Buy Me a Coffee"
+                                            : "Telemetry tracking: Monitor users switching between Vietnam VietQR tab and International Buy Me a Coffee tab"}
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-300 font-mono text-xs font-bold border border-purple-500/20">
+                                        {isVi ? "Tỷ Lệ Quan Tâm Quốc Tế" : "Intl Demand Ratio"}: {marketingStats?.regionalBreakdown?.intlInterestRatio || 0}%
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* 4 Cards Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="bg-[#141b2d] border border-gray-800 rounded-2xl p-4 space-y-1">
+                                    <div className="text-[10px] font-mono text-emerald-400 uppercase font-semibold flex items-center justify-between">
+                                        <span>{isVi ? "Xem Tab Gói VN" : "VN Tab Views"}</span>
+                                        <span>🇻🇳</span>
+                                    </div>
+                                    <div className="text-2xl font-black text-white font-mono">
+                                        {(marketingStats?.regionalBreakdown?.vnViewsCount || 0).toLocaleString()}
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 font-mono">
+                                        {isVi ? "Xem gói VietQR nội địa" : "VietQR package views"}
+                                    </div>
+                                </div>
+
+                                <div className="bg-[#141b2d] border border-gray-800 rounded-2xl p-4 space-y-1">
+                                    <div className="text-[10px] font-mono text-purple-400 uppercase font-semibold flex items-center justify-between">
+                                        <span>{isVi ? "Xem Tab Quốc Tế" : "Intl Tab Views"}</span>
+                                        <span>🌐</span>
+                                    </div>
+                                    <div className="text-2xl font-black text-purple-300 font-mono">
+                                        {(marketingStats?.regionalBreakdown?.intlViewsCount || 0).toLocaleString()}
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 font-mono">
+                                        {isVi ? "Bấm sang tab Buy Me a Coffee" : "Switched to Intl tab"}
+                                    </div>
+                                </div>
+
+                                <div className="bg-[#141b2d] border border-gray-800 rounded-2xl p-4 space-y-1">
+                                    <div className="text-[10px] font-mono text-cyan-400 uppercase font-semibold flex items-center justify-between">
+                                        <span>{isVi ? "Chọn Gói USD" : "USD Pkg Clicks"}</span>
+                                        <span>💵</span>
+                                    </div>
+                                    <div className="text-2xl font-black text-cyan-300 font-mono">
+                                        {(marketingStats?.regionalBreakdown?.intlPackageSelections || 0).toLocaleString()}
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 font-mono">
+                                        {isVi ? "Click chọn gói $1, $3, $5" : "Selected $1, $3, $5 USD"}
+                                    </div>
+                                </div>
+
+                                <div className="bg-[#141b2d] border border-gray-800 rounded-2xl p-4 space-y-1">
+                                    <div className="text-[10px] font-mono text-amber-400 uppercase font-semibold flex items-center justify-between">
+                                        <span>{isVi ? "Click Buy Me a Coffee" : "Coffee Clicks"}</span>
+                                        <span>☕</span>
+                                    </div>
+                                    <div className="text-2xl font-black text-amber-300 font-mono">
+                                        {(marketingStats?.regionalBreakdown?.buyMeACoffeeClicks || 0).toLocaleString()}
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 font-mono">
+                                        {isVi ? "Bấm mở link cổng quốc tế" : "Opened Buy Me a Coffee"}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Comparative Progress Bar */}
+                            <div className="space-y-1.5 font-mono text-xs">
+                                <div className="flex justify-between text-gray-300 text-[11px]">
+                                    <span className="flex items-center gap-1.5 text-emerald-400">
+                                        <span>🇻🇳</span>
+                                        <span>{isVi ? "Lưu Lượng Gói Việt Nam (VietQR)" : "Vietnam Domestic"}</span>:{" "}
+                                        <strong className="text-white">
+                                            {Math.max(0, 100 - (marketingStats?.regionalBreakdown?.intlInterestRatio || 0)).toFixed(1)}%
+                                        </strong>
+                                    </span>
+                                    <span className="flex items-center gap-1.5 text-purple-400">
+                                        <span>🌐</span>
+                                        <span>{isVi ? "Lưu Lượng Gói Quốc Tế (USD)" : "International (USD)"}</span>:{" "}
+                                        <strong className="text-white">
+                                            {(marketingStats?.regionalBreakdown?.intlInterestRatio || 0).toFixed(1)}%
+                                        </strong>
+                                    </span>
+                                </div>
+                                <div className="w-full h-3 bg-[#141b2d] rounded-full overflow-hidden flex">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all"
+                                        style={{ width: `${Math.max(0, 100 - (marketingStats?.regionalBreakdown?.intlInterestRatio || 0))}%` }}
+                                        title={`VN: ${(100 - (marketingStats?.regionalBreakdown?.intlInterestRatio || 0)).toFixed(1)}%`}
+                                    ></div>
+                                    <div
+                                        className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all"
+                                        style={{ width: `${marketingStats?.regionalBreakdown?.intlInterestRatio || 0}%` }}
+                                        title={`Intl: ${(marketingStats?.regionalBreakdown?.intlInterestRatio || 0).toFixed(1)}%`}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* 4. MARKETING PERSONAS: 4 STRATEGIC USER SEGMENTS */}
                         <div>
                             <div className="flex items-center justify-between mb-3">
@@ -3490,6 +3599,21 @@ export default function DarkboardClient({
                                                                 >
                                                                     📋
                                                                 </button>
+                                                                {user.preferredRegion === "intl" && (
+                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold font-mono">
+                                                                        🌐 Quốc tế (USD)
+                                                                    </span>
+                                                                )}
+                                                                {user.preferredRegion === "both" && (
+                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold font-mono">
+                                                                        🔄 VN & Quốc tế
+                                                                    </span>
+                                                                )}
+                                                                {user.preferredRegion === "vn" && (
+                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold font-mono">
+                                                                        🇻🇳 Gói VN
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </td>
                                                         <td className="py-3 whitespace-nowrap">

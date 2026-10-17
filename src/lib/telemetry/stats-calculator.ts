@@ -1055,6 +1055,53 @@ export async function computeDashboardStats(
         }
     });
 
+    // Regional Breakdown: Vietnam Domestic (VietQR) vs International (Buy Me a Coffee / USD)
+    let vnViewsCount = 0;
+    let intlViewsCount = 0;
+    let vnPackageSelections = 0;
+    let intlPackageSelections = 0;
+    let buyMeACoffeeClicks = 0;
+
+    events.forEach((e) => {
+        if (e.action === "TOPUP_PAGE_VIEWED") {
+            vnViewsCount++;
+            if (e.meta?.region === "intl" || e.meta?.currency === "USD") {
+                intlViewsCount++;
+            }
+        } else if (e.action === "TOPUP_TAB_VIEWED") {
+            if (e.meta?.region === "intl" || e.meta?.currency === "USD") {
+                intlViewsCount++;
+            } else {
+                vnViewsCount++;
+            }
+        } else if (e.action === "TOPUP_PACKAGE_SELECTED") {
+            const m = e.meta || {};
+            if (m.currency === "USD" || m.amountUsd || (m.packageName && String(m.packageName).includes("USD"))) {
+                intlPackageSelections++;
+            } else {
+                vnPackageSelections++;
+            }
+        } else if (e.action === "BUY_ME_A_COFFEE_CLICKED") {
+            buyMeACoffeeClicks++;
+            intlPackageSelections++;
+        }
+    });
+
+    const totalIntlEngagements = intlViewsCount + intlPackageSelections + buyMeACoffeeClicks;
+    const totalVnEngagements = vnViewsCount + vnPackageSelections;
+    const intlInterestRatio = (totalIntlEngagements + totalVnEngagements) > 0
+        ? Math.round((totalIntlEngagements / (totalIntlEngagements + totalVnEngagements)) * 1000) / 10
+        : 0;
+
+    const regionalBreakdown = {
+        vnViewsCount,
+        intlViewsCount,
+        vnPackageSelections,
+        intlPackageSelections,
+        buyMeACoffeeClicks,
+        intlInterestRatio,
+    };
+
     const totalPkgSelects = Object.values(pkgCounts).reduce((a, b) => a + b, 0);
     const packagePreferences = Object.entries(pkgCounts).map(([packageName, count]) => ({
         packageName,
@@ -1104,6 +1151,8 @@ export async function computeDashboardStats(
             topupAttempts: number;
             abortedCount: number;
             lastActive: string;
+            hasVnIntent: boolean;
+            hasIntlIntent: boolean;
         }
     >();
 
@@ -1119,6 +1168,8 @@ export async function computeDashboardStats(
                 topupAttempts: 0,
                 abortedCount: 0,
                 lastActive: e.createdAt,
+                hasVnIntent: false,
+                hasIntlIntent: false,
             });
         }
         const record = userIntentScores.get(uid)!;
@@ -1129,14 +1180,57 @@ export async function computeDashboardStats(
         if (e.action === "POPUP_OPENED") record.popupOpens++;
         if (e.action === "TOPUP_OPENED" || e.action === "TOPUP_PAGE_VIEWED") {
             record.topupAttempts++;
+            record.hasVnIntent = true;
             if (!record.reasons.includes("Đã xem trang nạp tiền")) record.reasons.push("Đã xem trang nạp tiền");
         }
+        if (e.action === "TOPUP_TAB_VIEWED") {
+            record.topupAttempts++;
+            if (e.meta?.region === "intl" || e.meta?.currency === "USD") {
+                record.hasIntlIntent = true;
+                if (!record.reasons.includes("Đã xem gói Quốc tế (Buy Me a Coffee / USD)")) {
+                    record.reasons.push("Đã xem gói Quốc tế (Buy Me a Coffee / USD)");
+                }
+            } else {
+                record.hasVnIntent = true;
+                if (!record.reasons.includes("Đã xem gói Việt Nam (VietQR)")) {
+                    record.reasons.push("Đã xem gói Việt Nam (VietQR)");
+                }
+            }
+        }
+        if (e.action === "BUY_ME_A_COFFEE_CLICKED") {
+            record.topupAttempts += 3;
+            record.hasIntlIntent = true;
+            if (!record.reasons.includes("Đã click mở Buy Me a Coffee ($USD)")) {
+                record.reasons.push("Đã click mở Buy Me a Coffee ($USD)");
+            }
+        }
         if (e.action === "TOPUP_PACKAGE_SELECTED") {
-            if (!record.reasons.includes("Đã chủ động chọn gói nạp")) record.reasons.push("Đã chủ động chọn gói nạp");
+            const m = e.meta || {};
+            if (m.currency === "USD" || m.amountUsd) {
+                record.hasIntlIntent = true;
+                if (!record.reasons.includes("Đã chủ động chọn gói USD Quốc Tế")) {
+                    record.reasons.push("Đã chủ động chọn gói USD Quốc Tế");
+                }
+            } else {
+                record.hasVnIntent = true;
+                if (!record.reasons.includes("Đã chủ động chọn gói nạp")) {
+                    record.reasons.push("Đã chủ động chọn gói nạp");
+                }
+            }
         }
         if (e.action === "TOPUP_ACTION_COPY") {
             record.topupAttempts += 2;
-            if (!record.reasons.includes("Đã sao chép STK/QR (Bỏ giỏ hàng)")) record.reasons.push("Đã sao chép STK/QR (Bỏ giỏ hàng)");
+            if (e.meta?.region === "intl") {
+                record.hasIntlIntent = true;
+                if (!record.reasons.includes("Đã sao chép Memo Quốc tế")) {
+                    record.reasons.push("Đã sao chép Memo Quốc tế");
+                }
+            } else {
+                record.hasVnIntent = true;
+                if (!record.reasons.includes("Đã sao chép STK/QR (Bỏ giỏ hàng)")) {
+                    record.reasons.push("Đã sao chép STK/QR (Bỏ giỏ hàng)");
+                }
+            }
         }
         if (e.action === "COUNTDOWN_ABORTED") {
             record.abortedCount++;
@@ -1154,7 +1248,18 @@ export async function computeDashboardStats(
             u.reasons.push("Đã từng nạp tiền");
         }
         u.intentScore = Math.min(Math.max(score, 10), 99);
-        return u;
+        const preferredRegion: "vn" | "intl" | "both" =
+            u.hasVnIntent && u.hasIntlIntent ? "both" : u.hasIntlIntent ? "intl" : "vn";
+        return {
+            userId: u.userId,
+            intentScore: u.intentScore,
+            reasons: u.reasons,
+            popupOpens: u.popupOpens,
+            topupAttempts: u.topupAttempts,
+            abortedCount: u.abortedCount,
+            lastActive: u.lastActive,
+            preferredRegion,
+        };
     }).sort((a, b) => b.intentScore - a.intentScore).slice(0, 10);
 
     // Golden Marketing Hours (24 hours)
@@ -1219,6 +1324,7 @@ export async function computeDashboardStats(
             conversionRate: monetizationConversionRate,
         },
         packagePreferences,
+        regionalBreakdown,
         personas: {
             whalesCount,
             impatientProspectsCount,
