@@ -128,9 +128,23 @@ export default function DarkboardClient({
     const [marketingPersonaFilter, setMarketingPersonaFilter] = useState<"all" | "whales" | "impatient" | "frugal" | "frustrated">("all");
     const [marketingSearchQuery, setMarketingSearchQuery] = useState("");
 
+    // Refs for in-flight guards, aborting old requests, and dynamic polling
+    const isFetchingRef = useRef(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const autoRefreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+
     // Load Telemetry Data (MongoDB Primary + Google Sheets Hybrid)
-    const fetchTelemetry = useCallback(async () => {
+    const fetchTelemetry = useCallback(async (forceRefresh = false) => {
         if (!isAuthenticated) return;
+
+        // Hủy request cũ đang bay nếu có để tránh nghẽn mạng
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
+        isFetchingRef.current = true;
         setIsLoading(true);
         try {
             const params = new URLSearchParams({
@@ -139,12 +153,16 @@ export default function DarkboardClient({
                 status: statusFilter,
                 q: searchQuery,
             });
+            if (forceRefresh) {
+                params.set("refresh", "true");
+            }
             const authHeaders: Record<string, string> = { "x-vault-slug": secretSlug };
             if (tabToken) {
                 authHeaders["x-vault-tab-token"] = tabToken;
             }
             const res = await fetch(`/api/admin-vault/stats?${params.toString()}`, {
                 headers: authHeaders,
+                signal: controller.signal,
             });
             if (res.status === 401 || res.status === 404) {
                 setIsAuthenticated(false);
@@ -174,26 +192,58 @@ export default function DarkboardClient({
                 }
                 setLastUpdated(new Date().toLocaleTimeString(isVi ? "vi-VN" : "en-US"));
             }
-        } catch (err) {
+        } catch (err: any) {
+            if (err?.name === "AbortError") {
+                return;
+            }
             console.error("Failed to load telemetry:", err);
         } finally {
+            isFetchingRef.current = false;
             setIsLoading(false);
         }
     }, [isAuthenticated, extensionId, timeframe, statusFilter, searchQuery, isVi, secretSlug, tabToken]);
 
     useEffect(() => {
         if (isAuthenticated) {
-            fetchTelemetry();
+            fetchTelemetry(false);
         }
     }, [isAuthenticated, fetchTelemetry]);
 
-    // Auto-refresh interval (every 12 seconds)
+    // Dynamic auto-refresh loop (Chỉ đếm ngược 30s SAU KHI request trước đã kết thúc thành công)
     useEffect(() => {
-        if (!isAuthenticated || !autoRefresh) return;
-        const interval = setInterval(() => {
-            fetchTelemetry();
-        }, 12000);
-        return () => clearInterval(interval);
+        if (!isAuthenticated || !autoRefresh) {
+            if (autoRefreshTimerRef.current) {
+                clearTimeout(autoRefreshTimerRef.current);
+                autoRefreshTimerRef.current = null;
+            }
+            return;
+        }
+
+        let isMounted = true;
+        const scheduleNext = () => {
+            if (autoRefreshTimerRef.current) {
+                clearTimeout(autoRefreshTimerRef.current);
+            }
+            autoRefreshTimerRef.current = setTimeout(async () => {
+                if (!isMounted) return;
+                if (!isFetchingRef.current) {
+                    await fetchTelemetry(false);
+                }
+                if (isMounted) {
+                    scheduleNext();
+                }
+            }, 30000); // 30s sau khi request trước kết thúc
+        };
+
+        scheduleNext();
+
+        return () => {
+            isMounted = false;
+            if (autoRefreshTimerRef.current) {
+                clearTimeout(autoRefreshTimerRef.current);
+                autoRefreshTimerRef.current = null;
+            }
+        };
     }, [isAuthenticated, autoRefresh, fetchTelemetry]);
 
     // Handle Login
@@ -565,19 +615,30 @@ export default function DarkboardClient({
                             </span>
                         </div>
 
+                        {/* Force Refresh Manual Button */}
+                        <button
+                            onClick={() => fetchTelemetry(true)}
+                            disabled={isLoading}
+                            title={isVi ? "Làm mới dữ liệu tức thì" : "Refresh data now"}
+                            className="p-2 rounded-xl border border-gray-700 bg-gray-800/40 text-gray-300 hover:text-white hover:bg-gray-700/60 transition-all text-xs flex items-center justify-center disabled:opacity-50"
+                        >
+                            <svg className={`w-4 h-4 ${isLoading ? "animate-spin text-emerald-400" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+
                         {/* Auto Refresh Toggle */}
                         <button
                             onClick={() => setAutoRefresh(!autoRefresh)}
-                            title={isVi ? "Tự động làm mới mỗi 12 giây" : "Auto-refresh every 12s"}
-                            className={`p-2 rounded-xl border text-xs transition-all ${
+                            title={isVi ? "Bật/Tắt tự động làm mới mỗi 30 giây" : "Toggle auto-refresh every 30s"}
+                            className={`px-3 py-2 rounded-xl border text-xs font-mono flex items-center gap-1.5 transition-all ${
                                 autoRefresh
                                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                                     : "bg-gray-800/40 border-gray-700 text-gray-400"
                             }`}
                         >
-                            <svg className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                            <span className={`w-1.5 h-1.5 rounded-full ${autoRefresh ? "bg-emerald-400 animate-pulse" : "bg-gray-500"}`} />
+                            <span>{autoRefresh ? (isVi ? "Tự động: 30s" : "Auto: 30s") : (isVi ? "Tự động: Tắt" : "Auto: Off")}</span>
                         </button>
 
                         {/* Export CSV */}

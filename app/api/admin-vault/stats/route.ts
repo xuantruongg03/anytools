@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
         timeframe: (searchParams.get("timeframe") as any) || "24h",
         status: (searchParams.get("status") as any) || "all",
         searchQuery: searchParams.get("q") || undefined,
+        forceRefresh: searchParams.get("refresh") === "true",
     };
 
     try {

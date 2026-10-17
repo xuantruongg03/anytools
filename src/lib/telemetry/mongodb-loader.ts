@@ -16,11 +16,13 @@ import {
 // Keep the dashboard responsive while allowing a short freshness window.
 let cachedMongoEvents: TelemetryEvent[] | null = null;
 let lastMongoEventsCache = 0;
+let cachedMongoEventsKey = "";
 let cachedMongoTransactions: CreditTransaction[] | null = null;
 let lastMongoTxCache = 0;
+let cachedMongoTransactionsKey = "";
 let cachedMongoUsers: RawSheetUser[] | null = null;
 let lastMongoUsersCache = 0;
-const MONGO_CACHE_TTL_MS = 45_000;
+const MONGO_CACHE_TTL_MS = 60_000;
 
 function timeframeToDate(timeframe: StatsFilterOptions["timeframe"]): Date | null {
     const now = Date.now();
@@ -35,15 +37,25 @@ function timeframeToDate(timeframe: StatsFilterOptions["timeframe"]): Date | nul
 
 function createdAtFilter(timeframe: StatsFilterOptions["timeframe"]): Record<string, unknown> {
     const since = timeframeToDate(timeframe);
-    return since ? { createdAt: { $gte: since } } : {};
+    if (!since) return {};
+    const legacyVn = new Date(since.getTime() + 7 * 60 * 60 * 1000)
+        .toISOString().replace("T", " ").slice(0, 19);
+    const isoString = since.toISOString();
+    return {
+        $or: [
+            { createdAt: { $gte: since } },
+            { createdAt: { $gte: isoString } },
+            { createdAt: { $gte: legacyVn } },
+        ],
+    };
 }
 
 /**
  * Lấy danh sách users từ MongoDB (collection credits_users)
  */
-export async function fetchMongoUsers(): Promise<RawSheetUser[]> {
+export async function fetchMongoUsers(options: StatsFilterOptions = {}): Promise<RawSheetUser[]> {
     const now = Date.now();
-    if (cachedMongoUsers && now - lastMongoUsersCache < MONGO_CACHE_TTL_MS) {
+    if (!options.forceRefresh && cachedMongoUsers && now - lastMongoUsersCache < MONGO_CACHE_TTL_MS) {
         return cachedMongoUsers;
     }
 
@@ -57,8 +69,9 @@ export async function fetchMongoUsers(): Promise<RawSheetUser[]> {
         const rawDocs = await db
             .collection("credits_users")
             .find({})
+            .project({ userId: 1, credits: 1, totalDownloaded: 1, createdIp: 1, createdAt: 1, updatedAt: 1 })
             .sort({ createdAt: -1 })
-            .limit(25000)
+            .limit(10000)
             .toArray();
 
         const userMap = new Map<string, RawSheetUser>();
@@ -118,7 +131,8 @@ export async function fetchMongoUsers(): Promise<RawSheetUser[]> {
  */
 export async function fetchMongoTransactions(options: StatsFilterOptions = {}): Promise<CreditTransaction[]> {
     const now = Date.now();
-    if (cachedMongoTransactions && now - lastMongoTxCache < MONGO_CACHE_TTL_MS) {
+    const cacheKey = options.timeframe || "all";
+    if (!options.forceRefresh && cachedMongoTransactions && cachedMongoTransactionsKey === cacheKey && now - lastMongoTxCache < MONGO_CACHE_TTL_MS) {
         return cachedMongoTransactions;
     }
 
@@ -165,6 +179,7 @@ export async function fetchMongoTransactions(options: StatsFilterOptions = {}): 
         transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
         cachedMongoTransactions = transactions;
+        cachedMongoTransactionsKey = cacheKey;
         lastMongoTxCache = now;
         return transactions;
     } catch (err: any) {
@@ -178,7 +193,8 @@ export async function fetchMongoTransactions(options: StatsFilterOptions = {}): 
  */
 export async function fetchMongoTelemetry(options: StatsFilterOptions = {}): Promise<TelemetryEvent[]> {
     const now = Date.now();
-    if (cachedMongoEvents && now - lastMongoEventsCache < MONGO_CACHE_TTL_MS) {
+    const cacheKey = `${options.extensionId || "all"}_${options.timeframe || "all"}`;
+    if (!options.forceRefresh && cachedMongoEvents && cachedMongoEventsKey === cacheKey && now - lastMongoEventsCache < MONGO_CACHE_TTL_MS) {
         return cachedMongoEvents;
     }
 
@@ -195,7 +211,7 @@ export async function fetchMongoTelemetry(options: StatsFilterOptions = {}): Pro
             .find(createdAtFilter(options.timeframe))
             .project({ logId: 1, userId: 1, downloadType: 1, documentUrl: 1, documentTitle: 1, totalPages: 1, clientIp: 1, createdAt: 1 })
             .sort({ createdAt: -1 })
-            .limit(25000)
+            .limit(10000)
             .toArray();
 
         const rawRecords: RawDownloadRecord[] = dlDocs.map((doc: any, idx: number) => ({
@@ -215,12 +231,16 @@ export async function fetchMongoTelemetry(options: StatsFilterOptions = {}): Pro
         // 2. Lấy thêm telemetry_events nếu có (các event giàu thông tin do extension gửi)
         let directEvents: TelemetryEvent[] = [];
         try {
+            const teFilter: Record<string, unknown> = createdAtFilter(options.timeframe);
+            if (options.extensionId && options.extensionId !== "all") {
+                teFilter.extensionId = options.extensionId;
+            }
             const teDocs = await db
                 .collection("telemetry_events")
-                .find(createdAtFilter(options.timeframe))
+                .find(teFilter)
                 .project({ _id: 1, id: 1, sessionNonce: 1, clientUserId: 1, extensionId: 1, extensionVersion: 1, action: 1, docIdHash: 1, docTitle: 1, pages: 1, downloadType: 1, elapsedSeconds: 1, estimatedMinSeconds: 1, ip: 1, country: 1, city: 1, browser: 1, anomalies: 1, riskScore: 1, severity: 1, meta: 1, createdAt: 1 })
                 .sort({ createdAt: -1 })
-                .limit(25000)
+                .limit(10000)
                 .toArray();
 
             directEvents = teDocs.map((doc: any) => {
@@ -253,6 +273,7 @@ export async function fetchMongoTelemetry(options: StatsFilterOptions = {}): Pro
         mergedEvents.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
         cachedMongoEvents = mergedEvents;
+        cachedMongoEventsKey = cacheKey;
         lastMongoEventsCache = now;
         return mergedEvents;
     } catch (err: any) {
@@ -270,7 +291,7 @@ export async function getRealMongoStats(
     const [rawEvents, rawTransactions, rawUsers] = await Promise.all([
         fetchMongoTelemetry(options),
         fetchMongoTransactions(options),
-        fetchMongoUsers(),
+        fetchMongoUsers(options),
     ]);
 
     const result = await computeDashboardStats(rawEvents, rawTransactions, rawUsers, options);

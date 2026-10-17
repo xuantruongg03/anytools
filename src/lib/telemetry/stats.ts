@@ -6,6 +6,7 @@ export interface StatsFilterOptions {
     timeframe?: "1h" | "24h" | "7d" | "30d" | "all";
     status?: "all" | "credit_only" | "free_only" | "anomalies_only" | "fast_bypass" | "multi_ip";
     searchQuery?: string;
+    forceRefresh?: boolean;
 }
 
 export async function getTelemetryStats(options: StatsFilterOptions = {}): Promise<{

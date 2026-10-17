@@ -115,31 +115,78 @@ export function mergeTelemetryEvents(
     return result;
 }
 
+// Result-level caching & SingleFlight request coalescing
+interface DashboardCacheEntry {
+    data: DashboardStatsResult;
+    timestamp: number;
+}
+
+const DASHBOARD_RESULT_CACHE = new Map<string, DashboardCacheEntry>();
+const DASHBOARD_IN_FLIGHT = new Map<string, Promise<DashboardStatsResult>>();
+const DASHBOARD_CACHE_TTL_MS = 35_000; // 35 seconds
+
+function getDashboardCacheKey(options: StatsFilterOptions): string {
+    return `${options.extensionId || "all"}_${options.timeframe || "24h"}_${options.status || "all"}_${(options.searchQuery || "").trim().toLowerCase()}`;
+}
+
 /**
- * Phương thức lấy dữ liệu thống kê hợp nhất cho Dashboard theo yêu cầu:
- * - Khi timeframe === "all" ("Toàn bộ"): Lấy data cả từ Google Sheets VÀ MongoDB, sau đó hợp nhất & loại trừ trùng lặp.
- * - Khi timeframe !== "all" ("1h", "24h", "7d", "30d"): CHỈ lấy data từ MongoDB, KHÔNG gọi Google Sheets (bảo vệ hạn ngạch API Sheet).
- * - Trường hợp MongoDB gặp sự cố kết nối, tự động fallback sang Google Sheets để đảm bảo Dashboard không sập.
+ * Phương thức lấy dữ liệu thống kê hợp nhất cho Dashboard:
+ * - Tích hợp SingleFlight (ghép request trùng lặp) & Result-level caching (35s)
+ * - Đọc trực tiếp từ MongoDB Atlas, không gọi Google Sheets để bảo vệ hạn ngạch.
+ * - Tự động fallback sang Google Sheets nếu MongoDB gặp sự cố.
  */
 export async function getUnifiedDashboardStats(
     options: StatsFilterOptions = {}
 ): Promise<DashboardStatsResult> {
-    // Toàn bộ dữ liệu lịch sử đã được migrate sang MongoDB.
-    // Đọc trực tiếp từ MongoDB cho mọi khung thời gian (1h, 24h, 7d, 30d, all).
-    // Không đọc từ Google Sheets để tối ưu hiệu năng và bảo vệ hạn mức API.
-    try {
-        console.log(`⚡ [Unified Stats] Fetching strictly from MongoDB for timeframe [${options.timeframe || "24h"}]...`);
-        const mongoStats = await getRealMongoStats(options);
-        return mongoStats;
-    } catch (mongoErr: any) {
-        console.warn(
-            "⚠️ [Unified Stats] MongoDB fetch failed, activating emergency fallback to Google Sheets:",
-            mongoErr.message
-        );
-        const fallback = await getRealGoogleSheetsStats(options);
-        return {
-            ...fallback,
-            source: "google_sheets_fallback",
-        };
+    const cacheKey = getDashboardCacheKey(options);
+    const now = Date.now();
+
+    // 1. Kiểm tra cache nếu không yêu cầu forceRefresh
+    if (!options.forceRefresh) {
+        const cached = DASHBOARD_RESULT_CACHE.get(cacheKey);
+        if (cached && now - cached.timestamp < DASHBOARD_CACHE_TTL_MS) {
+            return cached.data;
+        }
+    } else {
+        DASHBOARD_RESULT_CACHE.delete(cacheKey);
     }
+
+    // 2. SingleFlight: Nếu đang có 1 request cùng tham số đang xử lý, dùng chung Promise
+    const existingPromise = DASHBOARD_IN_FLIGHT.get(cacheKey);
+    if (existingPromise) {
+        return existingPromise;
+    }
+
+    // 3. Khởi tạo tác vụ tính toán mới
+    const fetchPromise = (async () => {
+        try {
+            console.log(`⚡ [Unified Stats] Fetching strictly from MongoDB for timeframe [${options.timeframe || "24h"}]...`);
+            const mongoStats = await getRealMongoStats(options);
+            DASHBOARD_RESULT_CACHE.set(cacheKey, {
+                data: mongoStats,
+                timestamp: Date.now(),
+            });
+            return mongoStats;
+        } catch (mongoErr: any) {
+            console.warn(
+                "⚠️ [Unified Stats] MongoDB fetch failed, activating emergency fallback to Google Sheets:",
+                mongoErr.message
+            );
+            const fallback = await getRealGoogleSheetsStats(options);
+            const fallbackResult: DashboardStatsResult = {
+                ...fallback,
+                source: "google_sheets_fallback",
+            };
+            DASHBOARD_RESULT_CACHE.set(cacheKey, {
+                data: fallbackResult,
+                timestamp: Date.now(),
+            });
+            return fallbackResult;
+        } finally {
+            DASHBOARD_IN_FLIGHT.delete(cacheKey);
+        }
+    })();
+
+    DASHBOARD_IN_FLIGHT.set(cacheKey, fetchPromise);
+    return fetchPromise;
 }
