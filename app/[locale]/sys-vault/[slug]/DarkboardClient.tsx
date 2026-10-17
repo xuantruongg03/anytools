@@ -3563,13 +3563,13 @@ export default function DarkboardClient({
                                 <table className="w-full text-left text-xs font-mono">
                                     <thead>
                                         <tr className="border-b border-gray-800 text-gray-400">
-                                            <th className="pb-3 font-semibold">{isVi ? "Xếp Hạng" : "Rank"}</th>
-                                            <th className="pb-3 font-semibold">{isVi ? "User ID (Mã Máy)" : "Client User ID"}</th>
-                                            <th className="pb-3 font-semibold">{isVi ? "Điểm Tiềm Năng (Score)" : "Intent Score"}</th>
-                                            <th className="pb-3 font-semibold">{isVi ? "Căn Cứ Nhận Diện Hành Vi" : "Behavioral Signals"}</th>
-                                            <th className="pb-3 font-semibold">{isVi ? "Thao Tác" : "Interactions"}</th>
-                                            <th className="pb-3 font-semibold">{isVi ? "Lần Cuối Hoạt Động" : "Last Active"}</th>
-                                            <th className="pb-3 font-semibold text-right">{isVi ? "Gợi Ý Tiếp Thị" : "Target Strategy"}</th>
+                                            <th className="pb-3 font-semibold w-10">{isVi ? "#" : "#"}</th>
+                                            <th className="pb-3 font-semibold w-44">{isVi ? "User ID" : "User ID"}</th>
+                                            <th className="pb-3 font-semibold w-28">{isVi ? "Score" : "Score"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Tín Hiệu Hành Vi" : "Behavioral Signals"}</th>
+                                            <th className="pb-3 font-semibold w-32 text-center">{isVi ? "Thao Tác" : "Actions"}</th>
+                                            <th className="pb-3 font-semibold w-36">{isVi ? "Hoạt Động Cuối" : "Last Active"}</th>
+                                            <th className="pb-3 font-semibold w-36 text-right">{isVi ? "Chiến Lược" : "Strategy"}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-800/60">
@@ -3644,28 +3644,40 @@ export default function DarkboardClient({
                                                             </div>
                                                         </td>
                                                         <td className="py-3">
-                                                            <div className="flex flex-wrap gap-1 max-w-sm">
-                                                                {user.reasons.map((r, rIdx) => (
+                                                            <div className="flex flex-wrap gap-1" style={{ maxWidth: 280 }}>
+                                                                {user.reasons.slice(0, 3).map((r, rIdx) => (
                                                                     <span
                                                                         key={rIdx}
-                                                                        className={`px-2 py-0.5 rounded text-[10px] ${
-                                                                            r.includes("STK")
+                                                                        title={r}
+                                                                        className={`px-2 py-0.5 rounded text-[10px] truncate max-w-[260px] ${
+                                                                            r.includes("STK") || r.includes("sao chép")
                                                                                 ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
-                                                                                : r.includes("Hủy")
+                                                                                : r.includes("Hủy") || r.includes("bỏ")
                                                                                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                                                                                : r.includes("nạp")
+                                                                                : r.includes("nạp") || r.includes("coffee") || r.includes("Coffee")
                                                                                 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                                                                : r.includes("USD") || r.includes("Quốc tế")
+                                                                                ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
                                                                                 : "bg-gray-800 text-gray-300"
                                                                         }`}
                                                                     >
                                                                         {r}
                                                                     </span>
                                                                 ))}
+                                                                {user.reasons.length > 3 && (
+                                                                    <span
+                                                                        title={user.reasons.slice(3).join(" • ")}
+                                                                        className="px-2 py-0.5 rounded text-[10px] bg-gray-700/60 text-gray-400 border border-gray-600/40 cursor-help"
+                                                                    >
+                                                                        +{user.reasons.length - 3}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </td>
-                                                        <td className="py-3 text-gray-400 whitespace-nowrap text-[11px]">
-                                                            <div>Popup: <strong className="text-white">{user.popupOpens}</strong></div>
-                                                            <div>Nạp: <strong className="text-emerald-400">{user.topupAttempts}</strong> | Hủy 30s: <strong className="text-rose-400">{user.abortedCount}</strong></div>
+                                                        <td className="py-3 text-gray-400 whitespace-nowrap text-[11px] text-center">
+                                                            <div className="flex flex-col gap-0.5">
+                                                                <span>Pop <strong className="text-white">{user.popupOpens}</strong> · Top <strong className="text-emerald-400">{user.topupAttempts}</strong> · ✕ <strong className="text-rose-400">{user.abortedCount}</strong></span>
+                                                            </div>
                                                         </td>
                                                         <td className="py-3 text-gray-400 whitespace-nowrap">
                                                             {new Date(user.lastActive).toLocaleString(isVi ? "vi-VN" : "en-US")}
