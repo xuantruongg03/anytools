@@ -754,7 +754,7 @@ export async function computeDashboardStats(
     } else if (options.status === "credit_only") {
         tableEvents = tableEvents.filter((e) => e.downloadType === "credit");
     } else if (options.status === "free_only") {
-        tableEvents = tableEvents.filter((e) => e.downloadType !== "credit");
+        tableEvents = tableEvents.filter((e) => (e.downloadType === "free" || e.downloadType !== "credit") && (e.action === "DOWNLOAD_SUCCESS" || e.action?.startsWith("DOWNLOAD_") || !e.action || e.id.startsWith("DL_")));
     } else if (options.status === "fast_bypass") {
         tableEvents = tableEvents.filter((e) => e.anomalies.includes("FAST_BYPASS"));
     } else if (options.status === "multi_ip") {

@@ -2373,7 +2373,11 @@ export default function DarkboardClient({
                                                 <td className="py-3 text-gray-300 whitespace-nowrap">
                                                     <div className="flex items-center gap-1.5">
                                                         <span>{event.extensionId}</span>
-                                                        {event.downloadType === "credit" ? (
+                                                        {event.action === "POPUP_OPENED" ? (
+                                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                                                📱 {isVi ? "Mở popup" : "Popup"}
+                                                            </span>
+                                                        ) : event.downloadType === "credit" ? (
                                                             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                                                                 💎 Credit
                                                             </span>
@@ -2394,27 +2398,38 @@ export default function DarkboardClient({
                                                     {event.country || "Unknown"} ({event.browser})
                                                 </td>
                                                 <td className="py-3 whitespace-nowrap">
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
-                                                                isFastBypass
-                                                                    ? "bg-red-500/20 text-red-300 border border-red-500/40"
-                                                                    : event.elapsedSeconds >= requiredMin
-                                                                    ? "bg-emerald-500/20 text-emerald-300"
-                                                                    : "bg-gray-800 text-gray-300"
-                                                            }`}>
-                                                                {event.elapsedSeconds > 0 ? `${event.elapsedSeconds}s` : "Init"}
+                                                    {event.action === "POPUP_OPENED" ? (
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <span className="px-2 py-0.5 rounded-md font-medium text-[10px] bg-purple-950/40 text-purple-300 border border-purple-800/40 w-fit">
+                                                                📱 {isVi ? "Mở tiện ích" : "UI Opened"}
                                                             </span>
-                                                            <span className="text-[10px] text-amber-300/80 font-mono">
-                                                                {event.pages || 1} {isVi ? "trang" : "pgs"}
+                                                            <span className="text-[9px] text-gray-500 font-mono">
+                                                                {isVi ? "Chưa kích hoạt tải" : "No download"}
                                                             </span>
                                                         </div>
-                                                        <span className="text-[9px] text-gray-500 font-mono">
-                                                            {event.downloadType === "credit"
-                                                                ? (isVi ? `Init: ≥ ${requiredMin}s (Bỏ qua 30s)` : `Init only: ≥ ${requiredMin}s`)
-                                                                : (isVi ? `Yêu cầu: ≥ ${requiredMin}s (30s + init)` : `Min req: ≥ ${requiredMin}s`)}
-                                                        </span>
-                                                    </div>
+                                                    ) : (
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
+                                                                    isFastBypass
+                                                                        ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                                                                        : event.elapsedSeconds >= requiredMin
+                                                                        ? "bg-emerald-500/20 text-emerald-300"
+                                                                        : "bg-gray-800 text-gray-300"
+                                                                }`}>
+                                                                    {event.elapsedSeconds > 0 ? `${event.elapsedSeconds}s` : "Init"}
+                                                                </span>
+                                                                <span className="text-[10px] text-amber-300/80 font-mono">
+                                                                    {event.pages || 1} {isVi ? "trang" : "pgs"}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-[9px] text-gray-500 font-mono">
+                                                                {event.downloadType === "credit"
+                                                                    ? (isVi ? `Init: ≥ ${requiredMin}s (Bỏ qua 30s)` : `Init only: ≥ ${requiredMin}s`)
+                                                                    : (isVi ? `Yêu cầu: ≥ ${requiredMin}s (30s + init)` : `Min req: ≥ ${requiredMin}s`)}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="py-3">
                                                     {event.anomalies.length > 0 ? (
@@ -3813,7 +3828,11 @@ export default function DarkboardClient({
                         <div className="flex items-center justify-between border-b border-gray-800 pb-3">
                             <div>
                                 <h3 className="text-base font-bold text-white flex items-center gap-2">
-                                    <span>🔬 {isVi ? "Phân Tích Pháp Y Sự Kiện Telemetry" : "Event Forensic Breakdown"}</span>
+                                    <span>
+                                        {selectedEvent.action === "POPUP_OPENED"
+                                            ? (isVi ? "📱 Phân Tích Sự Kiện Mở Tiện Ích" : "📱 UI Event Forensic Breakdown")
+                                            : (isVi ? "🔬 Phân Tích Pháp Y Sự Kiện Telemetry" : "Event Forensic Breakdown")}
+                                    </span>
                                     {selectedEvent.anomalies.length > 0 && (
                                         <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-mono">
                                             {isVi ? "Rủi ro:" : "Risk:"} {selectedEvent.riskScore}/100
@@ -3835,7 +3854,11 @@ export default function DarkboardClient({
                                 <div className="text-gray-400">{isVi ? "Tiện ích & Loại yêu cầu" : "Extension & Type"}</div>
                                 <div className="text-white font-bold mt-0.5 flex items-center gap-2">
                                     <span>{selectedEvent.extensionId}</span>
-                                    {selectedEvent.downloadType === "credit" || selectedEvent.meta?.downloadType === "credit" ? (
+                                    {selectedEvent.action === "POPUP_OPENED" ? (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                            📱 {isVi ? "Mở Tiện Ích (Popup Opened)" : "Popup Opened"}
+                                        </span>
+                                    ) : selectedEvent.downloadType === "credit" || selectedEvent.meta?.downloadType === "credit" ? (
                                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                                             💎 {isVi ? "Tải Credit (Bỏ qua 30s)" : "Credit Download (Skip 30s)"}
                                         </span>
@@ -3855,47 +3878,65 @@ export default function DarkboardClient({
                                 <div className="text-white mt-0.5 truncate">{selectedEvent.ip} ({selectedEvent.city ? `${selectedEvent.city}, ` : ""}{selectedEvent.country})</div>
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d]">
-                                <div className="text-gray-400">{isVi ? "Thời gian chờ thực tế (Δt)" : "Waiting Elapsed Time (Δt)"}</div>
-                                <div className={`font-bold mt-0.5 ${
-                                    selectedEvent.elapsedSeconds < (selectedEvent.estimatedMinSeconds || (selectedEvent.downloadType === "credit" ? 3 : 30))
-                                        ? "text-red-400"
-                                        : "text-emerald-400"
-                                }`}>
-                                    {selectedEvent.elapsedSeconds}s (
-                                        {isVi
-                                            ? (selectedEvent.downloadType === "credit"
-                                                ? `T_min khởi tạo: ≥ ${selectedEvent.estimatedMinSeconds || 3}s (Không chờ 30s)`
-                                                : `T_min ước tính: ≥ ${selectedEvent.estimatedMinSeconds || 33}s (30s đếm ngược + init)`)
-                                            : (selectedEvent.downloadType === "credit"
-                                                ? `Est init min: ≥ ${selectedEvent.estimatedMinSeconds || 3}s (0s countdown)`
-                                                : `Est min: ≥ ${selectedEvent.estimatedMinSeconds || 33}s (30s + init)`)
-                                        }
-                                    )
-                                </div>
+                                <div className="text-gray-400">{isVi ? "Thời gian phản hồi / chờ (Δt)" : "Waiting Elapsed Time (Δt)"}</div>
+                                {selectedEvent.action === "POPUP_OPENED" ? (
+                                    <div className="text-gray-300 font-bold mt-0.5">
+                                        0s <span className="text-[10px] text-gray-500 font-normal">({isVi ? "Mở popup tức thì, không đếm ngược" : "Instant popup open, no countdown"})</span>
+                                    </div>
+                                ) : (
+                                    <div className={`font-bold mt-0.5 ${
+                                        selectedEvent.elapsedSeconds < (selectedEvent.estimatedMinSeconds || (selectedEvent.downloadType === "credit" ? 3 : 30))
+                                            ? "text-red-400"
+                                            : "text-emerald-400"
+                                    }`}>
+                                        {selectedEvent.elapsedSeconds}s (
+                                            {isVi
+                                                ? (selectedEvent.downloadType === "credit"
+                                                    ? `T_min khởi tạo: ≥ ${selectedEvent.estimatedMinSeconds || 3}s (Không chờ 30s)`
+                                                    : `T_min ước tính: ≥ ${selectedEvent.estimatedMinSeconds || 33}s (30s đếm ngược + init)`)
+                                                : (selectedEvent.downloadType === "credit"
+                                                    ? `Est init min: ≥ ${selectedEvent.estimatedMinSeconds || 3}s (0s countdown)`
+                                                    : `Est min: ≥ ${selectedEvent.estimatedMinSeconds || 33}s (30s + init)`)
+                                            }
+                                        )
+                                    </div>
+                                )}
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d]">
                                 <div className="text-gray-400">{isVi ? "Số trang tài liệu (Hiện tại / Trước)" : "Document Pages (Current / Prev)"}</div>
-                                <div className="text-amber-300 font-bold mt-0.5">
-                                    {selectedEvent.pages || 1} {isVi ? "trang" : "pgs"}
-                                    {selectedEvent.meta?.prevDocPages ? (
-                                        <span className="text-gray-400 font-normal ml-1">
-                                            ({isVi ? "Trước:" : "Prev:"} {selectedEvent.meta.prevDocPages} {isVi ? "trang" : "pgs"})
-                                        </span>
-                                    ) : (
-                                        <span className="text-gray-500 font-normal ml-1">
-                                            ({isVi ? "Lượt đầu tiên" : "First download"})
-                                        </span>
-                                    )}
-                                </div>
+                                {selectedEvent.action === "POPUP_OPENED" ? (
+                                    <div className="text-gray-400 mt-0.5 font-normal text-[11px]">
+                                        {isVi ? "Chưa kích hoạt tải tài liệu" : "No document loaded"}
+                                    </div>
+                                ) : (
+                                    <div className="text-amber-300 font-bold mt-0.5">
+                                        {selectedEvent.pages || 1} {isVi ? "trang" : "pgs"}
+                                        {selectedEvent.meta?.prevDocPages ? (
+                                            <span className="text-gray-400 font-normal ml-1">
+                                                ({isVi ? "Trước:" : "Prev:"} {selectedEvent.meta.prevDocPages} {isVi ? "trang" : "pgs"})
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-500 font-normal ml-1">
+                                                ({isVi ? "Lượt đầu tiên" : "First download"})
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d]">
                                 <div className="text-gray-400">{isVi ? "Tỷ lệ tốc độ hoàn thành" : "Completion Speed Ratio"}</div>
-                                <div className={`font-bold mt-0.5 ${(selectedEvent.meta?.speedRatioPercentage ?? 100) < 100 ? "text-red-400" : "text-emerald-400"}`}>
-                                    {selectedEvent.meta?.speedRatioPercentage ?? 100}%
-                                    <span className="text-[10px] text-gray-400 font-normal ml-1.5">
-                                        ({selectedEvent.elapsedSeconds}s / {selectedEvent.estimatedMinSeconds || 30}s)
-                                    </span>
-                                </div>
+                                {selectedEvent.action === "POPUP_OPENED" ? (
+                                    <div className="text-gray-400 mt-0.5 text-[11px] font-normal">
+                                        {isVi ? "Không áp dụng cho sự kiện giao diện" : "Not applicable for UI events"}
+                                    </div>
+                                ) : (
+                                    <div className={`font-bold mt-0.5 ${(selectedEvent.meta?.speedRatioPercentage ?? 100) < 100 ? "text-red-400" : "text-emerald-400"}`}>
+                                        {selectedEvent.meta?.speedRatioPercentage ?? 100}%
+                                        <span className="text-[10px] text-gray-400 font-normal ml-1.5">
+                                            ({selectedEvent.elapsedSeconds}s / {selectedEvent.estimatedMinSeconds || 30}s)
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Consecutive download timestamps */}
@@ -3924,41 +3965,76 @@ export default function DarkboardClient({
                                 </div>
                             </div>
 
-                            {/* Dynamic Physical Principle Note */}
-                            <div className="p-3 rounded-xl bg-[#161c2e] border border-cyan-500/20 sm:col-span-2 text-[11px] text-gray-300 leading-relaxed">
-                                <span className="text-cyan-400 font-bold block mb-1">
-                                    💡 {isVi ? "Mô hình ước tính vật lý động (Dynamic Physical Model):" : "Dynamic Physical Model:"}
-                                </span>
-                                {isVi ? (
-                                    <div className="space-y-1 text-gray-300">
-                                        <p>
-                                            • <strong className="text-blue-300">Tải Miễn Phí (Free):</strong> Ngưỡng tối thiểu <code>T_min = 30s (đếm ngược bắt buộc) + thời gian init data</code> (tỷ lệ thuận theo số trang tài liệu). Hoàn thành &lt; 30s bị cắm cờ Fast Bypass.
-                                        </p>
-                                        <p>
-                                            • <strong className="text-emerald-300">Tải bằng Credit (Premium):</strong> Bỏ qua hoàn toàn bộ đếm 30s (<code>countdown = 0s</code>), người dùng chỉ cần chờ thời gian init data thực tế để chuẩn bị dữ liệu (khoảng 2-5s tùy số trang).
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-1 text-gray-300">
-                                        <p>
-                                            • <strong className="text-blue-300">Free Download:</strong> Minimum threshold <code>T_min = 30s (mandatory countdown) + page init latency</code> (canvas & manifest caching). Downloads under 30s are flagged as Fast Bypass.
-                                        </p>
-                                        <p>
-                                            • <strong className="text-emerald-300">Credit Download:</strong> Completely bypasses the 30s timer (<code>countdown = 0s</code>), only requiring physical document init data latency (~2-5s depending on pages).
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
+                            {/* Dynamic Physical Principle Note or UI Telemetry Note */}
+                            {selectedEvent.action === "POPUP_OPENED" ? (
+                                <div className="p-3 rounded-xl bg-[#161c2e] border border-purple-500/20 sm:col-span-2 text-[11px] text-gray-300 leading-relaxed">
+                                    <span className="text-purple-400 font-bold block mb-1">
+                                        📱 {isVi ? "Sự kiện tương tác giao diện (UI Telemetry):" : "UI Telemetry Event:"}
+                                    </span>
+                                    <p className="text-gray-300">
+                                        {isVi 
+                                            ? "Sự kiện này được ghi nhận khi người dùng mở tiện ích popup trên trình duyệt. Tại bước này người dùng chưa bắt đầu tải tài liệu nên các tiêu chuẩn vật lý (bộ đếm đếm ngược 30s, số trang, mã nonce) không áp dụng."
+                                            : "This event tracks when a user opens the extension popup UI. No download workflow has started yet, so physical download criteria (30s countdown, page count, session nonce) do not apply."}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="p-3 rounded-xl bg-[#161c2e] border border-cyan-500/20 sm:col-span-2 text-[11px] text-gray-300 leading-relaxed">
+                                    <span className="text-cyan-400 font-bold block mb-1">
+                                        💡 {isVi ? "Mô hình ước tính vật lý động (Dynamic Physical Model):" : "Dynamic Physical Model:"}
+                                    </span>
+                                    {isVi ? (
+                                        <div className="space-y-1 text-gray-300">
+                                            <p>
+                                                • <strong className="text-blue-300">Tải Miễn Phí (Free):</strong> Ngưỡng tối thiểu <code>T_min = 30s (đếm ngược bắt buộc) + thời gian init data</code> (tỷ lệ thuận theo số trang tài liệu). Hoàn thành &lt; 30s bị cắm cờ Fast Bypass.
+                                            </p>
+                                            <p>
+                                                • <strong className="text-emerald-300">Tải bằng Credit (Premium):</strong> Bỏ qua hoàn toàn bộ đếm 30s (<code>countdown = 0s</code>), người dùng chỉ cần chờ thời gian init data thực tế để chuẩn bị dữ liệu (khoảng 2-5s tùy số trang).
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-1 text-gray-300">
+                                            <p>
+                                                • <strong className="text-blue-300">Free Download:</strong> Minimum threshold <code>T_min = 30s (mandatory countdown) + page init latency</code> (canvas & manifest caching). Downloads under 30s are flagged as Fast Bypass.
+                                            </p>
+                                            <p>
+                                                • <strong className="text-emerald-300">Credit Download:</strong> Completely bypasses the 30s timer (<code>countdown = 0s</code>), only requiring physical document init data latency (~2-5s depending on pages).
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <div className="p-3 rounded-xl bg-[#141b2d] sm:col-span-2">
                                 <div className="text-gray-400">{isVi ? "Mã Nonce Handshake" : "Handshake Session Nonce"}</div>
                                 <div className="text-gray-300 text-[11px] mt-0.5 truncate">
-                                    {selectedEvent.sessionNonce || (isVi ? "KHÔNG CÓ NONCE (Yêu cầu trực tiếp chưa qua xác thực)" : "MISSING_NONCE (Unverified direct request)")}
+                                    {selectedEvent.sessionNonce || (selectedEvent.action === "POPUP_OPENED"
+                                        ? (isVi ? "Không áp dụng (Chỉ yêu cầu nonce khi tải tài liệu)" : "N/A (Handshake only required for download)")
+                                        : (isVi ? "KHÔNG CÓ NONCE (Yêu cầu trực tiếp chưa qua xác thực)" : "MISSING_NONCE (Unverified direct request)"))}
                                 </div>
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d] sm:col-span-2">
                                 <div className="text-gray-400">{isVi ? "Hash / Tiêu đề tài liệu" : "Document Hash / Title"}</div>
-                                <div className="text-gray-200 mt-0.5 break-all">{selectedEvent.docTitle || selectedEvent.docIdHash}</div>
+                                <div className="text-gray-200 mt-0.5 break-all">
+                                    {selectedEvent.action === "POPUP_OPENED" ? (
+                                        <div className="text-gray-400 text-[11px] space-y-1">
+                                            <div className="text-gray-300">
+                                                {isVi 
+                                                    ? "Chưa chọn tải tài liệu (Tiêu đề nhận được là tên cửa sổ tiện ích popup)"
+                                                    : "No document selected (Title received was extension popup window title)"}
+                                            </div>
+                                            {selectedEvent.meta?.hostname && (
+                                                <div className="text-cyan-300">
+                                                    {isVi ? "Trang web đang xem:" : "Active domain:"} {selectedEvent.meta.hostname}
+                                                    {selectedEvent.meta?.isScribdDocument && (
+                                                        <span className="ml-2 text-emerald-400">({isVi ? "Đang mở trang tài liệu" : "On doc page"})</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        selectedEvent.docTitle || selectedEvent.docIdHash || (isVi ? "Không xác định" : "Unknown")
+                                    )}
+                                </div>
                             </div>
                         </div>
 

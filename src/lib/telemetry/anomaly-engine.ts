@@ -188,6 +188,25 @@ export async function processTelemetryEvent(input: TelemetryIngestInput): Promis
         severity = "LOW";
     }
 
+    const isDownloadAction =
+        input.action === "DOWNLOAD_SUCCESS" ||
+        input.action === "DOWNLOAD_FAILED" ||
+        input.action === "DOWNLOAD_STARTED" ||
+        input.action === "FREE_DOWNLOAD_CLICKED" ||
+        input.action === "INSTANT_DOWNLOAD_CLICKED" ||
+        input.action === "INIT_REQUEST";
+
+    let cleanedDocTitle = input.docTitle;
+    if (
+        (input.action === "POPUP_OPENED" || !isDownloadAction) &&
+        (cleanedDocTitle === "Scribd Downloader" || cleanedDocTitle === "Document Downloader")
+    ) {
+        cleanedDocTitle = undefined;
+    }
+
+    const resolvedDownloadType =
+        input.meta?.downloadType || (isCredit ? "credit" : (isDownloadAction ? "free" : undefined));
+
     const event: TelemetryEvent = {
         id: `evt_${Date.now()}_${crypto.randomBytes(6).toString("hex")}`,
         extensionId: input.extensionId,
@@ -195,8 +214,8 @@ export async function processTelemetryEvent(input: TelemetryIngestInput): Promis
         action: input.action,
         clientUserId: input.clientUserId,
         sessionNonce: input.sessionNonce,
-        docIdHash: input.docIdHash,
-        docTitle: input.docTitle,
+        docIdHash: input.action === "POPUP_OPENED" && input.docIdHash === "unknown_doc" ? "" : input.docIdHash,
+        docTitle: cleanedDocTitle,
         ip: input.clientIp,
         country: input.country || "Unknown",
         city: input.city || "Unknown",
@@ -204,16 +223,18 @@ export async function processTelemetryEvent(input: TelemetryIngestInput): Promis
         initTimestamp: initTimestamp,
         completeTimestamp: now,
         elapsedSeconds: actualElapsedSeconds,
-        estimatedMinSeconds: isCredit ? (input.meta?.estimatedMinSeconds || 3.0) : (input.meta?.estimatedMinSeconds || 30.0),
-        pages: input.meta?.pages || 1,
-        downloadType: isCredit ? "credit" : "free",
+        estimatedMinSeconds: isDownloadAction
+            ? (isCredit ? (input.meta?.estimatedMinSeconds || 3.0) : (input.meta?.estimatedMinSeconds || 30.0))
+            : undefined,
+        pages: input.meta?.pages !== undefined ? input.meta.pages : (isDownloadAction ? 1 : undefined),
+        downloadType: resolvedDownloadType,
         clientReportedSeconds: input.elapsedSeconds,
         anomalies: anomalies,
         riskScore: riskScore,
         severity: severity,
         meta: {
             ...input.meta,
-            downloadType: isCredit ? "credit" : "free",
+            downloadType: resolvedDownloadType,
             totalUserDistinctIps: distinctIps.size,
         },
         createdAt: new Date(now).toISOString(),
