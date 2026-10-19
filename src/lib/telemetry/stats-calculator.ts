@@ -19,6 +19,28 @@ import { batchResolveIpLocations } from "@/lib/utils/geo-ip-service";
 const PLACEHOLDER_COUNTRY = "Chưa xác định";
 const PLACEHOLDER_CITY = "";
 
+export const USD_TO_VND_RATE = 25400;
+
+export function isUsdTransaction(t: {
+    currency?: string;
+    bankCode?: string;
+    id?: string;
+    content?: string;
+    rawAmount?: string;
+}): boolean {
+    const code = (t.bankCode || "").toUpperCase();
+    const id = (t.id || "").toUpperCase();
+    const content = (t.content || "").toUpperCase();
+    return (
+        t.currency === "USD" ||
+        code === "BUYMEACOFFEE" ||
+        code === "BMAC" ||
+        id.startsWith("BMAC_") ||
+        content.includes("BMAC") ||
+        Boolean(t.rawAmount && t.rawAmount.includes("$"))
+    );
+}
+
 export interface RawSheetUser {
     userId: string;
     credits: number;
@@ -610,7 +632,9 @@ export async function computeDashboardStats(
     });
     transactions.forEach((t) => {
         const d = new Date(t.createdAt).getDay();
-        if (dowMap[d]) dowMap[d].revenue += t.amount;
+        const isUsd = isUsdTransaction(t);
+        const rev = isUsd ? Math.round(t.amount * USD_TO_VND_RATE) : t.amount;
+        if (dowMap[d]) dowMap[d].revenue += rev;
     });
 
     const dayOfWeekDistribution: DayOfWeekActivity[] = [1, 2, 3, 4, 5, 6, 0].map((dayIndex) => ({
@@ -776,26 +800,45 @@ export async function computeDashboardStats(
     }
 
     // 14. Compute Credit Transaction Metrics
-    const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
+    let totalRevenueVnd = 0;
+    let totalRevenueUsd = 0;
+    transactions.forEach((t) => {
+        if (isUsdTransaction(t)) {
+            totalRevenueUsd += t.amount;
+        } else {
+            totalRevenueVnd += t.amount;
+        }
+    });
+    const totalRevenue = Math.round(totalRevenueVnd + totalRevenueUsd * USD_TO_VND_RATE);
     const totalTransactions = transactions.length;
     const totalCreditsAdded = transactions.reduce((sum, t) => sum + t.creditsAdded, 0);
     const averageTransactionValue =
         totalTransactions > 0 ? Math.round((totalRevenue / totalTransactions) * 100) / 100 : 0;
 
-    const txTimelineMap: Record<string, { revenue: number; transactionsCount: number; creditsCount: number }> = {};
+    const txTimelineMap: Record<
+        string,
+        { revenue: number; revenueVnd: number; revenueUsd: number; transactionsCount: number; creditsCount: number }
+    > = {};
     if (effectiveTimeframe === "24h") {
         const currentVnHour = vnNow.getUTCHours();
         for (let h = 0; h <= currentVnHour; h++) {
             const bucket = `${String(h).padStart(2, "0")}:00`;
-            txTimelineMap[bucket] = { revenue: 0, transactionsCount: 0, creditsCount: 0 };
+            txTimelineMap[bucket] = { revenue: 0, revenueVnd: 0, revenueUsd: 0, transactionsCount: 0, creditsCount: 0 };
         }
     }
     transactions.forEach((t) => {
         const bucket = formatVnBucket(t.createdAt, isHourly);
         if (!txTimelineMap[bucket]) {
-            txTimelineMap[bucket] = { revenue: 0, transactionsCount: 0, creditsCount: 0 };
+            txTimelineMap[bucket] = { revenue: 0, revenueVnd: 0, revenueUsd: 0, transactionsCount: 0, creditsCount: 0 };
         }
-        txTimelineMap[bucket].revenue += t.amount;
+        const isUsd = isUsdTransaction(t);
+        const converted = isUsd ? Math.round(t.amount * USD_TO_VND_RATE) : t.amount;
+        txTimelineMap[bucket].revenue += converted;
+        if (isUsd) {
+            txTimelineMap[bucket].revenueUsd += t.amount;
+        } else {
+            txTimelineMap[bucket].revenueVnd += t.amount;
+        }
         txTimelineMap[bucket].transactionsCount += 1;
         txTimelineMap[bucket].creditsCount += t.creditsAdded;
     });
@@ -804,33 +847,70 @@ export async function computeDashboardStats(
         .map(([time, data]) => ({ time, ...data }))
         .sort((a, b) => a.time.localeCompare(b.time));
 
-    const bankBreakdown: Record<string, { count: number; totalAmount: number }> = {};
+    const bankBreakdown: Record<
+        string,
+        { count: number; totalAmount: number; currency: string; totalAmountVnd: number; totalAmountUsd: number }
+    > = {};
     transactions.forEach((t) => {
+        const isUsd = isUsdTransaction(t);
         const bank = t.bankCode || "NGAN_HANG";
         if (!bankBreakdown[bank]) {
-            bankBreakdown[bank] = { count: 0, totalAmount: 0 };
+            bankBreakdown[bank] = {
+                count: 0,
+                totalAmount: 0,
+                currency: isUsd ? "USD" : "VND",
+                totalAmountVnd: 0,
+                totalAmountUsd: 0,
+            };
         }
         bankBreakdown[bank].count += 1;
         bankBreakdown[bank].totalAmount += t.amount;
+        if (isUsd) {
+            bankBreakdown[bank].totalAmountUsd += t.amount;
+            bankBreakdown[bank].currency = "USD";
+        } else {
+            bankBreakdown[bank].totalAmountVnd += t.amount;
+        }
     });
 
     const spenderMap: Record<
         string,
-        { totalSpent: number; totalCredits: number; transactionCount: number; lastTransaction: string }
+        {
+            totalSpent: number;
+            totalSpentVnd: number;
+            totalSpentUsd: number;
+            primaryCurrency: string;
+            totalCredits: number;
+            transactionCount: number;
+            lastTransaction: string;
+        }
     > = {};
 
     transactions.forEach((t) => {
+        const isUsd = isUsdTransaction(t);
         if (!spenderMap[t.userId]) {
             spenderMap[t.userId] = {
                 totalSpent: 0,
+                totalSpentVnd: 0,
+                totalSpentUsd: 0,
+                primaryCurrency: isUsd ? "USD" : "VND",
                 totalCredits: 0,
                 transactionCount: 0,
                 lastTransaction: t.createdAt,
             };
         }
-        spenderMap[t.userId].totalSpent += t.amount;
-        spenderMap[t.userId].totalCredits += t.creditsAdded;
-        spenderMap[t.userId].transactionCount += 1;
+        const s = spenderMap[t.userId];
+        if (isUsd) {
+            s.totalSpentUsd += t.amount;
+            s.totalSpent += Math.round(t.amount * USD_TO_VND_RATE);
+            if (!s.totalSpentVnd) s.primaryCurrency = "USD";
+        } else {
+            s.totalSpentVnd += t.amount;
+            s.totalSpent += t.amount;
+            s.primaryCurrency = "VND";
+        }
+        s.totalCredits += t.creditsAdded;
+        s.transactionCount += 1;
     });
 
     const topSpenders = Object.entries(spenderMap)
@@ -854,12 +934,20 @@ export async function computeDashboardStats(
     }
 
     // 15. User Directory & CRM Analysis
-    const userTxMap = new Map<string, { totalSpent: number; count: number }>();
+    const userTxMap = new Map<string, { totalSpent: number; totalSpentVnd: number; totalSpentUsd: number; count: number }>();
     rawTransactions.forEach((t) => {
         const u = t.userId.trim().toUpperCase();
-        if (!userTxMap.has(u)) userTxMap.set(u, { totalSpent: 0, count: 0 });
-        userTxMap.get(u)!.totalSpent += t.amount;
-        userTxMap.get(u)!.count += 1;
+        if (!userTxMap.has(u)) userTxMap.set(u, { totalSpent: 0, totalSpentVnd: 0, totalSpentUsd: 0, count: 0 });
+        const record = userTxMap.get(u)!;
+        const isUsd = isUsdTransaction(t);
+        if (isUsd) {
+            record.totalSpentUsd += t.amount;
+            record.totalSpent += Math.round(t.amount * USD_TO_VND_RATE);
+        } else {
+            record.totalSpentVnd += t.amount;
+            record.totalSpent += t.amount;
+        }
+        record.count += 1;
     });
 
     const userDlInTimeframe = new Map<string, number>();
@@ -879,7 +967,7 @@ export async function computeDashboardStats(
 
     const enrichedUsers: UserDirectoryItem[] = rawUsers.map((u) => {
         const uKey = u.userId.trim().toUpperCase();
-        const txInfo = userTxMap.get(uKey) || { totalSpent: 0, count: 0 };
+        const txInfo = userTxMap.get(uKey) || { totalSpent: 0, totalSpentVnd: 0, totalSpentUsd: 0, count: 0 };
         const dlCount = userDlInTimeframe.get(uKey) || 0;
         const isPaying = txInfo.count > 0;
         const isNew = cutoffTime > 0 ? new Date(u.createdAt).getTime() >= cutoffTime : true;
@@ -915,7 +1003,8 @@ export async function computeDashboardStats(
             createdAt: u.createdAt,
             updatedAt: u.updatedAt,
             isPaying,
-            totalSpentVnd: txInfo.totalSpent,
+            totalSpentVnd: txInfo.totalSpentVnd,
+            totalSpentUsd: txInfo.totalSpentUsd,
             transactionCount: txInfo.count,
             actualDownloadsInTimeframe: dlCount,
             isNewInTimeframe: isNew,
@@ -1036,18 +1125,25 @@ export async function computeDashboardStats(
     transactions.forEach((t) => {
         const amt = Number(t.amount) || 0;
         let pkgName = "";
-        if (amt > 0 && amt <= 3000) {
-            pkgName = "Gói 2K (3 Credits)";
-        } else if (amt <= 7000) {
-            pkgName = "Gói 5K (7 Credits)";
-        } else if (amt <= 15000) {
-            pkgName = "Gói 10K (25 Credits)";
-        } else if (amt >= 20000 && amt <= 35000) {
-            pkgName = "Gói $1.00 USD (60 Credits)";
-        } else if (amt >= 65000 && amt <= 85000) {
-            pkgName = "Gói $3.00 USD (200 Credits)";
-        } else if (amt > 15000) {
-            pkgName = `Gói ${(amt / 1000).toFixed(0)}K (${t.creditsAdded || 0} Credits)`;
+        const isUsd = isUsdTransaction(t);
+        if (isUsd) {
+            if (amt === 1 || t.creditsAdded === 60) pkgName = "Gói $1.00 USD (60 Credits)";
+            else if (amt === 3 || t.creditsAdded === 200) pkgName = "Gói $3.00 USD (200 Credits)";
+            else if (amt === 5 || t.creditsAdded === 400) pkgName = "Gói $5.00 USD (400 Credits)";
+            else if (amt >= 10 || t.creditsAdded >= 900) pkgName = `Gói $${amt}.00 USD (${t.creditsAdded} Credits)`;
+            else pkgName = `Gói $${amt} USD (${t.creditsAdded} Credits)`;
+        } else {
+            if (amt > 0 && amt <= 3000) {
+                pkgName = "Gói 2K (3 Credits)";
+            } else if (amt <= 7000) {
+                pkgName = "Gói 5K (7 Credits)";
+            } else if (amt <= 15000) {
+                pkgName = "Gói 10K (25 Credits)";
+            } else if (amt >= 20000 && amt <= 35000 && t.creditsAdded === 60) {
+                pkgName = "Gói $1.00 USD (60 Credits)";
+            } else if (amt > 15000) {
+                pkgName = `Gói ${(amt / 1000).toFixed(0)}K (${t.creditsAdded || 0} Credits)`;
+            }
         }
 
         if (pkgName) {
@@ -1364,6 +1460,8 @@ export async function computeDashboardStats(
         filteredEvents: tableEvents.slice(0, 100),
         transactionStats: {
             totalRevenue,
+            totalRevenueVnd,
+            totalRevenueUsd,
             totalTransactions,
             totalCreditsAdded,
             averageTransactionValue,

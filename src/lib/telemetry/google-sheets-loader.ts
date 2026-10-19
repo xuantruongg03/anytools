@@ -205,7 +205,7 @@ export async function fetchRealGoogleSheetsTransactions(): Promise<CreditTransac
 
     try {
         const txRange =
-            process.env.TELEMETRY_TRANSACTIONS_SHEET_RANGE || "Credits_Transactions!A:G";
+            process.env.TELEMETRY_TRANSACTIONS_SHEET_RANGE || "Credits_Transactions!A:H";
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: spreadsheetId,
@@ -219,7 +219,7 @@ export async function fetchRealGoogleSheetsTransactions(): Promise<CreditTransac
             return [];
         }
 
-        // Row format: [Trans_ID, User_ID, Amount, Credits_Added, Bank_Code, Content, Created_At]
+        // Row format: [Trans_ID, User_ID, Amount, Credits_Added, Bank_Code, Content, Created_At, Currency]
         const dataRows = rows.slice(1);
 
         const transactions: CreditTransaction[] = dataRows.map((r, idx) => {
@@ -231,6 +231,9 @@ export async function fetchRealGoogleSheetsTransactions(): Promise<CreditTransac
             const bankCode = (r[4] || "NGAN_HANG").toString().trim().toUpperCase();
             const content = (r[5] || "").toString().trim();
             const dateStr = (r[6] || "").toString().trim();
+            const colCurrency = (r[7] || "").toString().trim().toUpperCase();
+            const isUsd = colCurrency === "USD" || bankCode === "BUYMEACOFFEE" || id.startsWith("BMAC_") || content.includes("BMAC") || rawAmount.includes("$");
+            const currency = colCurrency || (isUsd ? "USD" : "VND");
 
             let timestamp = now - idx * 60000;
             if (dateStr) {
@@ -244,6 +247,7 @@ export async function fetchRealGoogleSheetsTransactions(): Promise<CreditTransac
                 id,
                 userId,
                 amount: numericAmount,
+                currency,
                 rawAmount,
                 creditsAdded,
                 bankCode,

@@ -130,6 +130,7 @@ export interface CreditTransaction {
     id: string; // Trans_ID
     userId: string;
     amount: number;
+    currency?: "VND" | "USD" | string;
     rawAmount?: string;
     creditsAdded: number;
     bankCode: string;
@@ -139,19 +140,26 @@ export interface CreditTransaction {
 
 export interface CreditTransactionSummary {
     totalRevenue: number;
+    totalRevenueVnd?: number;
+    totalRevenueUsd?: number;
     totalTransactions: number;
     totalCreditsAdded: number;
     averageTransactionValue: number;
     timeline: Array<{
         time: string;
         revenue: number;
+        revenueVnd?: number;
+        revenueUsd?: number;
         transactionsCount: number;
         creditsCount: number;
     }>;
-    bankBreakdown: Record<string, { count: number; totalAmount: number }>;
+    bankBreakdown: Record<string, { count: number; totalAmount: number; currency?: string; totalAmountVnd?: number; totalAmountUsd?: number }>;
     topSpenders: Array<{
         userId: string;
         totalSpent: number;
+        totalSpentVnd?: number;
+        totalSpentUsd?: number;
+        primaryCurrency?: string;
         totalCredits: number;
         transactionCount: number;
         lastTransaction: string;
@@ -169,6 +177,7 @@ export interface UserDirectoryItem {
     updatedAt: string; // ISO
     isPaying: boolean;
     totalSpentVnd: number;
+    totalSpentUsd?: number;
     transactionCount: number;
     actualDownloadsInTimeframe: number;
     isNewInTimeframe: boolean;

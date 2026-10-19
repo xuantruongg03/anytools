@@ -163,11 +163,14 @@ export async function fetchMongoTransactions(options: StatsFilterOptions = {}): 
             const bankCode = (doc.bankCode || "NGAN_HANG").toString().trim().toUpperCase();
             const content = (doc.content || "").toString().trim();
             const createdAt = parseDateTimeToIso(doc.createdAt);
+            const isUsd = doc.currency === "USD" || bankCode === "BUYMEACOFFEE" || id.startsWith("BMAC_") || content.includes("BMAC");
+            const currency = doc.currency || (isUsd ? "USD" : "VND");
 
             return {
                 id,
                 userId,
                 amount: numericAmount,
+                currency,
                 rawAmount: String(doc.amount || numericAmount),
                 creditsAdded,
                 bankCode,

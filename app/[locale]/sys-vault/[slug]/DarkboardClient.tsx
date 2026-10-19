@@ -310,8 +310,8 @@ export default function DarkboardClient({
         if (activeTab === "users") {
             if (!filteredUsers.length) return;
             const headers = isVi
-                ? ["Ma_User_ID", "So_Du_Credits", "Tong_Da_Tai", "IP_Dang_Ky", "Khu_Vuc", "Quoc_Gia", "Da_Tung_Nap", "Tong_Chi_Tieu_VND", "So_Giao_Dich", "Ngay_Tham_Gia", "Hoat_Dong_Cuoi"]
-                : ["User_ID", "Credits", "Total_Downloaded", "Created_IP", "City", "Country", "Is_Paying", "Total_Spent_VND", "Transactions_Count", "Created_At", "Updated_At"];
+                ? ["Ma_User_ID", "So_Du_Credits", "Tong_Da_Tai", "IP_Dang_Ky", "Khu_Vuc", "Quoc_Gia", "Da_Tung_Nap", "Tong_Chi_Tieu_VND", "Tong_Chi_Tieu_USD", "So_Giao_Dich", "Ngay_Tham_Gia", "Hoat_Dong_Cuoi"]
+                : ["User_ID", "Credits", "Total_Downloaded", "Created_IP", "City", "Country", "Is_Paying", "Total_Spent_VND", "Total_Spent_USD", "Transactions_Count", "Created_At", "Updated_At"];
 
             const rows = filteredUsers.map((u) => [
                 u.userId,
@@ -322,6 +322,7 @@ export default function DarkboardClient({
                 u.country || "Unknown",
                 u.isPaying ? "YES" : "NO",
                 u.totalSpentVnd,
+                u.totalSpentUsd || 0,
                 u.transactionCount,
                 u.createdAt,
                 u.updatedAt,
@@ -340,18 +341,22 @@ export default function DarkboardClient({
         if (activeTab === "transactions") {
             if (!transactions.length) return;
             const headers = isVi
-                ? ["Thoi_Gian", "Ma_Giao_Dich", "Ma_User", "So_Tien_VND", "Credits_Cong", "Ngan_Hang", "Noi_Dung"]
-                : ["Timestamp", "Trans_ID", "User_ID", "Amount_VND", "Credits_Added", "Bank_Code", "Content"];
+                ? ["Thoi_Gian", "Ma_Giao_Dich", "Ma_User", "So_Tien", "Loai_Tien", "Credits_Cong", "Ngan_Hang", "Noi_Dung"]
+                : ["Timestamp", "Trans_ID", "User_ID", "Amount", "Currency", "Credits_Added", "Bank_Code", "Content"];
 
-            const rows = transactions.map((t) => [
-                t.createdAt,
-                t.id,
-                t.userId,
-                t.amount,
-                t.creditsAdded,
-                t.bankCode,
-                `"${(t.content || "").replace(/"/g, '""')}"`,
-            ]);
+            const rows = transactions.map((t) => {
+                const isUsd = t.currency === "USD" || t.bankCode === "BUYMEACOFFEE" || t.id.startsWith("BMAC_") || (t.content && t.content.includes("BMAC"));
+                return [
+                    t.createdAt,
+                    t.id,
+                    t.userId,
+                    t.amount,
+                    isUsd ? "USD" : "VND",
+                    t.creditsAdded,
+                    t.bankCode,
+                    `"${(t.content || "").replace(/"/g, '""')}"`,
+                ];
+            });
             const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
@@ -746,7 +751,13 @@ export default function DarkboardClient({
                         </div>
                         <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
                             <span>Doanh thu:</span>
-                            <strong className="text-white font-bold">{(transactionStats?.totalRevenue || 0).toLocaleString()} đ</strong>
+                            <strong className="text-white font-bold">
+                                {transactionStats?.totalRevenueUsd && transactionStats.totalRevenueUsd > 0
+                                    ? transactionStats.totalRevenueVnd && transactionStats.totalRevenueVnd > 0
+                                        ? `${transactionStats.totalRevenueVnd.toLocaleString()} đ + $${transactionStats.totalRevenueUsd}`
+                                        : `$${transactionStats.totalRevenueUsd} USD`
+                                    : `${(transactionStats?.totalRevenue || 0).toLocaleString()} đ`}
+                            </strong>
                         </div>
                     </div>
                 </div>
@@ -803,7 +814,21 @@ export default function DarkboardClient({
                                     <span className="text-base">💰</span>
                                 </div>
                                 <div className="text-3xl font-black text-white mt-2">
-                                    {(transactionStats?.totalRevenue || 0).toLocaleString()} <span className="text-base text-emerald-400">đ</span>
+                                    {transactionStats?.totalRevenueUsd && transactionStats.totalRevenueUsd > 0 ? (
+                                        transactionStats.totalRevenueVnd && transactionStats.totalRevenueVnd > 0 ? (
+                                            <span className="text-2xl">
+                                                {transactionStats.totalRevenueVnd.toLocaleString()} <span className="text-sm text-emerald-400">đ</span> + ${transactionStats.totalRevenueUsd} <span className="text-sm text-cyan-400">USD</span>
+                                            </span>
+                                        ) : (
+                                            <span>
+                                                ${transactionStats.totalRevenueUsd.toLocaleString()} <span className="text-base text-cyan-400">USD</span>
+                                            </span>
+                                        )
+                                    ) : (
+                                        <>
+                                            {(transactionStats?.totalRevenue || 0).toLocaleString()} <span className="text-base text-emerald-400">đ</span>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="text-[11px] text-gray-400 font-mono mt-1 flex items-center justify-between">
                                     <span>CR: <strong className="text-emerald-300">{userStats?.conversionRate || 0}%</strong></span>
@@ -1868,7 +1893,12 @@ export default function DarkboardClient({
                                                     <td className="py-3 whitespace-nowrap">
                                                         {user.isPaying ? (
                                                             <span className="text-emerald-400 font-bold">
-                                                                {user.totalSpentVnd.toLocaleString()} đ ({user.transactionCount} GD)
+                                                                {user.totalSpentUsd && user.totalSpentUsd > 0
+                                                                    ? user.totalSpentVnd && user.totalSpentVnd > 0
+                                                                        ? `${user.totalSpentVnd.toLocaleString()} đ + $${user.totalSpentUsd}`
+                                                                        : `$${user.totalSpentUsd.toLocaleString()} USD`
+                                                                    : `${user.totalSpentVnd.toLocaleString()} đ`}{" "}
+                                                                ({user.transactionCount} GD)
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-500">0 đ (Free)</span>
@@ -2502,10 +2532,34 @@ export default function DarkboardClient({
                                     <span className="text-base">💰</span>
                                 </div>
                                 <div className="text-2xl sm:text-3xl font-black text-white mt-2">
-                                    {(transactionStats?.totalRevenue || 0).toLocaleString()} <span className="text-base text-emerald-400 font-bold">đ</span>
+                                    {transactionStats?.totalRevenueUsd && transactionStats.totalRevenueUsd > 0 ? (
+                                        transactionStats.totalRevenueVnd && transactionStats.totalRevenueVnd > 0 ? (
+                                            <div className="flex flex-wrap items-baseline gap-1 text-xl sm:text-2xl">
+                                                <span>{transactionStats.totalRevenueVnd.toLocaleString()}</span>
+                                                <span className="text-sm text-emerald-400 font-bold">đ</span>
+                                                <span className="text-gray-400 text-base font-normal">+</span>
+                                                <span>${transactionStats.totalRevenueUsd.toLocaleString()}</span>
+                                                <span className="text-sm text-cyan-400 font-bold">USD</span>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                ${transactionStats.totalRevenueUsd.toLocaleString()}{" "}
+                                                <span className="text-base text-cyan-400 font-bold">USD</span>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <div>
+                                            {(transactionStats?.totalRevenue || 0).toLocaleString()}{" "}
+                                            <span className="text-base text-emerald-400 font-bold">đ</span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="text-[10px] text-gray-400 font-mono mt-1">
-                                    {isVi ? `Ghi nhận trong khung: ${timeframe}` : `Logged in timeframe: ${timeframe}`}
+                                    {transactionStats?.totalRevenueUsd && transactionStats.totalRevenueUsd > 0
+                                        ? `≈ ${(transactionStats?.totalRevenue || 0).toLocaleString()} đ (Quy đổi 1$ ~ 25.400đ)`
+                                        : isVi
+                                        ? `Ghi nhận trong khung: ${timeframe}`
+                                        : `Logged in timeframe: ${timeframe}`}
                                 </div>
                             </div>
 
@@ -2547,7 +2601,17 @@ export default function DarkboardClient({
                                     <span className="text-base">📈</span>
                                 </div>
                                 <div className="text-2xl sm:text-3xl font-black text-purple-300 mt-2">
-                                    {(transactionStats?.averageTransactionValue || 0).toLocaleString()} <span className="text-base text-purple-400 font-bold">đ</span>
+                                    {transactionStats?.totalRevenueUsd && transactionStats.totalRevenueUsd > 0 && !transactionStats.totalRevenueVnd ? (
+                                        <>
+                                            ${(transactionStats.totalRevenueUsd / Math.max(transactionStats.totalTransactions, 1)).toFixed(2)}{" "}
+                                            <span className="text-base text-purple-400 font-bold">USD</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {(transactionStats?.averageTransactionValue || 0).toLocaleString()}{" "}
+                                            <span className="text-base text-purple-400 font-bold">đ</span>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="text-[10px] text-gray-400 font-mono mt-1">
                                     {isVi ? "Trung bình / lượt nạp" : "Per transaction average"}
@@ -2570,7 +2634,11 @@ export default function DarkboardClient({
                                         </p>
                                     </div>
                                     <div className="text-xs font-mono text-emerald-400 font-bold">
-                                        {(transactionStats?.totalRevenue || 0).toLocaleString()} đ
+                                        {transactionStats?.totalRevenueUsd && transactionStats.totalRevenueUsd > 0
+                                            ? transactionStats.totalRevenueVnd && transactionStats.totalRevenueVnd > 0
+                                                ? `${transactionStats.totalRevenueVnd.toLocaleString()} đ + $${transactionStats.totalRevenueUsd}`
+                                                : `$${transactionStats.totalRevenueUsd} USD`
+                                            : `${(transactionStats?.totalRevenue || 0).toLocaleString()} đ`}
                                     </div>
                                 </div>
 
@@ -2583,7 +2651,7 @@ export default function DarkboardClient({
                                             return (
                                                 <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative h-full justify-end">
                                                     <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-[10px] font-mono text-white pointer-events-none z-20 whitespace-nowrap shadow-lg">
-                                                        {item.time} | {item.revenue.toLocaleString()} đ ({item.transactionsCount} GD / {item.creditsCount} cr)
+                                                        {item.time} | {item.revenueUsd && item.revenueUsd > 0 ? (item.revenueVnd && item.revenueVnd > 0 ? `${item.revenueVnd.toLocaleString()} đ + $${item.revenueUsd}` : `$${item.revenueUsd} USD`) : `${item.revenue.toLocaleString()} đ`} ({item.transactionsCount} GD / {item.creditsCount} cr)
                                                     </div>
                                                     <div
                                                         style={{ height: `${Math.min(h, 85)}%` }}
@@ -2628,7 +2696,11 @@ export default function DarkboardClient({
                                                         <span className="text-white font-bold">{bank}</span>
                                                         <span className="text-gray-400 text-[10px]">({data.count} GD)</span>
                                                     </div>
-                                                    <span className="font-bold text-emerald-400">{data.totalAmount.toLocaleString()} đ</span>
+                                                    <span className="font-bold text-emerald-400">
+                                                        {bank === "BUYMEACOFFEE" || data.currency === "USD"
+                                                            ? `$${data.totalAmount.toLocaleString("en-US")} USD`
+                                                            : `${data.totalAmount.toLocaleString()} đ`}
+                                                    </span>
                                                 </div>
                                             ))
                                         ) : (
@@ -2652,7 +2724,13 @@ export default function DarkboardClient({
                                                     <span className="text-cyan-300 truncate max-w-[120px]">{s.userId}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-amber-400">+{s.totalCredits} cr</span>
-                                                        <span className="font-bold text-white">{s.totalSpent.toLocaleString()} đ</span>
+                                                        <span className="font-bold text-white">
+                                                            {s.totalSpentUsd && s.totalSpentUsd > 0
+                                                                ? s.totalSpentVnd && s.totalSpentVnd > 0
+                                                                    ? `${s.totalSpentVnd.toLocaleString()} đ + $${s.totalSpentUsd}`
+                                                                    : `$${s.totalSpentUsd.toLocaleString("en-US")} USD`
+                                                                : `${(s.totalSpentVnd || s.totalSpent).toLocaleString()} đ`}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             ))
@@ -2707,7 +2785,7 @@ export default function DarkboardClient({
                                             <th className="pb-3 font-semibold">{isVi ? "Thời Gian" : "Timestamp"}</th>
                                             <th className="pb-3 font-semibold">{isVi ? "Mã Giao Dịch" : "Trans ID"}</th>
                                             <th className="pb-3 font-semibold">{isVi ? "Mã User ID" : "User ID"}</th>
-                                            <th className="pb-3 font-semibold">{isVi ? "Số Tiền (VND)" : "Amount (VND)"}</th>
+                                            <th className="pb-3 font-semibold">{isVi ? "Số Tiền" : "Amount"}</th>
                                             <th className="pb-3 font-semibold">{isVi ? "Credits Nhận" : "Credits Added"}</th>
                                             <th className="pb-3 font-semibold">{isVi ? "Kênh / Ngân Hàng" : "Gateway / Bank"}</th>
                                             <th className="pb-3 font-semibold">{isVi ? "Nội Dung Chuyển Khoản" : "Content / Memo"}</th>
@@ -2716,20 +2794,22 @@ export default function DarkboardClient({
                                     </thead>
                                     <tbody className="divide-y divide-gray-800/60">
                                         {transactions.length > 0 ? (
-                                            transactions.map((tx, idx) => (
-                                                <tr key={`${tx.id}-${idx}`} className="hover:bg-gray-800/40 transition-colors">
-                                                    <td className="py-3 text-gray-400 whitespace-nowrap">
-                                                        {new Date(tx.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US")}
-                                                    </td>
-                                                    <td className="py-3 font-bold text-white whitespace-nowrap">
-                                                        {tx.id}
-                                                    </td>
-                                                    <td className="py-3 text-cyan-300 font-bold whitespace-nowrap">
-                                                        {tx.userId}
-                                                    </td>
-                                                    <td className="py-3 text-emerald-400 font-bold whitespace-nowrap">
-                                                        +{tx.amount.toLocaleString()} đ
-                                                    </td>
+                                            transactions.map((tx, idx) => {
+                                                const isUsd = tx.currency === "USD" || tx.bankCode === "BUYMEACOFFEE" || tx.id.startsWith("BMAC_") || (tx.content && tx.content.includes("BMAC"));
+                                                return (
+                                                    <tr key={`${tx.id}-${idx}`} className="hover:bg-gray-800/40 transition-colors">
+                                                        <td className="py-3 text-gray-400 whitespace-nowrap">
+                                                            {new Date(tx.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US")}
+                                                        </td>
+                                                        <td className="py-3 font-bold text-white whitespace-nowrap">
+                                                            {tx.id}
+                                                        </td>
+                                                        <td className="py-3 text-cyan-300 font-bold whitespace-nowrap">
+                                                            {tx.userId}
+                                                        </td>
+                                                        <td className="py-3 text-emerald-400 font-bold whitespace-nowrap">
+                                                            {isUsd ? `+$${tx.amount.toLocaleString("en-US")} USD` : `+${tx.amount.toLocaleString()} đ`}
+                                                        </td>
                                                     <td className="py-3 whitespace-nowrap">
                                                         <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold text-[11px] border border-amber-500/30">
                                                             +{tx.creditsAdded} cr
@@ -2752,7 +2832,8 @@ export default function DarkboardClient({
                                                         </button>
                                                     </td>
                                                 </tr>
-                                            ))
+                                            );
+                                        })
                                         ) : (
                                             <tr>
                                                 <td colSpan={8} className="py-12 text-center text-gray-500">
@@ -4087,7 +4168,9 @@ export default function DarkboardClient({
                             <div className="p-3 rounded-xl bg-[#141b2d]">
                                 <div className="text-gray-400">{isVi ? "Số Tiền Thanh Toán" : "Payment Amount"}</div>
                                 <div className="text-emerald-400 font-bold mt-1 text-sm">
-                                    {selectedTransaction.amount.toLocaleString()} đ
+                                    {selectedTransaction.currency === "USD" || selectedTransaction.bankCode === "BUYMEACOFFEE" || selectedTransaction.id.startsWith("BMAC_")
+                                        ? `$${selectedTransaction.amount.toLocaleString("en-US")} USD`
+                                        : `${selectedTransaction.amount.toLocaleString()} đ`}
                                 </div>
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d]">
@@ -4179,7 +4262,13 @@ export default function DarkboardClient({
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d] border border-emerald-500/20">
                                 <div className="text-gray-400 text-[10px] uppercase">{isVi ? "Tổng Tiền Đã Nạp" : "Total Spent"}</div>
-                                <div className="text-emerald-400 font-black text-lg mt-1">{selectedUser.totalSpentVnd.toLocaleString()} đ</div>
+                                <div className="text-emerald-400 font-black text-lg mt-1">
+                                    {selectedUser.totalSpentUsd && selectedUser.totalSpentUsd > 0
+                                        ? selectedUser.totalSpentVnd && selectedUser.totalSpentVnd > 0
+                                            ? `${selectedUser.totalSpentVnd.toLocaleString()} đ + $${selectedUser.totalSpentUsd}`
+                                            : `$${selectedUser.totalSpentUsd.toLocaleString()} USD`
+                                        : `${selectedUser.totalSpentVnd.toLocaleString()} đ`}
+                                </div>
                             </div>
                             <div className="p-3 rounded-xl bg-[#141b2d] border border-purple-500/20">
                                 <div className="text-gray-400 text-[10px] uppercase">{isVi ? "Số Lần Nạp" : "Transactions"}</div>

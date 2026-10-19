@@ -20,6 +20,7 @@ codex-session-01a144fb-5c06-7082-8980-ffcae970adc9.md
 /.next/
 /out/
 /tests
+/scripts/deploy.txt
 
 # production
 /build

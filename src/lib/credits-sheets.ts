@@ -119,10 +119,10 @@ export async function ensureCreditsSheetsExist(): Promise<void> {
             });
             await sheets.spreadsheets.values.update({
                 spreadsheetId: SPREADSHEET_ID,
-                range: `${TRANSACTIONS_SHEET_NAME}!A1:G1`,
+                range: `${TRANSACTIONS_SHEET_NAME}!A1:H1`,
                 valueInputOption: "USER_ENTERED",
                 requestBody: {
-                    values: [["Trans_ID", "User_ID", "Amount", "Credits_Added", "Bank_Code", "Content", "Created_At"]],
+                    values: [["Trans_ID", "User_ID", "Amount", "Credits_Added", "Bank_Code", "Content", "Created_At", "Currency"]],
                 },
             });
         }
@@ -224,6 +224,7 @@ async function asyncBackupTransactionToSheets(trans: {
     userId: string;
     amount: number;
     creditsAdded: number;
+    currency?: string;
     bankCode?: string;
     content: string;
 }, now: string) {
@@ -231,12 +232,13 @@ async function asyncBackupTransactionToSheets(trans: {
         const sheets = getSheetsClient();
         if (!sheets || !SPREADSHEET_ID) return;
         await ensureCreditsSheetsExist();
+        const txCurrency = trans.currency || (trans.bankCode === "BUYMEACOFFEE" || trans.transId.startsWith("BMAC_") ? "USD" : "VND");
         await sheets.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID,
-            range: `${TRANSACTIONS_SHEET_NAME}!A:G`,
+            range: `${TRANSACTIONS_SHEET_NAME}!A:H`,
             valueInputOption: "USER_ENTERED",
             requestBody: {
-                values: [[trans.transId, trans.userId, trans.amount, trans.creditsAdded, trans.bankCode || "BANK", trans.content, now]],
+                values: [[trans.transId, trans.userId, trans.amount, trans.creditsAdded, trans.bankCode || "BANK", trans.content, now, txCurrency]],
             },
         });
     } catch (err) {
@@ -573,11 +575,14 @@ export async function processPaymentWebhook(data: {
                 return { success: false, creditsAdded: 0, message: "Giao dịch này đã được xử lý trước đó" };
             }
 
+            const txCurrency = data.currency || (data.bankCode === "BUYMEACOFFEE" || data.transId.startsWith("BMAC_") ? "USD" : "VND");
+
             // Ghi transaction
             await db.collection("credits_transactions").insertOne({
                 transId: data.transId,
                 userId: cleanId,
                 amount: data.amount,
+                currency: txCurrency,
                 creditsAdded: creditsToAdd,
                 bankCode: data.bankCode || "BANK",
                 content: data.content,
@@ -600,7 +605,7 @@ export async function processPaymentWebhook(data: {
             );
 
             // Backup ngầm sang Google Sheets
-            asyncBackupTransactionToSheets({ ...data, creditsAdded: creditsToAdd }, now);
+            asyncBackupTransactionToSheets({ ...data, currency: txCurrency, creditsAdded: creditsToAdd }, now);
             // Cập nhật ngầm sheet Users
             (async () => {
                 const user = await db.collection("credits_users").findOne({ userId: cleanId });
@@ -638,12 +643,13 @@ export async function processPaymentWebhook(data: {
             return { success: false, creditsAdded: 0, message: "Giao dịch này đã được xử lý trước đó" };
         }
 
+        const fallbackCurrency = data.currency || (data.bankCode === "BUYMEACOFFEE" || data.transId.startsWith("BMAC_") ? "USD" : "VND");
         await sheets.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID,
-            range: `${TRANSACTIONS_SHEET_NAME}!A:G`,
+            range: `${TRANSACTIONS_SHEET_NAME}!A:H`,
             valueInputOption: "USER_ENTERED",
             requestBody: {
-                values: [[data.transId, cleanId, data.amount, creditsToAdd, data.bankCode || "BANK", data.content, now]],
+                values: [[data.transId, cleanId, data.amount, creditsToAdd, data.bankCode || "BANK", data.content, now, fallbackCurrency]],
             },
         });
 
@@ -914,29 +920,41 @@ export async function migrateAllSheetsDataToMongo(): Promise<{
     try {
         const transRes = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: `${TRANSACTIONS_SHEET_NAME}!A:G`,
+            range: `${TRANSACTIONS_SHEET_NAME}!A:H`,
         });
         const transRows = (transRes.data.values || []).slice(1);
         if (transRows.length > 0) {
             const transOps = transRows
                 .filter((r) => r[0] && r[0].toString().trim().length > 0)
-                .map((r) => ({
-                    updateOne: {
-                        filter: { transId: r[0].toString().trim() },
-                        update: {
-                            $set: {
-                                transId: r[0].toString().trim(),
-                                userId: (r[1] || "").toString().trim(),
-                                amount: parseInt(r[2] || "0", 10) || 0,
-                                creditsAdded: parseInt(r[3] || "0", 10) || 0,
-                                bankCode: (r[4] || "BANK").toString().trim(),
-                                content: (r[5] || "").toString().trim(),
-                                createdAt: (r[6] || getVnTimeString()).toString().trim(),
+                .map((r) => {
+                    const transId = r[0].toString().trim();
+                    const bankCode = (r[4] || "BANK").toString().trim();
+                    const content = (r[5] || "").toString().trim();
+                    const colCurrency = (r[7] || "").toString().trim().toUpperCase();
+                    const isUsd = colCurrency === "USD" || bankCode === "BUYMEACOFFEE" || transId.startsWith("BMAC_") || content.includes("BMAC");
+                    const currency = colCurrency || (isUsd ? "USD" : "VND");
+                    const rawAmt = (r[2] || "0").toString().trim();
+                    const numericAmount = parseFloat(rawAmt.replace(/[^0-9.-]+/g, "")) || 0;
+
+                    return {
+                        updateOne: {
+                            filter: { transId },
+                            update: {
+                                $set: {
+                                    transId,
+                                    userId: (r[1] || "").toString().trim(),
+                                    amount: numericAmount,
+                                    currency,
+                                    creditsAdded: parseInt(r[3] || "0", 10) || 0,
+                                    bankCode,
+                                    content,
+                                    createdAt: (r[6] || getVnTimeString()).toString().trim(),
+                                },
                             },
+                            upsert: true,
                         },
-                        upsert: true,
-                    },
-                }));
+                    };
+                });
 
             if (transOps.length > 0) {
                 const res = await db.collection("credits_transactions").bulkWrite(transOps, { ordered: false });
